@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/transaction_provider.dart';
-import '../transactions/transaction.dart';
+import '../models/transaction.dart';
 
 class EditTransactionScreen extends StatefulWidget {
-  final Transaction transaction;
+  final TransactionModel transaction;
 
   const EditTransactionScreen({super.key, required this.transaction});
 
@@ -19,6 +19,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
   late TextEditingController _titleController;
   late TextEditingController _amountController;
   late DateTime _selectedDate;
+  late TransactionType _selectedType;
 
   @override
   void initState() {
@@ -42,11 +43,12 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
     }
 
     Provider.of<TransactionProvider>(context, listen: false).editTransaction(
-      widget.transaction.id,
-      enteredTitle,
-      enteredAmount,
-      _selectedDate,
-    );
+        TransactionModel(
+            id: widget.transaction.id,
+            title: enteredTitle,
+            amount: enteredAmount,
+            date: _selectedDate,
+            type: _selectedType));
 
     Navigator.of(context).pop();
   }

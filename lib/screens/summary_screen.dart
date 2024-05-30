@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 import '../providers/transaction_provider.dart';
-import '../transactions/transaction.dart';
+import '../models/transaction.dart';
 
 class MonthlySummaryScreen extends StatelessWidget {
   const MonthlySummaryScreen({super.key});
@@ -16,10 +16,10 @@ class MonthlySummaryScreen extends StatelessWidget {
         transactionProvider.getTransactionsByMonth(currentMonth);
 
     final totalIncome = transactions
-        .where((tx) => tx.type == TransactionType.income)
+        .where((tx) => tx.type == TransactionType.ingreso)
         .fold(0.0, (sum, tx) => sum + tx.amount);
     final totalExpense = transactions
-        .where((tx) => tx.type == TransactionType.expense)
+        .where((tx) => tx.type == TransactionType.gasto)
         .fold(0.0, (sum, tx) => sum + tx.amount);
 
     return Scaffold(

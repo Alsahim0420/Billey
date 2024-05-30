@@ -1,58 +1,71 @@
 import 'package:flutter/material.dart';
 
-import '../transactions/transaction.dart';
+import '../database/data_base_helper.dart';
+import '../models/transaction.dart';
 
 class TransactionProvider with ChangeNotifier {
-  final List<Transaction> _transactions = [];
+  List<TransactionModel> _transactions = [];
 
-  List<Transaction> get transactions => _transactions;
+  List<TransactionModel> get transactions => _transactions;
 
-  void addTransaction(
-      String title, double amount, DateTime date, TransactionType type) {
-    _transactions
-        .add(Transaction(title: title, amount: amount, date: date, type: type));
+  Future<void> loadTransactions() async {
+    final data = await DatabaseHelper.instance.readAllTransactions();
+    _transactions = data;
     notifyListeners();
   }
 
-  void editTransaction(String id, String title, double amount, DateTime date) {
-    final index = _transactions.indexWhere((tx) => tx.id == id);
-    if (index >= 0) {
-      _transactions[index] = Transaction(
-        // id: id,
-        title: title,
-        amount: amount,
-        date: date,
-        type: _transactions[index].type,
-      );
-      notifyListeners();
-    }
+  void addTransaction(TransactionModel transaction) async {
+    await DatabaseHelper.instance.create(
+      TransactionModel(
+        id: transaction.id,
+        title: transaction.title,
+        amount: transaction.amount,
+        date: transaction.date,
+        type: transaction.type,
+      ),
+    );
+    loadTransactions();
   }
 
-  void deleteTransaction(String id) {
-    _transactions.removeWhere((tx) => tx.id == id);
-    notifyListeners();
+  void editTransaction(TransactionModel transaction) async {
+    await DatabaseHelper.instance.update(transaction);
+    loadTransactions();
   }
 
-  double get totalIncome {
+  void deleteTransaction(String id) async {
+    await DatabaseHelper.instance.delete(id);
+    loadTransactions();
+  }
+
+  double getTotalIncome() {
     return _transactions
-        .where((tx) => tx.type == TransactionType.income)
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+        .where((transaction) => transaction.type == TransactionType.ingreso)
+        .fold(0.0, (sum, item) => sum + item.amount);
   }
 
-  double get totalExpense {
+  double getTotalExpenses() {
     return _transactions
-        .where((tx) => tx.type == TransactionType.expense)
-        .fold(0.0, (sum, tx) => sum + tx.amount);
+        .where((transaction) => transaction.type == TransactionType.gasto)
+        .fold(0.0, (sum, item) => sum + item.amount);
   }
 
-  double get balance {
-    return totalIncome - totalExpense;
+  double getMonthlySummary(DateTime date) {
+    double income = getTransactionsByMonth(date)
+        .where((transaction) => transaction.type == TransactionType.ingreso)
+        .fold(0.0, (sum, item) => sum + item.amount);
+
+    double expenses = getTransactionsByMonth(date)
+        .where((transaction) => transaction.type == TransactionType.gasto)
+        .fold(0.0, (sum, item) => sum + item.amount);
+
+    return income - expenses;
   }
 
-  List<Transaction> getTransactionsByMonth(DateTime month) {
+  List<TransactionModel> getTransactionsByMonth(DateTime date) {
     return _transactions
-        .where(
-            (tx) => tx.date.year == month.year && tx.date.month == month.month)
+        .where((transaction) =>
+            transaction.date.year == date.year &&
+            transaction.date.month == date.month)
         .toList();
   }
 }
