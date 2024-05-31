@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -168,6 +169,56 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   listen: false)
                               .editTransaction(transaction);
                         }
+                        if (widget.transaction == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              backgroundColor: AppColors.incomeColor,
+                              content: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Icon(
+                                    TablerIcons.square_rounded_check,
+                                    color: AppColors.white,
+                                    size: 50,
+                                  ),
+                                  Text(
+                                    "Transacción agregada correctamente",
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: AppColors.white,
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              backgroundColor: AppColors.primaryColor,
+                              content: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Icon(
+                                    TablerIcons.square_rounded_check,
+                                    color: AppColors.white,
+                                    size: 50,
+                                  ),
+                                  Text(
+                                    "Transacción editada correctamente",
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: AppColors.white,
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+
                         Navigator.of(context).pop();
                       }
                     },

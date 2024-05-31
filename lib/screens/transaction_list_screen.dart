@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:my_finances_app/screens/add_transaction_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/transaction_provider.dart';
-import '../models/transaction.dart';
 
 import '../widgets/transaction_card.dart';
 import 'monthly_summary_screen.dart';
@@ -21,9 +20,20 @@ class TransactionListScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('My Finances'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
+          ElevatedButton(
             onPressed: () => _showMonthlySummary(context),
+            child: Row(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(right: 10),
+                  child: const Text("Resumen "),
+                ),
+                const Icon(Icons.calendar_today),
+              ],
+            ),
+          ),
+          const SizedBox(
+            width: 20,
           ),
         ],
       ),
