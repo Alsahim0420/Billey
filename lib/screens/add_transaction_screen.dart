@@ -51,7 +51,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Transaction'),
+        title: const Text('Agregar Transaction'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -222,7 +222,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         Navigator.of(context).pop();
                       }
                     },
-                    child: Text(widget.transaction == null ? 'Add' : 'Edit'),
+                    child: Text(widget.transaction == null ? 'Agregar' : 'Editar'),
                   ),
                 ),
               ],
