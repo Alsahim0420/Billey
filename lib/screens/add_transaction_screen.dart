@@ -102,9 +102,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         borderRadius: BorderRadius.circular(10),
                         color: AppColors.primaryColorTransparent,
                       ),
-                      child: const Text(
-                        "Elige un tipo de transacción",
-                        textAlign: TextAlign.center,
+                      child: const Center(
+                        child: Text(
+                          "Elige un tipo de transacción",
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                     SizedBox(width: size.width * 0.05),
@@ -222,7 +224,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         Navigator.of(context).pop();
                       }
                     },
-                    child: Text(widget.transaction == null ? 'Agregar' : 'Editar'),
+                    child:
+                        Text(widget.transaction == null ? 'Agregar' : 'Editar'),
                   ),
                 ),
               ],

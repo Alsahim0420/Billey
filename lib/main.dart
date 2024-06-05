@@ -1,9 +1,9 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:my_finances_app/screens/slide_show_intro_screen.dart';
 import 'package:my_finances_app/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'providers/transaction_provider.dart';
-import 'screens/transaction_list_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Financial Manager',
         theme: AppTheme().getTheme(),
-        home: const TransactionListScreen(),
+        home: const IntroScreen(),
       ),
     );
   }
