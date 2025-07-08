@@ -650,7 +650,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     );
   }
 
-  void _saveTransaction() {
+  void _saveTransaction() async {
     if (_formKey.currentState!.validate()) {
       // Validar que se haya seleccionado una categoría
       if (_selectedCategory == null) {
@@ -675,24 +675,28 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
         amount: double.parse(cleanAmount),
         date: _date,
         type: _type,
-        category: TransactionCategory
-            .other, // Por ahora usamos 'other' para todas las categorías personalizadas
+        category: _selectedCategory!
+            .transactionCategory, // Usar la categoría seleccionada
         description: _descriptionController.text.trim().isEmpty
             ? null
             : _descriptionController.text.trim(),
       );
 
       if (widget.transaction == null) {
-        Provider.of<TransactionProvider>(context, listen: false)
+        await Provider.of<TransactionProvider>(context, listen: false)
             .addTransaction(transaction);
-        _showSuccessMessage('Transacción agregada correctamente');
+        if (mounted) {
+          _showSuccessMessage('Transacción agregada correctamente');
+          Navigator.of(context).pop();
+        }
       } else {
-        Provider.of<TransactionProvider>(context, listen: false)
+        await Provider.of<TransactionProvider>(context, listen: false)
             .editTransaction(transaction);
-        _showSuccessMessage('Transacción actualizada correctamente');
+        if (mounted) {
+          _showSuccessMessage('Transacción actualizada correctamente');
+          Navigator.of(context).pop();
+        }
       }
-
-      Navigator.of(context).pop();
     }
   }
 

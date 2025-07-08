@@ -167,6 +167,9 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildMonthlyChart(TransactionProvider provider) {
     final monthlyData = _getMonthlyData(provider);
+    // Determinar el balance del último mes
+    final lastBalance = monthlyData.isNotEmpty ? monthlyData.last.y : 0;
+    final isNegative = lastBalance < 0;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -198,16 +201,33 @@ class DashboardScreen extends StatelessWidget {
                   LineChartBarData(
                     spots: monthlyData.map((e) => FlSpot(e.x, e.y)).toList(),
                     isCurved: true,
-                    gradient: AppColors.primaryGradient,
+                    gradient: LinearGradient(
+                      colors: isNegative
+                          ? [
+                              AppColors.expenseColor,
+                              AppColors.expenseColorLight
+                            ]
+                          : [
+                              AppColors.primaryColor,
+                              AppColors.primaryColorDark
+                            ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
                     barWidth: 3,
                     dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
                       gradient: LinearGradient(
-                        colors: [
-                          AppColors.primaryColor.withOpacity(0.3),
-                          AppColors.primaryColor.withOpacity(0.1),
-                        ],
+                        colors: isNegative
+                            ? [
+                                AppColors.expenseColor.withOpacity(0.3),
+                                AppColors.expenseColor.withOpacity(0.1)
+                              ]
+                            : [
+                                AppColors.primaryColor.withOpacity(0.3),
+                                AppColors.primaryColor.withOpacity(0.1)
+                              ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),

@@ -37,19 +37,19 @@ class TransactionProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void addTransaction(TransactionModel transaction) async {
+  Future<void> addTransaction(TransactionModel transaction) async {
     await dbHelper.create(transaction);
-    loadTransactions();
+    await loadTransactions();
   }
 
-  void editTransaction(TransactionModel transaction) async {
+  Future<void> editTransaction(TransactionModel transaction) async {
     await dbHelper.update(transaction);
-    loadTransactions();
+    await loadTransactions();
   }
 
-  void deleteTransaction(String id) async {
+  Future<void> deleteTransaction(String id) async {
     await dbHelper.delete(id);
-    loadTransactions();
+    await loadTransactions();
   }
 
   double getTotalIncome() {

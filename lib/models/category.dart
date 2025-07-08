@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
 import '../theme/colors/app_colors.dart';
+import 'transaction.dart';
 
 part 'category.g.dart';
 
@@ -44,6 +45,24 @@ class CategoryModel extends HiveObject {
   IconData get icon => IconData(iconCodePoint, fontFamily: 'MaterialIcons');
   Color get color => Color(colorValue);
   Color get sectionColor => Color(sectionColorValue);
+
+  // Mapear CategoryModel a TransactionCategory
+  TransactionCategory get transactionCategory {
+    switch (id) {
+      case 'food':
+        return TransactionCategory.food;
+      case 'transport':
+        return TransactionCategory.transport;
+      case 'entertainment':
+        return TransactionCategory.entertainment;
+      case 'health':
+        return TransactionCategory.health;
+      case 'education':
+        return TransactionCategory.education;
+      default:
+        return TransactionCategory.other;
+    }
+  }
 
   // Categorías por defecto
   static List<CategoryModel> getDefaultCategories() {
