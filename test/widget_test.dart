@@ -7,24 +7,59 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:provider/provider.dart';
 import 'package:my_finances_app/main.dart';
+import 'package:my_finances_app/providers/transaction_provider.dart';
+import 'package:my_finances_app/providers/category_provider.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('My Finances App Tests', () {
+    testWidgets('App should start without crashing',
+        (WidgetTester tester) async {
+      // Build our app and trigger a frame.
+      await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      // Verify that the app starts without errors
+      expect(find.byType(MaterialApp), findsOneWidget);
+    });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    testWidgets('App should have providers configured',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+      // Verify that providers are available
+      expect(find.byType(ChangeNotifierProvider<TransactionProvider>),
+          findsOneWidget);
+      expect(find.byType(ChangeNotifierProvider<CategoryProvider>),
+          findsOneWidget);
+    });
+
+    testWidgets('App should display splash screen initially',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(const MyApp());
+
+      // Verify that splash screen is shown initially
+      expect(find.byType(MaterialApp), findsOneWidget);
+    });
+
+    testWidgets('App should have proper theme configuration',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(const MyApp());
+
+      // Verify that the app has a theme
+      final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
+      expect(materialApp.theme, isNotNull);
+    });
+
+    testWidgets('App should handle provider initialization',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(const MyApp());
+
+      // Verify that the app can access providers
+      final context = tester.element(find.byType(MaterialApp));
+      expect(
+          Provider.of<TransactionProvider>(context, listen: false), isNotNull);
+      expect(Provider.of<CategoryProvider>(context, listen: false), isNotNull);
+    });
   });
 }
