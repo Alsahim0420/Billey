@@ -11,17 +11,15 @@ class Utils {
 
   ///returns: number formatted in [String] if @params [currency] is not null.
   String valueCurrency(dynamic currency) {
-    List<String> value = [];
-    String val = '';
     try {
       if (currency != null) {
-        final NumberFormat f = NumberFormat("#,##0.00", "es_CO");
-        val = f.format(currency);
-        value = val.split(',');
+        final NumberFormat f = NumberFormat("#,##0.00");
+        String formatted = f.format(currency);
+        return '\$ $formatted';
       }
-      return '\$ ${value[0]}';
+      return '\$ 0.00';
     } catch (e) {
-      return ' \$ 0';
+      return '\$ 0.00';
     }
   }
 
