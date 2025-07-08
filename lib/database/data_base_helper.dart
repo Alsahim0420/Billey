@@ -1,80 +1,46 @@
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:hive/hive.dart';
 import '../models/transaction.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
-
-  static Database? _database;
+  static const String _boxName = 'transactions';
 
   DatabaseHelper._init();
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-
-    _database = await _initDB('transactions.db');
-    return _database!;
-  }
-
-  Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
-
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDB,
-    );
-  }
-
-  Future _createDB(Database db, int version) async {
-    const idType = 'TEXT PRIMARY KEY';
-    const textType = 'TEXT NOT NULL';
-    const doubleType = 'REAL NOT NULL';
-    const dateType = 'TEXT NOT NULL';
-
-    await db.execute('''
-CREATE TABLE transactions ( 
-  id $idType, 
-  title $textType,
-  amount $doubleType,
-  date $dateType,
-  type $textType
-  )
-''');
+  Future<Box<TransactionModel>> get _box async {
+    return await Hive.openBox<TransactionModel>(_boxName);
   }
 
   Future<void> create(TransactionModel transaction) async {
-    final db = await instance.database;
-    await db.insert('transactions', transaction.toMap());
+    final box = await _box;
+    await box.add(transaction);
   }
 
   Future<List<TransactionModel>> readAllTransactions() async {
-    final db = await instance.database;
-
-    final result = await db.query('transactions');
-
-    return result.map((json) => TransactionModel.fromMap(json)).toList();
+    final box = await _box;
+    return box.values.toList();
   }
 
   Future<void> update(TransactionModel transaction) async {
-    final db = await instance.database;
-
-    await db.update(
-      'transactions',
-      transaction.toMap(),
-      where: 'id = ?',
-      whereArgs: [transaction.id],
-    );
+    final box = await _box;
+    // Buscar la transacción por ID
+    final index = box.values.toList().indexWhere((t) => t.id == transaction.id);
+    if (index != -1) {
+      await box.putAt(index, transaction);
+    }
   }
 
   Future<void> delete(String id) async {
-    final db = await instance.database;
+    final box = await _box;
+    // Buscar la transacción por ID y eliminarla
+    final index = box.values.toList().indexWhere((t) => t.id == id);
+    if (index != -1) {
+      await box.deleteAt(index);
+    }
+  }
 
-    await db.delete(
-      'transactions',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+  Future<void> close() async {
+    final box = await _box;
+    await box.close();
   }
 }

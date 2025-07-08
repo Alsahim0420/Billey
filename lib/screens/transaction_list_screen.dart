@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:my_finances_app/screens/add_transaction_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/transaction_provider.dart';
-
 import '../widgets/transaction_card.dart';
+import '../widgets/empty_state_widget.dart';
+import '../widgets/shimmer_loading.dart';
+import '../theme/colors/app_colors.dart';
 import 'monthly_summary_screen.dart';
 
 class TransactionListScreen extends StatelessWidget {
@@ -47,9 +49,31 @@ class TransactionListScreen extends StatelessWidget {
           );
         },
       ),
+      backgroundColor: AppColors.backgroundColor,
       body: FutureBuilder(
         future: provider.loadTransactions(),
-        builder: (context, data) {
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const TransactionListShimmer();
+          }
+
+          if (provider.transactions.isEmpty) {
+            return EmptyStateWidget(
+              icon: Icons.receipt_long_outlined,
+              title: '¡Tu primera transacción te espera!',
+              message:
+                  'Comienza registrando tus ingresos y gastos para tener control total de tu dinero.',
+              actionText: 'Agregar Transacción',
+              onAction: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const AddTransactionScreen(),
+                  ),
+                );
+              },
+            );
+          }
+
           return ListView.builder(
             itemCount: provider.transactions.length,
             padding: const EdgeInsets.only(top: 20),
@@ -80,7 +104,8 @@ class TransactionListScreen extends StatelessWidget {
   void _showMonthlySummary(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => MonthlySummaryScreen(month: DateTime.now()),
+        builder: (context) =>
+            MonthlySummaryScreen(initialMonth: DateTime.now()),
       ),
     );
   }

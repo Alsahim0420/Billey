@@ -5,25 +5,32 @@ import '../models/transaction.dart';
 
 class TransactionProvider with ChangeNotifier {
   List<TransactionModel> _transactions = [];
+  List<TransactionModel> _filteredTransactions = [];
+  String _searchQuery = '';
+  TransactionType? _filterType;
+  TransactionCategory? _filterCategory;
 
-  List<TransactionModel> get transactions => _transactions;
+  List<TransactionModel> get transactions => _filteredTransactions.isEmpty &&
+          _searchQuery.isEmpty &&
+          _filterType == null &&
+          _filterCategory == null
+      ? _transactions
+      : _filteredTransactions;
+
+  String get searchQuery => _searchQuery;
+  TransactionType? get filterType => _filterType;
+  TransactionCategory? get filterCategory => _filterCategory;
 
   Future<void> loadTransactions() async {
     final data = await DatabaseHelper.instance.readAllTransactions();
     _transactions = data;
+    // Sort by date (most recent first)
+    _transactions.sort((a, b) => b.date.compareTo(a.date));
     notifyListeners();
   }
 
   void addTransaction(TransactionModel transaction) async {
-    await DatabaseHelper.instance.create(
-      TransactionModel(
-        id: transaction.id,
-        title: transaction.title,
-        amount: transaction.amount,
-        date: transaction.date,
-        type: transaction.type,
-      ),
-    );
+    await DatabaseHelper.instance.create(transaction);
     loadTransactions();
   }
 
@@ -67,5 +74,79 @@ class TransactionProvider with ChangeNotifier {
             transaction.date.year == date.year &&
             transaction.date.month == date.month)
         .toList();
+  }
+
+  void searchTransactions(String query) {
+    _searchQuery = query;
+    _applyFilters();
+    notifyListeners();
+  }
+
+  void filterByType(TransactionType? type) {
+    _filterType = type;
+    _applyFilters();
+    notifyListeners();
+  }
+
+  void filterByCategory(TransactionCategory? category) {
+    _filterCategory = category;
+    _applyFilters();
+    notifyListeners();
+  }
+
+  void clearFilters() {
+    _searchQuery = '';
+    _filterType = null;
+    _filterCategory = null;
+    _filteredTransactions = [];
+    notifyListeners();
+  }
+
+  void _applyFilters() {
+    var filtered = List<TransactionModel>.from(_transactions);
+
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered.where((transaction) {
+        return transaction.title
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()) ||
+            (transaction.description
+                    ?.toLowerCase()
+                    .contains(_searchQuery.toLowerCase()) ??
+                false);
+      }).toList();
+    }
+
+    // Apply type filter
+    if (_filterType != null) {
+      filtered = filtered
+          .where((transaction) => transaction.type == _filterType)
+          .toList();
+    }
+
+    // Apply category filter
+    if (_filterCategory != null) {
+      filtered = filtered
+          .where((transaction) => transaction.category == _filterCategory)
+          .toList();
+    }
+
+    _filteredTransactions = filtered;
+  }
+
+  List<TransactionModel> getTransactionsByDateRange(
+      DateTime start, DateTime end) {
+    return _transactions.where((transaction) {
+      return transaction.date
+              .isAfter(start.subtract(const Duration(days: 1))) &&
+          transaction.date.isBefore(end.add(const Duration(days: 1)));
+    }).toList();
+  }
+
+  double getTotalByCategory(TransactionCategory category) {
+    return _transactions
+        .where((transaction) => transaction.category == category)
+        .fold(0.0, (sum, transaction) => sum + transaction.amount);
   }
 }
