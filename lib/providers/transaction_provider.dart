@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import '../database/data_base_helper.dart';
 import '../models/transaction.dart';
 
 class TransactionProvider with ChangeNotifier {
+  final DatabaseHelper dbHelper;
   List<TransactionModel> _transactions = [];
   List<TransactionModel> _filteredTransactions = [];
   String _searchQuery = '';
   TransactionType? _filterType;
   TransactionCategory? _filterCategory;
+
+  // Constructor por defecto usa DatabaseHelper.instance
+  TransactionProvider() : dbHelper = DatabaseHelper.instance;
+
+  // Constructor alternativo para tests/mocks
+  TransactionProvider.withDb(this.dbHelper);
 
   List<TransactionModel> get transactions => _filteredTransactions.isEmpty &&
           _searchQuery.isEmpty &&
@@ -22,7 +30,7 @@ class TransactionProvider with ChangeNotifier {
   TransactionCategory? get filterCategory => _filterCategory;
 
   Future<void> loadTransactions() async {
-    final data = await DatabaseHelper.instance.readAllTransactions();
+    final data = await dbHelper.readAllTransactions();
     _transactions = data;
     // Sort by date (most recent first)
     _transactions.sort((a, b) => b.date.compareTo(a.date));
@@ -30,17 +38,17 @@ class TransactionProvider with ChangeNotifier {
   }
 
   void addTransaction(TransactionModel transaction) async {
-    await DatabaseHelper.instance.create(transaction);
+    await dbHelper.create(transaction);
     loadTransactions();
   }
 
   void editTransaction(TransactionModel transaction) async {
-    await DatabaseHelper.instance.update(transaction);
+    await dbHelper.update(transaction);
     loadTransactions();
   }
 
   void deleteTransaction(String id) async {
-    await DatabaseHelper.instance.delete(id);
+    await dbHelper.delete(id);
     loadTransactions();
   }
 
@@ -148,5 +156,11 @@ class TransactionProvider with ChangeNotifier {
     return _transactions
         .where((transaction) => transaction.category == category)
         .fold(0.0, (sum, transaction) => sum + transaction.amount);
+  }
+
+  @visibleForTesting
+  void setTestTransactions(List<TransactionModel> txs) {
+    _transactions = txs;
+    _filteredTransactions = [];
   }
 }
