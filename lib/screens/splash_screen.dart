@@ -4,6 +4,8 @@ import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
 import '../theme/colors/app_colors.dart';
 import 'slide_show_intro_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'main_navigation_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -105,14 +107,20 @@ class _SplashScreenState extends State<SplashScreen>
     // Small delay for better UX
     await Future.delayed(const Duration(milliseconds: 500));
 
-    // Navigate to intro screen
+    // Revisar si ya se mostró el onboarding
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+    // Navegar según corresponda
     if (mounted) {
       _fadeController.forward().then((_) {
         if (mounted) {
           Navigator.of(context).pushReplacement(
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) =>
-                  const IntroScreen(),
+                  hasSeenOnboarding
+                      ? const MainNavigationScreen()
+                      : const IntroScreen(),
               transitionDuration: const Duration(milliseconds: 300),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {

@@ -8,6 +8,7 @@ import '../models/transaction.dart';
 import '../models/category.dart';
 import '../theme/colors/app_colors.dart';
 import '../providers/category_provider.dart';
+import '../providers/currency_provider.dart';
 
 class MonthlySummaryScreen extends StatefulWidget {
   final DateTime? initialMonth;
@@ -49,6 +50,8 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<TransactionProvider>(context);
+    final currencyProvider =
+        Provider.of<CurrencyProvider>(context, listen: false);
     final transactions = provider.transactions
         .where((t) =>
             t.date.year == _selectedMonth.year &&
@@ -90,7 +93,8 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
           children: [
             _buildMonthSelector(),
             const SizedBox(height: 20),
-            _buildTotals(totalIncome, totalExpense, netBalance),
+            _buildTotals(
+                totalIncome, totalExpense, netBalance, currencyProvider),
             const SizedBox(height: 24),
             _buildBarChart(totalIncome, totalExpense),
             const SizedBox(height: 32),
@@ -148,7 +152,8 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
     );
   }
 
-  Widget _buildTotals(double income, double expense, double net) {
+  Widget _buildTotals(double income, double expense, double net,
+      CurrencyProvider currencyProvider) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -159,14 +164,22 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
       child: Column(
         children: [
           // Balance arriba
-          _buildTotalItem('Balance', net, AppColors.primaryColor, isMain: true),
+          _buildTotalItem(
+              'Balance', net, AppColors.primaryColor, currencyProvider,
+              isMain: true),
           const SizedBox(height: 16),
           // Ingresos y Gastos abajo
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildTotalItem('Ingresos', income, AppColors.incomeColor),
-              _buildTotalItem('Gastos', expense, AppColors.expenseColor),
+              Expanded(
+                child: _buildTotalItem('Ingresos', income,
+                    AppColors.incomeColor, currencyProvider),
+              ),
+              Expanded(
+                child: _buildTotalItem('Gastos', expense,
+                    AppColors.expenseColor, currencyProvider),
+              ),
             ],
           ),
         ],
@@ -175,6 +188,7 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
   }
 
   Widget _buildTotalItem(String label, double value, Color color,
+      CurrencyProvider currencyProvider,
       {bool isMain = false}) {
     return Column(
       children: [
@@ -186,11 +200,11 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
             )),
         const SizedBox(height: 6),
         Text(
-          NumberFormat.currency(locale: 'es', symbol: '₡').format(value),
+          currencyProvider.format(value),
           style: TextStyle(
             color: color,
             fontWeight: FontWeight.bold,
-            fontSize: isMain ? 22 : 18,
+            fontSize: isMain ? 18 : 14,
           ),
         ),
       ],
@@ -335,6 +349,8 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
   Widget _buildLegend(Map<CategoryModel, double> data) {
     if (data.isEmpty) return const SizedBox();
     final total = data.values.fold(0.0, (sum, v) => sum + v);
+    final currencyProvider =
+        Provider.of<CurrencyProvider>(context, listen: false);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -364,9 +380,7 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
                 Text('$percent%',
                     style: const TextStyle(color: AppColors.textSecondary)),
                 const SizedBox(width: 8),
-                Text(
-                    NumberFormat.currency(locale: 'es', symbol: '₡')
-                        .format(entry.value),
+                Text(currencyProvider.format(entry.value),
                     style: const TextStyle(color: AppColors.textPrimary)),
               ],
             ),

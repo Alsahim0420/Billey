@@ -6,6 +6,7 @@ import 'package:my_finances_app/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'providers/transaction_provider.dart';
 import 'providers/category_provider.dart';
+import 'providers/currency_provider.dart';
 import 'models/transaction.dart';
 import 'models/category.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -23,7 +24,16 @@ void main() async {
   Hive.registerAdapter(TransactionCategoryAdapter());
   Hive.registerAdapter(CategoryModelAdapter());
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TransactionProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => CurrencyProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

@@ -1,5 +1,3 @@
-import 'package:intl/intl.dart';
-
 /// Methods widely used throughout the global app.
 class Utils {
   static final Utils _singleton = Utils._();
@@ -9,19 +7,19 @@ class Utils {
   }
   Utils._();
 
-  ///returns: number formatted in [String] if @params [currency] is not null.
-  String valueCurrency(dynamic currency) {
-    try {
-      if (currency != null) {
-        final NumberFormat f = NumberFormat("#,##0.00");
-        String formatted = f.format(currency);
-        return '\$ $formatted';
-      }
-      return '\$ 0.00';
-    } catch (e) {
-      return '\$ 0.00';
-    }
-  }
+  // ///returns: number formatted in [String] if @params [currency] is not null.
+  // String valueCurrency(dynamic currency) {
+  //   try {
+  //     if (currency != null) {
+  //       final NumberFormat f = NumberFormat("#,##0.00");
+  //       String formatted = f.format(currency);
+  //       return '\$ $formatted';
+  //     }
+  //     return '\$ 0.00';
+  //   } catch (e) {
+  //     return '\$ 0.00';
+  //   }
+  // }
 
   String capitalize(String input) {
     if (input.isEmpty) return input;

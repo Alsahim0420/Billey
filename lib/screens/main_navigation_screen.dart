@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:csv/csv.dart';
 import 'package:provider/provider.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/currency_provider.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
@@ -228,68 +229,175 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
           ),
         ),
         child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.textLight,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text(
-                  'Configuración',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.textLight,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              ),
-              const Divider(color: AppColors.textLight),
-              _buildSettingsItem(
-                TablerIcons.category,
-                'Gestionar Categorías',
-                'Agregar, editar o eliminar categorías',
-                () {
-                  Navigator.pop(context);
-                  _navigateToCategories();
-                },
-              ),
-              _buildSettingsItem(
-                TablerIcons.download,
-                'Exportar Datos',
-                'Descargar tus transacciones',
-                () {
-                  Navigator.pop(context);
-                  _exportData();
-                },
-              ),
-              _buildSettingsItem(
-                TablerIcons.share,
-                'Compartir App',
-                'Recomienda la app a tus amigos',
-                () {
-                  Navigator.pop(context);
-                  _shareApp();
-                },
-              ),
-              _buildSettingsItem(
-                TablerIcons.info_circle,
-                'Acerca de',
-                'Información de la aplicación',
-                () {
-                  Navigator.pop(context);
-                  _showAboutDialog();
-                },
-              ),
-              const SizedBox(height: 20),
-            ],
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'Configuración',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                const Divider(color: AppColors.textLight),
+                // Selector de divisa
+                Consumer<CurrencyProvider>(
+                  builder: (context, currencyProvider, _) {
+                    final selected = currencyProvider.selectedCurrency;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Divisa',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary),
+                        ),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () async {
+                            final selectedCurrency =
+                                await showModalBottomSheet<Currency>(
+                              context: context,
+                              backgroundColor: AppColors.surfaceColor,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20)),
+                              ),
+                              builder: (context) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'Selecciona tu divisa',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    const Divider(),
+                                    ...CurrencyProvider.supportedCurrencies
+                                        .map((currency) {
+                                      final isSelected = currency == selected;
+                                      return ListTile(
+                                        leading: Text(_getFlag(currency.code),
+                                            style:
+                                                const TextStyle(fontSize: 24)),
+                                        title: Text(
+                                            '${currency.name} (${currency.code})'),
+                                        trailing: Text(currency.symbol,
+                                            style:
+                                                const TextStyle(fontSize: 20)),
+                                        selected: isSelected,
+                                        selectedTileColor: AppColors
+                                            .primaryColor
+                                            .withOpacity(0.08),
+                                        onTap: () {
+                                          Navigator.pop(context, currency);
+                                        },
+                                      );
+                                    }).toList(),
+                                    const SizedBox(height: 16),
+                                  ],
+                                );
+                              },
+                            );
+                            if (selectedCurrency != null) {
+                              currencyProvider.setCurrency(selectedCurrency);
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 14),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceColor,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: AppColors.textLight, width: 1),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(_getFlag(selected.code),
+                                    style: const TextStyle(fontSize: 22)),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    '${selected.name} (${selected.code})',
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        color: AppColors.textPrimary),
+                                  ),
+                                ),
+                                Text(selected.symbol,
+                                    style: const TextStyle(fontSize: 18)),
+                                const SizedBox(width: 8),
+                                const Icon(Icons.arrow_forward_ios,
+                                    size: 16, color: AppColors.textLight),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                // Resto de opciones
+                _buildSettingsItem(
+                  TablerIcons.category,
+                  'Gestionar Categorías',
+                  'Agregar, editar o eliminar categorías',
+                  () {
+                    Navigator.pop(context);
+                    _navigateToCategories();
+                  },
+                ),
+                _buildSettingsItem(
+                  TablerIcons.download,
+                  'Exportar Datos',
+                  'Descargar tus transacciones',
+                  () {
+                    Navigator.pop(context);
+                    _exportData();
+                  },
+                ),
+                _buildSettingsItem(
+                  TablerIcons.share,
+                  'Compartir App',
+                  'Recomienda la app a tus amigos',
+                  () {
+                    Navigator.pop(context);
+                    _shareApp();
+                  },
+                ),
+                _buildSettingsItem(
+                  TablerIcons.info_circle,
+                  'Acerca de',
+                  'Información de la aplicación',
+                  () {
+                    Navigator.pop(context);
+                    _showAboutDialog();
+                  },
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
@@ -430,5 +538,22 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
         ],
       ),
     );
+  }
+}
+
+String _getFlag(String code) {
+  switch (code) {
+    case 'EUR':
+      return '🇪🇸';
+    case 'USD':
+      return '🇺🇸';
+    case 'COP':
+      return '🇨🇴';
+    case 'MXN':
+      return '🇲🇽';
+    case 'BRL':
+      return '🇧🇷';
+    default:
+      return '🏳️';
   }
 }

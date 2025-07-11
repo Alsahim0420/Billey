@@ -676,7 +676,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
         date: _date,
         type: _type,
         category: _selectedCategory!
-            .transactionCategory, // Usar la categoría seleccionada
+            .transactionCategory, // Usar la categoría seleccionada correctamente
         description: _descriptionController.text.trim().isEmpty
             ? null
             : _descriptionController.text.trim(),
@@ -768,12 +768,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       lastDate: DateTime.now(),
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
               primary: AppColors.primaryColor,
-              onPrimary: AppColors.white,
+              onPrimary: Colors.white,
+              surface: AppColors.surfaceColor,
               onSurface: AppColors.textPrimary,
             ),
+            dialogBackgroundColor: AppColors.backgroundColor,
           ),
           child: child!,
         );
