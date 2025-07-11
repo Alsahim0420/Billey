@@ -1,6 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:my_finances_app/screens/main_navigation_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});
@@ -137,7 +140,10 @@ class _IntroScreenState extends State<IntroScreen>
     }
   }
 
-  void _goToMainApp() {
+  void _goToMainApp() async {
+    // Guardar que ya vio el onboarding
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasSeenOnboarding', true);
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>

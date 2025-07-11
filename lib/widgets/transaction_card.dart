@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:my_finances_app/models/transaction.dart';
-import 'package:my_finances_app/resources/utils.dart';
+import 'package:my_finances_app/providers/currency_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../theme/colors/app_colors.dart';
 
@@ -67,7 +68,8 @@ class _TransactionCardState extends State<TransactionCard>
     final amount = widget.transaction.amount;
     final formattedDate =
         DateFormat('dd MMM, yyyy').format(widget.transaction.date);
-
+    final currencyProvider =
+        Provider.of<CurrencyProvider>(context, listen: false);
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {
@@ -223,45 +225,53 @@ class _TransactionCardState extends State<TransactionCard>
                                         ),
                                       ),
                                       const SizedBox(width: 12),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 3,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: widget
-                                              .transaction.category.color
-                                              .withOpacity(0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          border: Border.all(
+                                      Flexible(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 3,
+                                          ),
+                                          decoration: BoxDecoration(
                                             color: widget
                                                 .transaction.category.color
-                                                .withOpacity(0.3),
-                                            width: 0.5,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              widget.transaction.category.icon,
-                                              size: 12,
+                                                .withOpacity(0.15),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            border: Border.all(
                                               color: widget
-                                                  .transaction.category.color,
+                                                  .transaction.category.color
+                                                  .withOpacity(0.3),
+                                              width: 0.5,
                                             ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              widget.transaction.category
-                                                  .displayName,
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w600,
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                widget
+                                                    .transaction.category.icon,
+                                                size: 12,
                                                 color: widget
                                                     .transaction.category.color,
                                               ),
-                                            ),
-                                          ],
+                                              const SizedBox(width: 4),
+                                              Flexible(
+                                                child: Text(
+                                                  widget.transaction.category
+                                                      .displayName,
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: widget.transaction
+                                                        .category.color,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -283,15 +293,19 @@ class _TransactionCardState extends State<TransactionCard>
                                         ),
                                       ),
                                       const SizedBox(width: 4),
-                                      Text(
-                                        Utils().valueCurrency(amount),
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: isIncome
-                                              ? AppColors.incomeColor
-                                              : AppColors.expenseColor,
-                                          letterSpacing: -0.5,
+                                      Flexible(
+                                        child: Text(
+                                          currencyProvider.format(amount),
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: isIncome
+                                                ? AppColors.incomeColor
+                                                : AppColors.expenseColor,
+                                            letterSpacing: -0.5,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
                                         ),
                                       ),
                                     ],
@@ -405,6 +419,8 @@ class _TransactionCardState extends State<TransactionCard>
   }
 
   void _showConfirmationDialog(BuildContext context) {
+    final currencyProvider =
+        Provider.of<CurrencyProvider>(context, listen: false);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -467,7 +483,7 @@ class _TransactionCardState extends State<TransactionCard>
 
                 // Mensaje
                 Text(
-                  'Se eliminará "${widget.transaction.title}" por ${Utils().valueCurrency(widget.transaction.amount)}.\n\nEsta acción no se puede deshacer.',
+                  'Se eliminará "${widget.transaction.title}" por ${currencyProvider.format(widget.transaction.amount)}.\n\nEsta acción no se puede deshacer.',
                   style: const TextStyle(
                     fontSize: 16,
                     color: AppColors.textSecondary,

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:my_finances_app/providers/currency_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../providers/transaction_provider.dart';
 import '../models/transaction.dart';
 import '../theme/colors/app_colors.dart';
-import '../resources/utils.dart';
 import 'add_transaction_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -30,13 +30,13 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   _buildHeader(context),
                   const SizedBox(height: 20),
-                  _buildBalanceCards(provider),
+                  _buildBalanceCards(provider, context),
                   const SizedBox(height: 20),
                   _buildMonthlyChart(provider),
                   const SizedBox(height: 20),
                   _buildCategoryChart(provider),
                   const SizedBox(height: 20),
-                  _buildRecentTransactions(provider),
+                  _buildRecentTransactions(provider, context),
                 ],
               ),
             );
@@ -73,7 +73,10 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBalanceCards(TransactionProvider provider) {
+  Widget _buildBalanceCards(
+      TransactionProvider provider, BuildContext context) {
+    final currencyProvider =
+        Provider.of<CurrencyProvider>(context, listen: false);
     final totalIncome = provider.getTotalIncome();
     final totalExpenses = provider.getTotalExpenses();
     final balance = totalIncome - totalExpenses;
@@ -83,7 +86,7 @@ class DashboardScreen extends StatelessWidget {
         // Balance Total - Tarjeta completa arriba
         _buildBalanceCard(
           'Balance Total',
-          Utils().valueCurrency(balance),
+          currencyProvider.format(balance),
           balance >= 0 ? AppColors.successColor : AppColors.errorColor,
           balance >= 0 ? Icons.trending_up : Icons.trending_down,
           isMainCard: true,
@@ -95,7 +98,7 @@ class DashboardScreen extends StatelessWidget {
             Expanded(
               child: _buildBalanceCard(
                 'Ingresos',
-                Utils().valueCurrency(totalIncome),
+                currencyProvider.format(totalIncome),
                 AppColors.incomeColor,
                 Icons.arrow_upward,
               ),
@@ -104,7 +107,7 @@ class DashboardScreen extends StatelessWidget {
             Expanded(
               child: _buildBalanceCard(
                 'Gastos',
-                Utils().valueCurrency(totalExpenses),
+                currencyProvider.format(totalExpenses),
                 AppColors.expenseColor,
                 Icons.arrow_downward,
               ),
@@ -319,7 +322,10 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentTransactions(TransactionProvider provider) {
+  Widget _buildRecentTransactions(
+      TransactionProvider provider, BuildContext context) {
+    final currencyProvider =
+        Provider.of<CurrencyProvider>(context, listen: false);
     final recentTransactions = provider.transactions.take(5).toList();
 
     return Container(
@@ -382,7 +388,7 @@ class DashboardScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${transaction.type == TransactionType.gasto ? '-' : '+'}${Utils().valueCurrency(transaction.amount)}',
+                    '${transaction.type == TransactionType.gasto ? '-' : '+'}${currencyProvider.format(transaction.amount)}',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
