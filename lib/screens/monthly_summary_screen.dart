@@ -18,6 +18,21 @@ class MonthlySummaryScreen extends StatefulWidget {
   State<MonthlySummaryScreen> createState() => _MonthlySummaryScreenState();
 }
 
+// Clase auxiliar para los datos del gráfico de categorías
+class CategoryChartData {
+  final CategoryModel category;
+  final double value;
+  final double percentage;
+  final Color color;
+
+  CategoryChartData({
+    required this.category,
+    required this.value,
+    required this.percentage,
+    required this.color,
+  });
+}
+
 class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
   late DateTime _selectedMonth;
 
@@ -66,15 +81,17 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
         .fold(0.0, (sum, t) => sum + t.amount);
     final netBalance = totalIncome - totalExpense;
 
-    // Agrupar gastos por categoría
+    // Agrupar gastos por categoría usando TransactionCategory
     final Map<CategoryModel, double> expensesByCategory = {};
     final categoryProvider =
         Provider.of<CategoryProvider>(context, listen: false);
     for (var t in transactions.where((t) => t.type == TransactionType.gasto)) {
-      final cat = categoryProvider.getCategoryById(t.category.toString());
-      final category = cat ??
-          CategoryModel.getDefaultCategories()
-              .firstWhere((c) => c.id == 'other');
+      // Buscar la categoría por TransactionCategory
+      final category = categoryProvider.categories.firstWhere(
+        (c) => c.transactionCategory == t.category,
+        orElse: () => CategoryModel.getDefaultCategories()
+            .firstWhere((c) => c.id == 'other'),
+      );
       expensesByCategory[category] =
           (expensesByCategory[category] ?? 0) + t.amount;
     }
@@ -292,14 +309,30 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
     );
   }
 
+  List<CategoryChartData> _getCategoryData(
+      Map<CategoryModel, double> expensesByCategory) {
+    final totalExpenses =
+        expensesByCategory.values.fold(0.0, (sum, amount) => sum + amount);
+    return expensesByCategory.entries.map((entry) {
+      final percentage =
+          totalExpenses > 0 ? (entry.value / totalExpenses) * 100 : 0.0;
+      return CategoryChartData(
+        category: entry.key,
+        value: entry.value,
+        percentage: percentage,
+        color: entry.key.color,
+      );
+    }).toList();
+  }
+
   Widget _buildPieChart(Map<CategoryModel, double> data) {
-    if (data.isEmpty) {
+    final categoryData = _getCategoryData(data);
+    if (categoryData.isEmpty) {
       return const Center(
         child: Text('No hay gastos este mes',
             style: TextStyle(color: AppColors.textSecondary)),
       );
     }
-    final total = data.values.fold(0.0, (sum, v) => sum + v);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -318,26 +351,21 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
             height: 180,
             child: PieChart(
               PieChartData(
-                sections: data.entries.map((entry) {
-                  final percent =
-                      (entry.value / total * 100).toStringAsFixed(1);
+                sections: categoryData.map((data) {
                   return PieChartSectionData(
-                    color: entry.key.color,
-                    value: entry.value,
-                    title: '$percent%',
+                    color: data.color,
+                    value: data.value,
+                    title: '${data.percentage.toStringAsFixed(1)}%',
                     radius: 60,
                     titleStyle: const TextStyle(
-                      color: Colors.white,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      color: AppColors.white,
                     ),
-                    badgeWidget:
-                        Icon(entry.key.icon, color: entry.key.color, size: 22),
-                    badgePositionPercentageOffset: .98,
                   );
                 }).toList(),
                 sectionsSpace: 2,
-                centerSpaceRadius: 32,
+                centerSpaceRadius: 40,
               ),
             ),
           ),
@@ -347,8 +375,8 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
   }
 
   Widget _buildLegend(Map<CategoryModel, double> data) {
-    if (data.isEmpty) return const SizedBox();
-    final total = data.values.fold(0.0, (sum, v) => sum + v);
+    final categoryData = _getCategoryData(data);
+    if (categoryData.isEmpty) return const SizedBox();
     final currencyProvider =
         Provider.of<CurrencyProvider>(context, listen: false);
     return Column(
@@ -358,8 +386,7 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
             style: TextStyle(
                 fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
         const SizedBox(height: 12),
-        ...data.entries.map((entry) {
-          final percent = (entry.value / total * 100).toStringAsFixed(1);
+        ...categoryData.map((data) {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(
@@ -368,19 +395,19 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
                   width: 16,
                   height: 16,
                   decoration: BoxDecoration(
-                    color: entry.key.color,
+                    color: data.color,
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(entry.key.name,
+                Text(data.category.name,
                     style: TextStyle(
-                        color: entry.key.color, fontWeight: FontWeight.w600)),
+                        color: data.color, fontWeight: FontWeight.w600)),
                 const SizedBox(width: 8),
-                Text('$percent%',
+                Text('${data.percentage.toStringAsFixed(1)}%',
                     style: const TextStyle(color: AppColors.textSecondary)),
                 const SizedBox(width: 8),
-                Text(currencyProvider.format(entry.value),
+                Text(currencyProvider.format(data.value),
                     style: const TextStyle(color: AppColors.textPrimary)),
               ],
             ),

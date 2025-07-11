@@ -253,7 +253,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                     ),
                   ),
                 ),
-                const Divider(color: AppColors.textLight),
                 // Selector de divisa
                 Consumer<CurrencyProvider>(
                   builder: (context, currencyProvider, _) {
@@ -261,15 +260,26 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Divisa',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary),
-                        ),
-                        const SizedBox(height: 8),
-                        GestureDetector(
+                        ListTile(
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 16.0),
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(_getFlag(selected.code),
+                                style: const TextStyle(fontSize: 22)),
+                          ),
+                          title: Text(
+                            '${selected.name} (${selected.code})',
+                            style: const TextStyle(
+                                fontSize: 16, color: AppColors.textPrimary),
+                          ),
+                          trailing: Text(
+                            selected.symbol,
+                          ),
                           onTap: () async {
                             final selectedCurrency =
                                 await showModalBottomSheet<Currency>(
@@ -323,36 +333,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                               currencyProvider.setCurrency(selectedCurrency);
                             }
                           },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 14),
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceColor,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                  color: AppColors.textLight, width: 1),
-                            ),
-                            child: Row(
-                              children: [
-                                Text(_getFlag(selected.code),
-                                    style: const TextStyle(fontSize: 22)),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    '${selected.name} (${selected.code})',
-                                    style: const TextStyle(
-                                        fontSize: 16,
-                                        color: AppColors.textPrimary),
-                                  ),
-                                ),
-                                Text(selected.symbol,
-                                    style: const TextStyle(fontSize: 18)),
-                                const SizedBox(width: 8),
-                                const Icon(Icons.arrow_forward_ios,
-                                    size: 16, color: AppColors.textLight),
-                              ],
-                            ),
-                          ),
                         ),
                       ],
                     );
