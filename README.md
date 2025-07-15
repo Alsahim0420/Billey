@@ -36,8 +36,8 @@
 ## 🚀 Instalación
 
 ```bash
-git clone https://github.com/tuusuario/My-finances.git
-cd My-finances
+git clone https://github.com/Alsahim0420/Billey
+cd Billey
 flutter pub get
 flutter run
 ```
