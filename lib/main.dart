@@ -1,8 +1,8 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:my_finances_app/screens/splash_screen.dart';
-import 'package:my_finances_app/theme/app_theme.dart';
+import 'package:billey/screens/splash_screen.dart';
+import 'package:billey/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'providers/transaction_provider.dart';
 import 'providers/category_provider.dart';

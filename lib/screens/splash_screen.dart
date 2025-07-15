@@ -179,21 +179,21 @@ class _SplashScreenState extends State<SplashScreen>
                               width: 120,
                               height: 120,
                               decoration: BoxDecoration(
-                                gradient: AppColors.primaryGradient,
-                                shape: BoxShape.circle,
+                                borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color:
-                                        AppColors.primaryColor.withOpacity(0.3),
-                                    blurRadius: 30,
-                                    offset: const Offset(0, 15),
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
                                   ),
                                 ],
                               ),
-                              child: const Icon(
-                                Icons.account_balance_wallet_rounded,
-                                size: 60,
-                                color: Colors.white,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Image.asset(
+                                  'icono.png',
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                           ),
@@ -212,7 +212,7 @@ class _SplashScreenState extends State<SplashScreen>
                           child: const Column(
                             children: [
                               Text(
-                                'My Finances',
+                                'Billey',
                                 style: TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,

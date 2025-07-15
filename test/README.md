@@ -1,6 +1,6 @@
-# Tests para My Finances App
+# Tests para Billey App
 
-Esta carpeta contiene todos los tests para la aplicación My Finances, incluyendo tests unitarios, de widgets y de integración.
+Esta carpeta contiene todos los tests para la aplicación Billey, incluyendo tests unitarios, de widgets y de integración.
 
 ## Estructura de Tests
 

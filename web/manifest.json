@@ -1,11 +1,11 @@
 {
-    "name": "my_finances_app",
-    "short_name": "my_finances_app",
+    "name": "Billey",
+    "short_name": "Billey",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Billey - Tu aplicación de finanzas personales",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

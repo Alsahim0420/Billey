@@ -8,12 +8,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:my_finances_app/main.dart';
-import 'package:my_finances_app/providers/transaction_provider.dart';
-import 'package:my_finances_app/providers/category_provider.dart';
+import 'package:billey/main.dart';
+import 'package:billey/providers/transaction_provider.dart';
+import 'package:billey/providers/category_provider.dart';
 
 void main() {
-  group('My Finances App Tests', () {
+  group('Billey App Tests', () {
     testWidgets('App should start without crashing',
         (WidgetTester tester) async {
       // Build our app and trigger a frame.

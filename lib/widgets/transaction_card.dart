@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:my_finances_app/models/transaction.dart';
-import 'package:my_finances_app/providers/currency_provider.dart';
+import 'package:billey/models/transaction.dart';
+import 'package:billey/providers/currency_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 

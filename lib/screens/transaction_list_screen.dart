@@ -2,7 +2,7 @@
 // ignore_for_file: void_checks
 
 import 'package:flutter/material.dart';
-import 'package:my_finances_app/screens/add_transaction_screen.dart';
+import 'package:billey/screens/add_transaction_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/transaction_provider.dart';
 import '../widgets/transaction_card.dart';
@@ -20,7 +20,7 @@ class TransactionListScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Finances'),
+        title: const Text('Billey'),
         actions: [
           ElevatedButton(
             onPressed: () => _showMonthlySummary(context),

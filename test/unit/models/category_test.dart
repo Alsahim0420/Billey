@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_finances_app/models/category.dart';
-import 'package:my_finances_app/theme/colors/app_colors.dart';
+import 'package:billey/models/category.dart';
+import 'package:billey/theme/colors/app_colors.dart';
 
 void main() {
   group('Category Model Tests', () {

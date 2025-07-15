@@ -1,10 +1,10 @@
-# 💸 My Finances
+# 💸 Billey
 
-![My Finances App](https://res.cloudinary.com/panmecar/image/upload/v1752268085/preview_my_finances_har3jm.png)
+![Billey](https://res.cloudinary.com/panmecar/image/upload/v1752268085/preview_my_finances_har3jm.png)
 
 ---
 
-**My Finances** es una aplicación móvil desarrollada en Flutter para gestionar tus finanzas personales de manera simple, visual y eficiente.
+**Billey** es una aplicación móvil desarrollada en Flutter para gestionar tus finanzas personales de manera simple, visual y eficiente.
 
 ---
 

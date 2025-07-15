@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Script para ejecutar todos los tests de My Finances App
-# Autor: My Finances Team
+# Script para ejecutar todos los tests de Billey App
+# Autor: Billey Team
 # Fecha: $(date)
 
-echo "🧪 Ejecutando tests para My Finances App"
+echo "🧪 Ejecutando tests para Billey App"
 echo "========================================"
 
 # Colores para output

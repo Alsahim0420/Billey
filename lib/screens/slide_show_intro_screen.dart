@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:my_finances_app/screens/main_navigation_screen.dart';
+import 'package:billey/screens/main_navigation_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class IntroScreen extends StatefulWidget {
@@ -27,7 +27,7 @@ class _IntroScreenState extends State<IntroScreen>
   final List<OnboardingPage> _pages = [
     OnboardingPage(
       icon: TablerIcons.wallet,
-      title: '¡Bienvenido a\nMy Finances!',
+      title: '¡Bienvenido a\nBilley!',
       subtitle: 'Tu compañero financiero',
       description:
           'Organiza tus ingresos y gastos de manera inteligente. Toma el control total de tu dinero.',

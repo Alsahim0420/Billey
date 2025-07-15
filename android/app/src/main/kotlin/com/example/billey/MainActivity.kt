@@ -1,6 +1,6 @@
-package com.example.my_finances_app
+package com.example.billey
 
 import io.flutter.embedding.android.FlutterActivity
 
 class MainActivity: FlutterActivity() {
-}
+} 

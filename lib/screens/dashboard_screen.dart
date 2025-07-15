@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_finances_app/providers/currency_provider.dart';
+import 'package:billey/providers/currency_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
@@ -434,7 +434,7 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  '¡Bienvenido a My Finances!',
+                  '¡Bienvenido a Billey!',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,

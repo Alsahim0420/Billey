@@ -457,13 +457,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
     final file =
         await File('${tempDir.path}/transacciones.csv').writeAsString(csvData);
     await Share.shareXFiles([XFile(file.path)],
-        text: 'Mis transacciones de My Finances');
+        text: 'Mis transacciones de Billey');
   }
 
   void _shareApp() async {
     await Share.share(
-      '¡Descarga My Finances y gestiona tus finanzas personales! https://tulink.com/app',
-      subject: 'Te recomiendo My Finances',
+      '¡Descarga Billey y gestiona tus finanzas personales! https://tulink.com/app',
+      subject: 'Te recomiendo Billey',
     );
   }
 
@@ -475,7 +475,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
           borderRadius: BorderRadius.circular(16),
         ),
         title: const Text(
-          'My Finances',
+          'Billey',
           style: TextStyle(
             color: AppColors.primaryColor,
             fontWeight: FontWeight.bold,

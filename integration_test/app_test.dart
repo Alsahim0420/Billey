@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:my_finances_app/main.dart' as app;
+import 'package:billey/main.dart' as app;
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -150,7 +150,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verificar que se muestra el diálogo
-      expect(find.text('My Finances'), findsOneWidget);
+      expect(find.text('Billey'), findsOneWidget);
       expect(find.text('Versión 1.0.0'), findsOneWidget);
     });
 
