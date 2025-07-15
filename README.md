@@ -1,6 +1,6 @@
 # 💸 Billey
 
-![Billey](https://res.cloudinary.com/panmecar/image/upload/v1752268085/preview_my_finances_har3jm.png)
+![Billey](https://res.cloudinary.com/panmecar/image/upload/v1752550787/ChatGPT_Image_14_jul_2025_10_30_44_p.m._hpoaxj.png)
 
 ---
 
@@ -21,7 +21,7 @@
 
 ## 🖼️ Capturas de pantalla
 
-![Screenshot 1](https://res.cloudinary.com/panmecar/image/upload/v1752267740/Simulator_Screenshot_-_iPhone_16_Plus_-_2025-07-11_at_15.58.28_skoots.png)
+![Screenshot 1](https://res.cloudinary.com/panmecar/image/upload/v1752550802/Simulator_Screenshot_-_iPhone_16_Plus_-_2025-07-14_at_19.49.35_b1exvu.png)
 
 ![Screenshot 2](https://res.cloudinary.com/panmecar/image/upload/v1752267739/Simulator_Screenshot_-_iPhone_16_Plus_-_2025-07-11_at_16.01.20_s5qp9s.png)
 
