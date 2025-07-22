@@ -205,7 +205,7 @@ class _IntroScreenState extends State<IntroScreen>
               child: TextButton(
                 onPressed: _goToMainApp,
                 style: TextButton.styleFrom(
-                  backgroundColor: Colors.white.withOpacity(0.2),
+                  backgroundColor: Colors.white.withAlpha(51),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -271,11 +271,11 @@ class _IntroScreenState extends State<IntroScreen>
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withAlpha(51),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withAlpha(25),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -334,7 +334,7 @@ class _IntroScreenState extends State<IntroScreen>
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withAlpha(229),
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -359,7 +359,7 @@ class _IntroScreenState extends State<IntroScreen>
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withAlpha(204),
                       height: 1.6,
                       letterSpacing: 0.2,
                     ),
@@ -385,12 +385,12 @@ class _IntroScreenState extends State<IntroScreen>
           decoration: BoxDecoration(
             color: _currentPage == index
                 ? Colors.white
-                : Colors.white.withOpacity(0.4),
+                : Colors.white.withAlpha(102),
             borderRadius: BorderRadius.circular(4),
             boxShadow: _currentPage == index
                 ? [
                     BoxShadow(
-                      color: Colors.white.withOpacity(0.4),
+                      color: Colors.white.withAlpha(102),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -422,7 +422,7 @@ class _IntroScreenState extends State<IntroScreen>
                     _animationController.forward();
                   },
                   style: TextButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.2),
+                    backgroundColor: Colors.white.withAlpha(51),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
@@ -448,7 +448,7 @@ class _IntroScreenState extends State<IntroScreen>
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withAlpha(51),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),

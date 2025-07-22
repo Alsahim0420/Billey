@@ -10,12 +10,10 @@ class AppTheme {
           primary: AppColors.primaryColor,
           primaryContainer: AppColors.primaryColorDark,
           secondary: AppColors.primaryColor,
-          surface: AppColors.surfaceColor,
-          background: AppColors.backgroundColor,
+          surface: AppColors.backgroundColor,
           onPrimary: AppColors.white,
           onSecondary: AppColors.white,
           onSurface: AppColors.textPrimary,
-          onBackground: AppColors.textPrimary,
           error: AppColors.errorColor,
           onError: AppColors.white,
         ),
@@ -25,7 +23,7 @@ class AppTheme {
           elevation: 0,
           centerTitle: false,
         ),
-        cardTheme: const CardTheme(
+        cardTheme: const CardThemeData(
           color: AppColors.surfaceColor,
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -73,7 +71,7 @@ class AppTheme {
           labelStyle: TextStyle(color: AppColors.textSecondary),
           hintStyle: TextStyle(color: AppColors.textLight),
         ),
-        dialogTheme: const DialogTheme(
+        dialogTheme: const DialogThemeData(
           backgroundColor: AppColors.surfaceColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(16)),

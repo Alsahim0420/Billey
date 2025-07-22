@@ -12,10 +12,10 @@ void main() {
         id: 'test-category',
         name: 'Test Category',
         iconCodePoint: Icons.star.codePoint,
-        colorValue: Colors.red.value,
+        colorValue: Colors.red.toARGB32(),
         isDefault: false,
         section: 'Test Section',
-        sectionColorValue: Colors.blue.value,
+        sectionColorValue: Colors.blue.toARGB32(),
       );
     });
 
@@ -23,11 +23,11 @@ void main() {
       expect(category.id, 'test-category');
       expect(category.name, 'Test Category');
       expect(category.icon, Icons.star);
-      expect(category.color.value, Colors.red.value);
+      expect(category.color.toARGB32(), Colors.red.toARGB32());
       expect(category.isDefault, false);
       expect(category.isActive, true);
       expect(category.section, 'Test Section');
-      expect(category.sectionColor.value, Colors.blue.value);
+      expect(category.sectionColor.toARGB32(), Colors.blue.toARGB32());
     });
 
     test('should create default category', () {
@@ -35,7 +35,7 @@ void main() {
         id: 'default-category',
         name: 'Default Category',
         iconCodePoint: Icons.home.codePoint,
-        colorValue: Colors.blue.value,
+        colorValue: Colors.blue.toARGB32(),
         isDefault: true,
       );
 
@@ -60,14 +60,14 @@ void main() {
     test('should copy category with new values', () {
       final copiedCategory = category.copyWith(
         name: 'Updated Category',
-        colorValue: Colors.green.value,
+        colorValue: Colors.green.toARGB32(),
         section: 'Updated Section',
       );
 
       expect(copiedCategory.id, category.id);
       expect(copiedCategory.name, 'Updated Category');
       expect(copiedCategory.icon, category.icon);
-      expect(copiedCategory.color.value, Colors.green.value);
+      expect(copiedCategory.color.toARGB32(), Colors.green.toARGB32());
       expect(copiedCategory.section, 'Updated Section');
       expect(copiedCategory.isDefault, category.isDefault);
     });
@@ -77,26 +77,27 @@ void main() {
         id: 'test-category',
         name: 'Test Category',
         iconCodePoint: Icons.star.codePoint,
-        colorValue: Colors.red.value,
+        colorValue: Colors.red.toARGB32(),
         isDefault: false,
         section: 'Test Section',
-        sectionColorValue: Colors.blue.value,
+        sectionColorValue: Colors.blue.toARGB32(),
       );
 
       final differentCategory = CategoryModel(
         id: 'different-category',
         name: 'Different Category',
         iconCodePoint: Icons.star.codePoint,
-        colorValue: Colors.red.value,
+        colorValue: Colors.red.toARGB32(),
         isDefault: false,
       );
 
       expect(category.id, sameCategory.id);
       expect(category.name, sameCategory.name);
       expect(category.icon, sameCategory.icon);
-      expect(category.color.value, sameCategory.color.value);
+      expect(category.color.toARGB32(), sameCategory.color.toARGB32());
       expect(category.section, sameCategory.section);
-      expect(category.sectionColor.value, sameCategory.sectionColor.value);
+      expect(category.sectionColor.toARGB32(),
+          sameCategory.sectionColor.toARGB32());
       expect(category.isDefault, sameCategory.isDefault);
       expect(category.isActive, sameCategory.isActive);
       expect(category.id, isNot(differentCategory.id));
@@ -107,18 +108,19 @@ void main() {
         id: 'test-category',
         name: 'Test Category',
         iconCodePoint: Icons.star.codePoint,
-        colorValue: Colors.red.value,
+        colorValue: Colors.red.toARGB32(),
         isDefault: false,
         section: 'Test Section',
-        sectionColorValue: Colors.blue.value,
+        sectionColorValue: Colors.blue.toARGB32(),
       );
 
       expect(category.id, sameCategory.id);
       expect(category.name, sameCategory.name);
       expect(category.icon, sameCategory.icon);
-      expect(category.color.value, sameCategory.color.value);
+      expect(category.color.toARGB32(), sameCategory.color.toARGB32());
       expect(category.section, sameCategory.section);
-      expect(category.sectionColor.value, sameCategory.sectionColor.value);
+      expect(category.sectionColor.toARGB32(),
+          sameCategory.sectionColor.toARGB32());
       expect(category.isDefault, sameCategory.isDefault);
       expect(category.isActive, sameCategory.isActive);
     });
@@ -163,8 +165,8 @@ void main() {
     });
 
     test('should handle color getter correctly', () {
-      expect(category.color.value, Colors.red.value);
-      expect(category.sectionColor.value, Colors.blue.value);
+      expect(category.color.toARGB32(), Colors.red.toARGB32());
+      expect(category.sectionColor.toARGB32(), Colors.blue.toARGB32());
     });
   });
 }

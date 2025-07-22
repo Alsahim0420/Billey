@@ -155,9 +155,9 @@ class _SplashScreenState extends State<SplashScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppColors.primaryColor.withOpacity(0.1),
+                    const Color.fromARGB(255, 0, 150, 135).withAlpha(25),
                     AppColors.backgroundColor,
-                    AppColors.primaryColor.withOpacity(0.05),
+                    const Color.fromARGB(255, 0, 150, 135).withAlpha(13),
                   ],
                 ),
               ),
@@ -182,7 +182,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withAlpha(25),
                                     blurRadius: 10,
                                     offset: const Offset(0, 5),
                                   ),
@@ -259,8 +259,9 @@ class _SplashScreenState extends State<SplashScreen>
                                   Container(
                                     height: 4,
                                     decoration: BoxDecoration(
-                                      color: AppColors.primaryColor
-                                          .withOpacity(0.2),
+                                      color:
+                                          const Color.fromARGB(255, 0, 150, 135)
+                                              .withAlpha(51),
                                       borderRadius: BorderRadius.circular(2),
                                     ),
                                   ),
@@ -273,8 +274,9 @@ class _SplashScreenState extends State<SplashScreen>
                                         borderRadius: BorderRadius.circular(2),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: AppColors.primaryColor
-                                                .withOpacity(0.4),
+                                            color: const Color.fromARGB(
+                                                    255, 0, 150, 135)
+                                                .withAlpha(102),
                                             blurRadius: 8,
                                             offset: const Offset(0, 2),
                                           ),

@@ -136,7 +136,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _selectedColor.withOpacity(0.1),
+              color: _selectedColor.withAlpha(25),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -144,7 +144,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: _selectedColor.withOpacity(0.2),
+                    color: _selectedColor.withAlpha(51),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -284,13 +284,13 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                             vertical: 12, horizontal: 8),
                         decoration: BoxDecoration(
                           color: !_isCustomSection
-                              ? _selectedSectionColor.withOpacity(0.1)
+                              ? _selectedSectionColor.withAlpha(25)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: !_isCustomSection
                                 ? _selectedSectionColor
-                                : AppColors.textLight.withOpacity(0.3),
+                                : AppColors.textLight.withAlpha(76),
                             width: 1,
                           ),
                         ),
@@ -334,13 +334,13 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                             vertical: 12, horizontal: 8),
                         decoration: BoxDecoration(
                           color: _isCustomSection
-                              ? _selectedSectionColor.withOpacity(0.1)
+                              ? _selectedSectionColor.withAlpha(25)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: _isCustomSection
                                 ? _selectedSectionColor
-                                : AppColors.textLight.withOpacity(0.3),
+                                : AppColors.textLight.withAlpha(76),
                             width: 1,
                           ),
                         ),
@@ -454,7 +454,8 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                 itemCount: CategoryModel.availableColors.length,
                 itemBuilder: (context, index) {
                   final color = CategoryModel.availableColors[index];
-                  final isSelected = _selectedSectionColor.value == color.value;
+                  final isSelected =
+                      _selectedSectionColor.toARGB32() == color.toARGB32();
 
                   return GestureDetector(
                     onTap: () => setState(() => _selectedSectionColor = color),
@@ -468,7 +469,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: color.withOpacity(0.3),
+                            color: color.withAlpha(76),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -530,7 +531,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? _selectedColor.withOpacity(0.2)
+                        ? _selectedColor.withAlpha(51)
                         : AppColors.backgroundColor,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
@@ -584,7 +585,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
             itemCount: CategoryModel.availableColors.length,
             itemBuilder: (context, index) {
               final color = CategoryModel.availableColors[index];
-              final isSelected = color.value == _selectedColor.value;
+              final isSelected = color.toARGB32() == _selectedColor.toARGB32();
 
               return GestureDetector(
                 onTap: () => setState(() => _selectedColor = color),
@@ -602,7 +603,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: color.withOpacity(0.3),
+                        color: color.withAlpha(76),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -660,11 +661,11 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
         id: _isEditing ? widget.category!.id : provider.generateId(),
         name: _nameController.text.trim(),
         iconCodePoint: _selectedIcon.codePoint,
-        colorValue: _selectedColor.value,
+        colorValue: _selectedColor.toARGB32(),
         isDefault: _isEditing ? widget.category!.isDefault : false,
         isActive: true,
         section: finalSection,
-        sectionColorValue: _selectedSectionColor.value,
+        sectionColorValue: _selectedSectionColor.toARGB32(),
       );
 
       if (_isEditing) {

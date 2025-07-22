@@ -343,7 +343,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
+          color: isSelected
+              ? color.withAlpha(25)
+              : Colors
+                  .transparent, // color no constante para permitir withAlpha
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? color : AppColors.textLight,
@@ -478,7 +481,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                                   ),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? category.color.withOpacity(0.1)
+                                        ? category.color.withAlpha(25)
                                         : Colors.transparent,
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
@@ -543,9 +546,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor.withOpacity(0.05),
+                    backgroundColor:
+                        const Color.fromARGB(255, 0, 150, 135).withAlpha(13),
                     side: BorderSide(
-                      color: AppColors.primaryColor.withOpacity(0.3),
+                      color:
+                          const Color.fromARGB(255, 0, 150, 135).withAlpha(76),
                       width: 1.5,
                     ),
                     shape: RoundedRectangleBorder(
@@ -775,7 +780,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
               surface: AppColors.surfaceColor,
               onSurface: AppColors.textPrimary,
             ),
-            dialogBackgroundColor: AppColors.backgroundColor,
+            dialogTheme: const DialogThemeData(
+                backgroundColor: AppColors.backgroundColor),
           ),
           child: child!,
         );

@@ -53,7 +53,10 @@ class EmptyStateWidget extends StatelessWidget {
                         width: iconSize,
                         height: iconSize,
                         decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.1),
+                          color: primaryColor == AppColors.primaryColor
+                              ? const Color.fromARGB(255, 0, 150, 135)
+                                  .withAlpha(25)
+                              : primaryColor.withAlpha(25),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(

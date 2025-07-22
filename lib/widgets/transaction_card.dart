@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:billey/models/transaction.dart';
@@ -90,20 +92,22 @@ class _TransactionCardState extends State<TransactionCard>
                     end: Alignment.bottomRight,
                     colors: [
                       AppColors.surfaceColor,
-                      AppColors.surfaceColor.withOpacity(0.8),
+                      const Color.fromARGB(255, 28, 28, 30).withAlpha(204),
                     ],
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: isIncome
-                          ? AppColors.incomeColor.withOpacity(0.15)
-                          : AppColors.expenseColor.withOpacity(0.15),
+                          ? const Color.fromARGB(255, 72, 199, 116)
+                              .withAlpha(38)
+                          : const Color.fromARGB(255, 239, 83, 80)
+                              .withAlpha(38),
                       blurRadius: 15,
                       offset: const Offset(0, 5),
                       spreadRadius: 0,
                     ),
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withAlpha(13),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                       spreadRadius: 0,
@@ -111,8 +115,8 @@ class _TransactionCardState extends State<TransactionCard>
                   ],
                   border: Border.all(
                     color: isIncome
-                        ? AppColors.incomeColor.withOpacity(0.2)
-                        : AppColors.expenseColor.withOpacity(0.2),
+                        ? const Color.fromARGB(255, 72, 199, 116).withAlpha(51)
+                        : const Color.fromARGB(255, 239, 83, 80).withAlpha(51),
                     width: 1.5,
                   ),
                 ),
@@ -132,9 +136,11 @@ class _TransactionCardState extends State<TransactionCard>
                             gradient: RadialGradient(
                               colors: [
                                 (isIncome
-                                        ? AppColors.incomeColor
-                                        : AppColors.expenseColor)
-                                    .withOpacity(0.1),
+                                        ? const Color.fromARGB(
+                                            255, 72, 199, 116)
+                                        : const Color.fromARGB(
+                                            255, 239, 83, 80))
+                                    .withAlpha(25),
                                 Colors.transparent,
                               ],
                             ),
@@ -159,21 +165,24 @@ class _TransactionCardState extends State<TransactionCard>
                                   colors: isIncome
                                       ? [
                                           AppColors.incomeColor,
-                                          AppColors.incomeColor
-                                              .withOpacity(0.7),
+                                          const Color.fromARGB(
+                                                  255, 72, 199, 116)
+                                              .withAlpha(178),
                                         ]
                                       : [
                                           AppColors.expenseColor,
-                                          AppColors.expenseColor
-                                              .withOpacity(0.7),
+                                          const Color.fromARGB(255, 239, 83, 80)
+                                              .withAlpha(178),
                                         ],
                                 ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: (isIncome
-                                            ? AppColors.incomeColor
-                                            : AppColors.expenseColor)
-                                        .withOpacity(0.3),
+                                            ? const Color.fromARGB(
+                                                255, 72, 199, 116)
+                                            : const Color.fromARGB(
+                                                255, 239, 83, 80))
+                                        .withAlpha(76),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
@@ -234,13 +243,13 @@ class _TransactionCardState extends State<TransactionCard>
                                           decoration: BoxDecoration(
                                             color: widget
                                                 .transaction.category.color
-                                                .withOpacity(0.15),
+                                                .withAlpha(38),
                                             borderRadius:
                                                 BorderRadius.circular(12),
                                             border: Border.all(
                                               color: widget
                                                   .transaction.category.color
-                                                  .withOpacity(0.3),
+                                                  .withAlpha(76),
                                               width: 0.5,
                                             ),
                                           ),
@@ -322,8 +331,8 @@ class _TransactionCardState extends State<TransactionCard>
                                         vertical: 6,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: AppColors.textLight
-                                            .withOpacity(0.1),
+                                        color:
+                                            AppColors.textLight.withAlpha(25),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Text(
@@ -386,9 +395,9 @@ class _TransactionCardState extends State<TransactionCard>
       height: 40,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withOpacity(0.1),
+        color: color.withAlpha(25),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: color.withAlpha(76),
           width: 1,
         ),
       ),
@@ -456,8 +465,8 @@ class _TransactionCardState extends State<TransactionCard>
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.errorColor.withOpacity(0.2),
-                        AppColors.errorColor.withOpacity(0.1),
+                        const Color.fromARGB(255, 239, 83, 80).withAlpha(51),
+                        const Color.fromARGB(255, 239, 83, 80).withAlpha(25),
                       ],
                     ),
                   ),
@@ -536,12 +545,14 @@ class _TransactionCardState extends State<TransactionCard>
                           gradient: LinearGradient(
                             colors: [
                               AppColors.errorColor,
-                              AppColors.errorColor.withOpacity(0.8),
+                              const Color.fromARGB(255, 239, 83, 80)
+                                  .withAlpha(204),
                             ],
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.errorColor.withOpacity(0.3),
+                              color: const Color.fromARGB(255, 239, 83, 80)
+                                  .withAlpha(76),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),

@@ -138,7 +138,7 @@ class DashboardScreen extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(isMainCard ? 6 : 4),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withAlpha(25),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: color, size: isMainCard ? 20 : 16),
@@ -224,12 +224,12 @@ class DashboardScreen extends StatelessWidget {
                       gradient: LinearGradient(
                         colors: isNegative
                             ? [
-                                AppColors.expenseColor.withOpacity(0.3),
-                                AppColors.expenseColor.withOpacity(0.1)
+                                AppColors.expenseColor.withAlpha(76),
+                                AppColors.expenseColor.withAlpha(25)
                               ]
                             : [
-                                AppColors.primaryColor.withOpacity(0.3),
-                                AppColors.primaryColor.withOpacity(0.1)
+                                AppColors.primaryColor.withAlpha(76),
+                                AppColors.primaryColor.withAlpha(25)
                               ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
@@ -355,7 +355,7 @@ class DashboardScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: transaction.category.color.withOpacity(0.1),
+                      color: transaction.category.color.withAlpha(25),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -446,7 +446,7 @@ class DashboardScreen extends StatelessWidget {
                   'Comienza tu viaje hacia la libertad financiera',
                   style: TextStyle(
                     fontSize: 16,
-                    color: AppColors.white.withOpacity(0.9),
+                    color: AppColors.white.withAlpha(229),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -559,7 +559,7 @@ class DashboardScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.successColor.withOpacity(0.1),
+                        color: AppColors.successColor.withAlpha(25),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
@@ -609,7 +609,7 @@ class DashboardScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withAlpha(25),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(

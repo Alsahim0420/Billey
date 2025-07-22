@@ -92,12 +92,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primaryColor.withOpacity(0.4),
+                    color:
+                        const Color.fromARGB(255, 0, 150, 135).withAlpha(102),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
                   BoxShadow(
-                    color: AppColors.primaryColor.withOpacity(0.2),
+                    color: const Color.fromARGB(255, 0, 150, 135).withAlpha(51),
                     blurRadius: 40,
                     offset: const Offset(0, 16),
                   ),
@@ -184,7 +185,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primaryColor.withOpacity(0.1)
+              ? const Color.fromARGB(255, 0, 150, 135).withAlpha(25)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
@@ -266,7 +267,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                           leading: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryColor.withOpacity(0.1),
+                              color: const Color.fromARGB(255, 0, 150, 135)
+                                  .withAlpha(25),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(_getFlag(selected.code),
@@ -316,9 +318,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                                             style:
                                                 const TextStyle(fontSize: 20)),
                                         selected: isSelected,
-                                        selectedTileColor: AppColors
-                                            .primaryColor
-                                            .withOpacity(0.08),
+                                        selectedTileColor: const Color.fromARGB(
+                                                255, 0, 150, 135)
+                                            .withAlpha(20),
                                         onTap: () {
                                           Navigator.pop(context, currency);
                                         },
@@ -394,7 +396,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppColors.primaryColor.withOpacity(0.1),
+          color: const Color.fromARGB(255, 0, 150, 135).withAlpha(25),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(
