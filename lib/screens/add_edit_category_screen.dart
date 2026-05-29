@@ -136,7 +136,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _selectedColor.withOpacity(0.1),
+              color: _selectedColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -144,7 +144,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: _selectedColor.withOpacity(0.2),
+                    color: _selectedColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -274,38 +274,39 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
           child: Column(
             children: [
               // Selector de sección predefinida o personalizada
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _isCustomSection = false),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: !_isCustomSection
-                              ? _selectedSectionColor.withOpacity(0.1)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
+              RadioGroup<bool>(
+                groupValue: _isCustomSection,
+                onChanged: (value) =>
+                    setState(() => _isCustomSection = value!),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _isCustomSection = false),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 8),
+                          decoration: BoxDecoration(
                             color: !_isCustomSection
-                                ? _selectedSectionColor
-                                : AppColors.textLight.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Radio<bool>(
-                              value: false,
-                              groupValue: _isCustomSection,
-                              onChanged: (value) =>
-                                  setState(() => _isCustomSection = value!),
-                              activeColor: _selectedSectionColor,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
+                                ? _selectedSectionColor.withValues(alpha: 0.1)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: !_isCustomSection
+                                  ? _selectedSectionColor
+                                  : AppColors.textLight.withValues(alpha: 0.3),
+                              width: 1,
                             ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Radio<bool>(
+                                value: false,
+                                activeColor: _selectedSectionColor,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              ),
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
@@ -334,28 +335,25 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                             vertical: 12, horizontal: 8),
                         decoration: BoxDecoration(
                           color: _isCustomSection
-                              ? _selectedSectionColor.withOpacity(0.1)
+                              ? _selectedSectionColor.withValues(alpha: 0.1)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: _isCustomSection
                                 ? _selectedSectionColor
-                                : AppColors.textLight.withOpacity(0.3),
+                                : AppColors.textLight.withValues(alpha: 0.3),
                             width: 1,
                           ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Radio<bool>(
-                              value: true,
-                              groupValue: _isCustomSection,
-                              onChanged: (value) =>
-                                  setState(() => _isCustomSection = value!),
-                              activeColor: _selectedSectionColor,
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                            ),
+                              Radio<bool>(
+                                value: true,
+                                activeColor: _selectedSectionColor,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              ),
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
@@ -376,6 +374,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                     ),
                   ),
                 ],
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -407,7 +406,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                 )
               else
                 DropdownButtonFormField<String>(
-                  value: _selectedSection,
+                  initialValue: _selectedSection,
                   decoration: InputDecoration(
                     hintText: 'Seleccionar sección',
                     prefixIcon:
@@ -454,7 +453,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                 itemCount: CategoryModel.availableColors.length,
                 itemBuilder: (context, index) {
                   final color = CategoryModel.availableColors[index];
-                  final isSelected = _selectedSectionColor.value == color.value;
+                  final isSelected = _selectedSectionColor.toARGB32() == color.toARGB32();
 
                   return GestureDetector(
                     onTap: () => setState(() => _selectedSectionColor = color),
@@ -468,7 +467,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: color.withOpacity(0.3),
+                            color: color.withValues(alpha: 0.3),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -530,7 +529,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? _selectedColor.withOpacity(0.2)
+                        ? _selectedColor.withValues(alpha: 0.2)
                         : AppColors.backgroundColor,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
@@ -584,7 +583,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
             itemCount: CategoryModel.availableColors.length,
             itemBuilder: (context, index) {
               final color = CategoryModel.availableColors[index];
-              final isSelected = color.value == _selectedColor.value;
+              final isSelected = color.toARGB32() == _selectedColor.toARGB32();
 
               return GestureDetector(
                 onTap: () => setState(() => _selectedColor = color),
@@ -602,7 +601,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: color.withOpacity(0.3),
+                        color: color.withValues(alpha: 0.3),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -660,11 +659,11 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
         id: _isEditing ? widget.category!.id : provider.generateId(),
         name: _nameController.text.trim(),
         iconCodePoint: _selectedIcon.codePoint,
-        colorValue: _selectedColor.value,
+        colorValue: _selectedColor.toARGB32(),
         isDefault: _isEditing ? widget.category!.isDefault : false,
         isActive: true,
         section: finalSection,
-        sectionColorValue: _selectedSectionColor.value,
+        sectionColorValue: _selectedSectionColor.toARGB32(),
       );
 
       if (_isEditing) {

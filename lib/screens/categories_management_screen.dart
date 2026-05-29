@@ -93,7 +93,7 @@ class CategoriesManagementScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: AppColors.primaryColor.withOpacity(0.1),
+            color: AppColors.primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -114,10 +114,10 @@ class CategoriesManagementScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: sectionColor.withOpacity(0.05),
+        color: sectionColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: sectionColor.withOpacity(0.2),
+          color: sectionColor.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -128,7 +128,7 @@ class CategoriesManagementScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: sectionColor.withOpacity(0.1),
+              color: sectionColor.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -155,7 +155,7 @@ class CategoriesManagementScreen extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: sectionColor.withOpacity(0.15),
+                    color: sectionColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -195,7 +195,7 @@ class CategoriesManagementScreen extends StatelessWidget {
         boxShadow: const [AppColors.cardShadow],
         border: !isActive
             ? Border.all(
-                color: AppColors.textLight.withOpacity(0.3),
+                color: AppColors.textLight.withValues(alpha: 0.3),
                 width: 1,
               )
             : null,
@@ -204,12 +204,12 @@ class CategoriesManagementScreen extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: category.color.withOpacity(isActive ? 0.1 : 0.05),
+            color: category.color.withValues(alpha: isActive ? 0.1 : 0.05),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             category.icon,
-            color: isActive ? category.color : category.color.withOpacity(0.5),
+            color: isActive ? category.color : category.color.withValues(alpha: 0.5),
             size: 24,
           ),
         ),
@@ -240,7 +240,7 @@ class CategoriesManagementScreen extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppColors.infoColor.withOpacity(0.1),
+                      color: AppColors.infoColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Text(
@@ -259,7 +259,7 @@ class CategoriesManagementScreen extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: AppColors.warningColor.withOpacity(0.1),
+                      color: AppColors.warningColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Text(
@@ -430,7 +430,7 @@ class CategoriesManagementScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.warningColor.withOpacity(0.1),
+                  color: AppColors.warningColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Row(

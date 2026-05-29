@@ -397,7 +397,7 @@ class _EnhancedTransactionListScreenState
                 height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.errorColor.withOpacity(0.1),
+                  color: AppColors.errorColor.withValues(alpha: 0.1),
                 ),
                 child: const Icon(
                   TablerIcons.trash,
@@ -474,12 +474,12 @@ class _EnhancedTransactionListScreenState
                         gradient: LinearGradient(
                           colors: [
                             AppColors.errorColor,
-                            AppColors.errorColor.withOpacity(0.8),
+                            AppColors.errorColor.withValues(alpha: 0.8),
                           ],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.errorColor.withOpacity(0.3),
+                            color: AppColors.errorColor.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),

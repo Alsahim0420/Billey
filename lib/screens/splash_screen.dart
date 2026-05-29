@@ -155,9 +155,9 @@ class _SplashScreenState extends State<SplashScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppColors.primaryColor.withOpacity(0.1),
+                    AppColors.primaryColor.withValues(alpha: 0.1),
                     AppColors.backgroundColor,
-                    AppColors.primaryColor.withOpacity(0.05),
+                    AppColors.primaryColor.withValues(alpha: 0.05),
                   ],
                 ),
               ),
@@ -182,7 +182,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withValues(alpha: 0.1),
                                     blurRadius: 10,
                                     offset: const Offset(0, 5),
                                   ),
@@ -260,7 +260,7 @@ class _SplashScreenState extends State<SplashScreen>
                                     height: 4,
                                     decoration: BoxDecoration(
                                       color: AppColors.primaryColor
-                                          .withOpacity(0.2),
+                                          .withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(2),
                                     ),
                                   ),
@@ -274,7 +274,7 @@ class _SplashScreenState extends State<SplashScreen>
                                         boxShadow: [
                                           BoxShadow(
                                             color: AppColors.primaryColor
-                                                .withOpacity(0.4),
+                                                .withValues(alpha: 0.4),
                                             blurRadius: 8,
                                             offset: const Offset(0, 2),
                                           ),

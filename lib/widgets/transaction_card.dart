@@ -90,20 +90,20 @@ class _TransactionCardState extends State<TransactionCard>
                     end: Alignment.bottomRight,
                     colors: [
                       AppColors.surfaceColor,
-                      AppColors.surfaceColor.withOpacity(0.8),
+                      AppColors.surfaceColor.withValues(alpha: 0.8),
                     ],
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: isIncome
-                          ? AppColors.incomeColor.withOpacity(0.15)
-                          : AppColors.expenseColor.withOpacity(0.15),
+                          ? AppColors.incomeColor.withValues(alpha: 0.15)
+                          : AppColors.expenseColor.withValues(alpha: 0.15),
                       blurRadius: 15,
                       offset: const Offset(0, 5),
                       spreadRadius: 0,
                     ),
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                       spreadRadius: 0,
@@ -111,8 +111,8 @@ class _TransactionCardState extends State<TransactionCard>
                   ],
                   border: Border.all(
                     color: isIncome
-                        ? AppColors.incomeColor.withOpacity(0.2)
-                        : AppColors.expenseColor.withOpacity(0.2),
+                        ? AppColors.incomeColor.withValues(alpha: 0.2)
+                        : AppColors.expenseColor.withValues(alpha: 0.2),
                     width: 1.5,
                   ),
                 ),
@@ -134,7 +134,7 @@ class _TransactionCardState extends State<TransactionCard>
                                 (isIncome
                                         ? AppColors.incomeColor
                                         : AppColors.expenseColor)
-                                    .withOpacity(0.1),
+                                    .withValues(alpha: 0.1),
                                 Colors.transparent,
                               ],
                             ),
@@ -160,12 +160,12 @@ class _TransactionCardState extends State<TransactionCard>
                                       ? [
                                           AppColors.incomeColor,
                                           AppColors.incomeColor
-                                              .withOpacity(0.7),
+                                              .withValues(alpha: 0.7),
                                         ]
                                       : [
                                           AppColors.expenseColor,
                                           AppColors.expenseColor
-                                              .withOpacity(0.7),
+                                              .withValues(alpha: 0.7),
                                         ],
                                 ),
                                 boxShadow: [
@@ -173,7 +173,7 @@ class _TransactionCardState extends State<TransactionCard>
                                     color: (isIncome
                                             ? AppColors.incomeColor
                                             : AppColors.expenseColor)
-                                        .withOpacity(0.3),
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
@@ -234,13 +234,13 @@ class _TransactionCardState extends State<TransactionCard>
                                           decoration: BoxDecoration(
                                             color: widget
                                                 .transaction.category.color
-                                                .withOpacity(0.15),
+                                                .withValues(alpha: 0.15),
                                             borderRadius:
                                                 BorderRadius.circular(12),
                                             border: Border.all(
                                               color: widget
                                                   .transaction.category.color
-                                                  .withOpacity(0.3),
+                                                  .withValues(alpha: 0.3),
                                               width: 0.5,
                                             ),
                                           ),
@@ -323,7 +323,7 @@ class _TransactionCardState extends State<TransactionCard>
                                       ),
                                       decoration: BoxDecoration(
                                         color: AppColors.textLight
-                                            .withOpacity(0.1),
+                                            .withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Text(
@@ -386,9 +386,9 @@ class _TransactionCardState extends State<TransactionCard>
       height: 40,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -456,8 +456,8 @@ class _TransactionCardState extends State<TransactionCard>
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.errorColor.withOpacity(0.2),
-                        AppColors.errorColor.withOpacity(0.1),
+                        AppColors.errorColor.withValues(alpha: 0.2),
+                        AppColors.errorColor.withValues(alpha: 0.1),
                       ],
                     ),
                   ),
@@ -536,12 +536,13 @@ class _TransactionCardState extends State<TransactionCard>
                           gradient: LinearGradient(
                             colors: [
                               AppColors.errorColor,
-                              AppColors.errorColor.withOpacity(0.8),
+                              AppColors.errorColor.withValues(alpha: 0.8),
                             ],
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.errorColor.withOpacity(0.3),
+                              color:
+                                  AppColors.errorColor.withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),

@@ -8,8 +8,8 @@ class ShimmerLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: AppColors.textLight.withOpacity(0.3),
-      highlightColor: AppColors.white.withOpacity(0.8),
+      baseColor: AppColors.textLight.withValues(alpha: 0.3),
+      highlightColor: AppColors.white.withValues(alpha: 0.8),
       child: Column(
         children: [
           // Balance cards shimmer
@@ -114,8 +114,8 @@ class TransactionListShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: AppColors.textLight.withOpacity(0.3),
-      highlightColor: AppColors.white.withOpacity(0.8),
+      baseColor: AppColors.textLight.withValues(alpha: 0.3),
+      highlightColor: AppColors.white.withValues(alpha: 0.8),
       child: ListView.builder(
         itemCount: 8,
         padding: const EdgeInsets.all(16),

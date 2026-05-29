@@ -42,7 +42,8 @@ class CategoryModel extends HiveObject {
     this.sectionColorValue = 0xFF009688,
   });
 
-  IconData get icon => IconData(iconCodePoint, fontFamily: 'MaterialIcons');
+  IconData get icon =>
+      _iconsByCodePoint[iconCodePoint] ?? Icons.category;
   Color get color => Color(colorValue);
   Color get sectionColor => Color(sectionColorValue);
 
@@ -71,55 +72,55 @@ class CategoryModel extends HiveObject {
         id: 'food',
         name: 'Comida',
         iconCodePoint: Icons.restaurant.codePoint,
-        colorValue: AppColors.categoryFood.value,
+        colorValue: AppColors.categoryFood.toARGB32(),
         isDefault: true,
         section: 'Necesidades Básicas',
-        sectionColorValue: AppColors.categoryFood.value,
+        sectionColorValue: AppColors.categoryFood.toARGB32(),
       ),
       CategoryModel(
         id: 'transport',
         name: 'Transporte',
         iconCodePoint: Icons.directions_car.codePoint,
-        colorValue: AppColors.categoryTransport.value,
+        colorValue: AppColors.categoryTransport.toARGB32(),
         isDefault: true,
         section: 'Necesidades Básicas',
-        sectionColorValue: AppColors.categoryFood.value,
+        sectionColorValue: AppColors.categoryFood.toARGB32(),
       ),
       CategoryModel(
         id: 'entertainment',
         name: 'Entretenimiento',
         iconCodePoint: Icons.movie.codePoint,
-        colorValue: AppColors.categoryEntertainment.value,
+        colorValue: AppColors.categoryEntertainment.toARGB32(),
         isDefault: true,
         section: 'Entretenimiento',
-        sectionColorValue: AppColors.categoryEntertainment.value,
+        sectionColorValue: AppColors.categoryEntertainment.toARGB32(),
       ),
       CategoryModel(
         id: 'health',
         name: 'Salud',
         iconCodePoint: Icons.medical_services.codePoint,
-        colorValue: AppColors.categoryHealth.value,
+        colorValue: AppColors.categoryHealth.toARGB32(),
         isDefault: true,
         section: 'Bienestar',
-        sectionColorValue: AppColors.categoryHealth.value,
+        sectionColorValue: AppColors.categoryHealth.toARGB32(),
       ),
       CategoryModel(
         id: 'education',
         name: 'Educación',
         iconCodePoint: Icons.school.codePoint,
-        colorValue: AppColors.categoryEducation.value,
+        colorValue: AppColors.categoryEducation.toARGB32(),
         isDefault: true,
         section: 'Desarrollo Personal',
-        sectionColorValue: AppColors.categoryEducation.value,
+        sectionColorValue: AppColors.categoryEducation.toARGB32(),
       ),
       CategoryModel(
         id: 'other',
         name: 'Otros',
         iconCodePoint: Icons.category.codePoint,
-        colorValue: AppColors.categoryOther.value,
+        colorValue: AppColors.categoryOther.toARGB32(),
         isDefault: true,
         section: 'General',
-        sectionColorValue: AppColors.categoryOther.value,
+        sectionColorValue: AppColors.categoryOther.toARGB32(),
       ),
     ];
   }
@@ -162,6 +163,10 @@ class CategoryModel extends HiveObject {
         Icons.savings,
         Icons.payment,
       ];
+
+  static final Map<int, IconData> _iconsByCodePoint = {
+    for (final icon in availableIcons) icon.codePoint: icon,
+  };
 
   // Colores disponibles para categorías
   static List<Color> get availableColors => [
