@@ -276,8 +276,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
               // Selector de sección predefinida o personalizada
               RadioGroup<bool>(
                 groupValue: _isCustomSection,
-                onChanged: (value) =>
-                    setState(() => _isCustomSection = value!),
+                onChanged: (value) => setState(() => _isCustomSection = value!),
                 child: Row(
                   children: [
                     Expanded(
@@ -307,73 +306,73 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                                 materialTapTargetSize:
                                     MaterialTapTargetSize.shrinkWrap,
                               ),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                'Predefinida',
-                                style: TextStyle(
-                                  color: !_isCustomSection
-                                      ? _selectedSectionColor
-                                      : AppColors.textSecondary,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 13,
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  'Predefinida',
+                                  style: TextStyle(
+                                    color: !_isCustomSection
+                                        ? _selectedSectionColor
+                                        : AppColors.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 13,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _isCustomSection = true),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: _isCustomSection
-                              ? _selectedSectionColor.withValues(alpha: 0.1)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _isCustomSection = true),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 8),
+                          decoration: BoxDecoration(
                             color: _isCustomSection
-                                ? _selectedSectionColor
-                                : AppColors.textLight.withValues(alpha: 0.3),
-                            width: 1,
+                                ? _selectedSectionColor.withValues(alpha: 0.1)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _isCustomSection
+                                  ? _selectedSectionColor
+                                  : AppColors.textLight.withValues(alpha: 0.3),
+                              width: 1,
+                            ),
                           ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
                               Radio<bool>(
                                 value: true,
                                 activeColor: _selectedSectionColor,
                                 materialTapTargetSize:
                                     MaterialTapTargetSize.shrinkWrap,
                               ),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                'Personalizada',
-                                style: TextStyle(
-                                  color: _isCustomSection
-                                      ? _selectedSectionColor
-                                      : AppColors.textSecondary,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 13,
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  'Personalizada',
+                                  style: TextStyle(
+                                    color: _isCustomSection
+                                        ? _selectedSectionColor
+                                        : AppColors.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 13,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
@@ -453,7 +452,8 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                 itemCount: CategoryModel.availableColors.length,
                 itemBuilder: (context, index) {
                   final color = CategoryModel.availableColors[index];
-                  final isSelected = _selectedSectionColor.toARGB32() == color.toARGB32();
+                  final isSelected =
+                      _selectedSectionColor.toARGB32() == color.toARGB32();
 
                   return GestureDetector(
                     onTap: () => setState(() => _selectedSectionColor = color),

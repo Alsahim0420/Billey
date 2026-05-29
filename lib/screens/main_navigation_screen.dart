@@ -266,7 +266,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                           leading: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryColor.withValues(alpha: 0.1),
+                              color:
+                                  AppColors.primaryColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(_getFlag(selected.code),

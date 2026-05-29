@@ -543,7 +543,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor.withValues(alpha: 0.05),
+                    backgroundColor:
+                        AppColors.primaryColor.withValues(alpha: 0.05),
                     side: BorderSide(
                       color: AppColors.primaryColor.withValues(alpha: 0.3),
                       width: 1.5,

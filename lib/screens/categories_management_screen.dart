@@ -209,7 +209,9 @@ class CategoriesManagementScreen extends StatelessWidget {
           ),
           child: Icon(
             category.icon,
-            color: isActive ? category.color : category.color.withValues(alpha: 0.5),
+            color: isActive
+                ? category.color
+                : category.color.withValues(alpha: 0.5),
             size: 24,
           ),
         ),
