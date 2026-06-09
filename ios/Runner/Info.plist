@@ -45,5 +45,13 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Billey necesita el micrófono para registrar gastos por voz.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Billey usa reconocimiento de voz para crear gastos al hablar.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Billey necesita acceso a tus fotos para elegir tu imagen de perfil.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Billey puede usar la cámara para tomar tu foto de perfil.</string>
 </dict>
 </plist>

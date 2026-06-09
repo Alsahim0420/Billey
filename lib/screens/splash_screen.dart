@@ -1,11 +1,17 @@
+import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/transaction_provider.dart';
-import '../providers/category_provider.dart';
-import '../theme/colors/app_colors.dart';
-import 'slide_show_intro_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../providers/category_provider.dart';
+import '../providers/profile_provider.dart';
+import '../providers/transaction_provider.dart';
+import '../services/local_profile_storage.dart';
+import '../theme/billey_theme_scope.dart';
+import '../theme/colors/app_colors.dart';
 import 'main_navigation_screen.dart';
+import 'profile_setup_screen.dart';
+import 'slide_show_intro_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -107,20 +113,29 @@ class _SplashScreenState extends State<SplashScreen>
     // Small delay for better UX
     await Future.delayed(const Duration(milliseconds: 500));
 
-    // Revisar si ya se mostró el onboarding
+    // Revisar si ya se mostró el onboarding y si el usuario tiene un perfil propio
     final prefs = await SharedPreferences.getInstance();
     final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+    final hasCustomProfile = await LocalProfileStorage.hasCustomProfile();
+
+    // Precalentar perfil local (para que ProfileSetup tenga datos actualizados)
+    if (mounted) {
+      await context.read<ProfileProvider>().load();
+    }
 
     // Navegar según corresponda
     if (mounted) {
       _fadeController.forward().then((_) {
         if (mounted) {
+          final target = !hasSeenOnboarding
+              ? const IntroScreen()
+              : hasCustomProfile
+                  ? const MainNavigationScreen()
+                  : const ProfileSetupScreen();
+
           Navigator.of(context).pushReplacement(
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  hasSeenOnboarding
-                      ? const MainNavigationScreen()
-                      : const IntroScreen(),
+              pageBuilder: (context, animation, secondaryAnimation) => target,
               transitionDuration: const Duration(milliseconds: 300),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
@@ -143,6 +158,9 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    BilleyThemeScope.isDarkOf(context);
+
     return Scaffold(
       body: AnimatedBuilder(
         animation: _fadeOpacity,
@@ -155,9 +173,9 @@ class _SplashScreenState extends State<SplashScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    AppColors.primaryColor.withValues(alpha: 0.1),
+                    AppColors.backgroundAlt,
                     AppColors.backgroundColor,
-                    AppColors.primaryColor.withValues(alpha: 0.05),
+                    AppColors.backgroundColor,
                   ],
                 ),
               ),
@@ -180,12 +198,12 @@ class _SplashScreenState extends State<SplashScreen>
                               height: 120,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: AppColors.primaryColor
+                                      .withValues(alpha: 0.22),
+                                ),
                                 boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.1),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 5),
-                                  ),
+                                  AppColors.glow(AppColors.primaryColor),
                                 ],
                               ),
                               child: ClipRRect(
@@ -209,10 +227,10 @@ class _SplashScreenState extends State<SplashScreen>
                       builder: (context, child) {
                         return Opacity(
                           opacity: _logoOpacity.value,
-                          child: const Column(
+                          child: Column(
                             children: [
                               Text(
-                                'Billey',
+                                l10n.appTitle,
                                 style: TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
@@ -220,9 +238,9 @@ class _SplashScreenState extends State<SplashScreen>
                                   letterSpacing: 1.2,
                                 ),
                               ),
-                              SizedBox(height: 8),
+                              const SizedBox(height: 8),
                               Text(
-                                'Gestiona tu dinero con inteligencia',
+                                l10n.splashSubtitle,
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: AppColors.textSecondary,
@@ -242,8 +260,8 @@ class _SplashScreenState extends State<SplashScreen>
                       padding: const EdgeInsets.symmetric(horizontal: 60),
                       child: Column(
                         children: [
-                          const Text(
-                            'Cargando...',
+                          Text(
+                            l10n.loading,
                             style: TextStyle(
                               fontSize: 14,
                               color: AppColors.textSecondary,

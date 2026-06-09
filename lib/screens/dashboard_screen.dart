@@ -1,42 +1,83 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
+
+import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/providers/currency_provider.dart';
-import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../providers/transaction_provider.dart';
+import 'package:provider/provider.dart';
+
 import '../models/transaction.dart';
+import '../providers/profile_provider.dart';
+import '../providers/transaction_provider.dart';
 import '../theme/colors/app_colors.dart';
-import 'add_transaction_screen.dart';
+import 'enhanced_transaction_list_screen.dart';
+import '../theme/billey_theme_scope.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    BilleyThemeScope.isDarkOf(context);
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
-        child: Consumer<TransactionProvider>(
-          builder: (context, provider, child) {
-            // Check if there are no transactions
-            if (provider.transactions.isEmpty) {
-              return _buildWelcomeDashboard(context);
-            }
+        child: Consumer2<TransactionProvider, ProfileProvider>(
+          builder: (context, provider, profile, child) {
+            final currencyProvider =
+                Provider.of<CurrencyProvider>(context, listen: false);
+            final totalIncome = provider.getTotalIncome();
+            final totalExpenses = provider.getTotalExpenses();
+            final balance = totalIncome - totalExpenses;
+            final recentTransactions = provider.transactions.take(4).toList();
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(24, 30, 24, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeader(context),
-                  const SizedBox(height: 20),
-                  _buildBalanceCards(provider, context),
-                  const SizedBox(height: 20),
-                  _buildMonthlyChart(provider),
-                  const SizedBox(height: 20),
-                  _buildCategoryChart(provider),
-                  const SizedBox(height: 20),
-                  _buildRecentTransactions(provider, context),
+                  _HomeHeader(
+                    greeting: profile.greetingForHour(
+                      DateTime.now().hour,
+                      context.l10n,
+                    ),
+                    imagePath:
+                        profile.hasLocalImage ? profile.imagePath : null,
+                  ),
+                  const SizedBox(height: 44),
+                  _TotalBalance(
+                    amount: currencyProvider.format(balance),
+                    isNegative: balance < 0,
+                  ),
+                  const SizedBox(height: 38),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MetricCard(
+                          label: context.l10n.income,
+                          amount: totalIncome,
+                          color: AppColors.incomeColor,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _MetricCard(
+                          label: context.l10n.expenses,
+                          amount: totalExpenses,
+                          color: AppColors.expenseColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  _MonthlyTrendChart(data: _getMonthlyChartData(provider)),
+                  const SizedBox(height: 26),
+                  _RecentTransactions(
+                    transactions: recentTransactions,
+                    currencyProvider: currencyProvider,
+                  ),
                 ],
               ),
             );
@@ -46,193 +87,343 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  static const int _chartMonthsCount = 6;
+
+  _MonthlyChartData _getMonthlyChartData(TransactionProvider provider) {
     final now = DateTime.now();
-    final greeting = _getGreeting();
+    final spots = <FlSpot>[];
+    final labels = <String>[];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          greeting,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          DateFormat('dd/MM/yyyy').format(now),
-          style: const TextStyle(
-            fontSize: 16,
-            color: AppColors.textSecondary,
-          ),
-        ),
-      ],
+    for (var i = _chartMonthsCount - 1; i >= 0; i--) {
+      final month = DateTime(now.year, now.month - i, 1);
+      final balance = provider.getMonthlySummary(month);
+      spots.add(FlSpot((_chartMonthsCount - 1 - i).toDouble(), balance));
+      labels.add(_formatMonthLabel(month));
+    }
+
+    return _MonthlyChartData(
+      spots: spots,
+      monthLabels: labels,
+      trendLabel: _formatMonthTrend(spots),
     );
   }
 
-  Widget _buildBalanceCards(
-      TransactionProvider provider, BuildContext context) {
-    final currencyProvider =
-        Provider.of<CurrencyProvider>(context, listen: false);
-    final totalIncome = provider.getTotalIncome();
-    final totalExpenses = provider.getTotalExpenses();
-    final balance = totalIncome - totalExpenses;
-
-    return Column(
-      children: [
-        // Balance Total - Tarjeta completa arriba
-        _buildBalanceCard(
-          'Balance Total',
-          currencyProvider.format(balance),
-          balance >= 0 ? AppColors.successColor : AppColors.errorColor,
-          balance >= 0 ? Icons.trending_up : Icons.trending_down,
-          isMainCard: true,
-        ),
-        const SizedBox(height: 12),
-        // Ingresos y Gastos - En fila abajo con más espacio
-        Row(
-          children: [
-            Expanded(
-              child: _buildBalanceCard(
-                'Ingresos',
-                currencyProvider.format(totalIncome),
-                AppColors.incomeColor,
-                Icons.arrow_upward,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildBalanceCard(
-                'Gastos',
-                currencyProvider.format(totalExpenses),
-                AppColors.expenseColor,
-                Icons.arrow_downward,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
+  String _formatMonthLabel(DateTime date) {
+    final label = DateFormat('MMM', 'es').format(date);
+    return label.replaceAll('.', '').substring(0, 3).toUpperCase();
   }
 
-  Widget _buildBalanceCard(
-      String title, String amount, Color color, IconData icon,
-      {bool isMainCard = false}) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [AppColors.cardShadow],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  String? _formatMonthTrend(List<FlSpot> spots) {
+    if (spots.length < 2) return null;
+
+    final previous = spots[spots.length - 2].y;
+    final current = spots.last.y;
+
+    if (previous == 0) {
+      if (current == 0) return null;
+      return current > 0 ? '+100%' : '-100%';
+    }
+
+    final change = ((current - previous) / previous.abs()) * 100;
+    final sign = change >= 0 ? '+' : '';
+    return '$sign${change.toStringAsFixed(1)}%';
+  }
+}
+
+class _MonthlyChartData {
+  final List<FlSpot> spots;
+  final List<String> monthLabels;
+  final String? trendLabel;
+
+  const _MonthlyChartData({
+    required this.spots,
+    required this.monthLabels,
+    this.trendLabel,
+  });
+}
+
+class _HomeHeader extends StatelessWidget {
+  final String greeting;
+  final String? imagePath;
+
+  const _HomeHeader({
+    required this.greeting,
+    this.imagePath,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: color, size: isMainCard ? 28 : 20),
-              Container(
-                padding: EdgeInsets.all(isMainCard ? 6 : 4),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+              Text(
+                context.l10n.welcomeBack,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
-                child: Icon(icon, color: color, size: isMainCard ? 20 : 16),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                greeting,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 21,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.55,
+                ),
               ),
             ],
           ),
-          SizedBox(height: isMainCard ? 16 : 12),
+        ),
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: AppColors.primaryColor.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.borderSubtle, width: 1.2),
+          ),
+          child: ClipOval(
+            child: imagePath != null
+                ? Image.file(
+                    File(imagePath!),
+                    fit: BoxFit.cover,
+                    width: 52,
+                    height: 52,
+                  )
+                : const Icon(
+                    Icons.person_rounded,
+                    color: AppColors.primaryColor,
+                    size: 30,
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TotalBalance extends StatelessWidget {
+  final String amount;
+  final bool isNegative;
+
+  const _TotalBalance({
+    required this.amount,
+    required this.isNegative,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        children: [
           Text(
-            title,
+            context.l10n.totalBalance,
             style: TextStyle(
-              fontSize: isMainCard ? 16 : 12,
               color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Text(
             amount,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: isMainCard ? 24 : 14,
-              fontWeight: FontWeight.bold,
-              color: color,
+              color:
+                  isNegative ? AppColors.expenseColor : AppColors.textPrimary,
+              fontSize: 40,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -1.2,
+              height: 1.0,
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildMonthlyChart(TransactionProvider provider) {
-    final monthlyData = _getMonthlyData(provider);
-    // Determinar el balance del último mes
-    final lastBalance = monthlyData.isNotEmpty ? monthlyData.last.y : 0;
-    final isNegative = lastBalance < 0;
+class _MetricCard extends StatelessWidget {
+  final String label;
+  final double amount;
+  final Color color;
+
+  const _MetricCard({
+    required this.label,
+    required this.amount,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final currency = context.watch<CurrencyProvider>();
+    final valueText = currency.formatValue(amount);
+    final symbol = currency.selectedCurrency.symbol;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      height: 108,
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [AppColors.cardShadow],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                symbol,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          Text(
+            valueText,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 21,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.55,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MonthlyTrendChart extends StatelessWidget {
+  final _MonthlyChartData data;
+
+  const _MonthlyTrendChart({required this.data});
+
+  List<FlSpot> get spots => data.spots;
+
+  @override
+  Widget build(BuildContext context) {
+    final values = spots.map((spot) => spot.y).toList();
+    final minValue = values.reduce((a, b) => a < b ? a : b);
+    final maxValue = values.reduce((a, b) => a > b ? a : b);
+    final range = (maxValue - minValue).abs();
+    final chartMinY = minValue - (range == 0 ? 10 : range * 0.22);
+    final chartMaxY = maxValue + (range == 0 ? 10 : range * 0.18);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 18),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Tendencia Mensual',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  context.l10n.recentMonths,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.35,
+                  ),
+                ),
+              ),
+              if (data.trendLabel != null)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        data.trendLabel!.startsWith('-')
+                            ? Icons.trending_down_rounded
+                            : Icons.trending_up_rounded,
+                        color: AppColors.primaryColor,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        data.trendLabel!,
+                        style: const TextStyle(
+                          color: AppColors.primaryColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
           SizedBox(
-            height: 200,
+            height: 240,
             child: LineChart(
               LineChartData(
+                minX: spots.first.x,
+                maxX: spots.last.x,
+                minY: chartMinY,
+                maxY: chartMaxY,
                 gridData: const FlGridData(show: false),
                 titlesData: const FlTitlesData(show: false),
                 borderData: FlBorderData(show: false),
+                lineTouchData: const LineTouchData(enabled: false),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: monthlyData.map((e) => FlSpot(e.x, e.y)).toList(),
+                    spots: spots,
                     isCurved: true,
-                    gradient: LinearGradient(
-                      colors: isNegative
-                          ? [
-                              AppColors.expenseColor,
-                              AppColors.expenseColorLight
-                            ]
-                          : [
-                              AppColors.primaryColor,
-                              AppColors.primaryColorDark
-                            ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
+                    preventCurveOverShooting: true,
+                    color: AppColors.primaryColor,
                     barWidth: 3,
                     dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
                       gradient: LinearGradient(
-                        colors: isNegative
-                            ? [
-                                AppColors.expenseColor.withValues(alpha: 0.3),
-                                AppColors.expenseColor.withValues(alpha: 0.1)
-                              ]
-                            : [
-                                AppColors.primaryColor.withValues(alpha: 0.3),
-                                AppColors.primaryColor.withValues(alpha: 0.1)
-                              ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
+                        colors: [
+                          AppColors.primaryColor.withValues(alpha: 0.28),
+                          AppColors.primaryColor.withValues(alpha: 0.02),
+                        ],
                       ),
                     ),
                   ),
@@ -240,488 +431,223 @@ class DashboardScreen extends StatelessWidget {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryChart(TransactionProvider provider) {
-    final categoryData = _getCategoryData(provider);
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [AppColors.cardShadow],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Gastos por Categoría',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            height: 200,
-            child: PieChart(
-              PieChartData(
-                sections: categoryData.map((data) {
-                  return PieChartSectionData(
-                    color: data.color,
-                    value: data.value,
-                    title: '${data.percentage.toStringAsFixed(1)}%',
-                    radius: 60,
-                    titleStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.white,
-                    ),
-                  );
-                }).toList(),
-                sectionsSpace: 2,
-                centerSpaceRadius: 40,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 16,
-            runSpacing: 8,
-            children: categoryData.map((data) {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: data.color,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    data.category.displayName,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecentTransactions(
-      TransactionProvider provider, BuildContext context) {
-    final currencyProvider =
-        Provider.of<CurrencyProvider>(context, listen: false);
-    final recentTransactions = provider.transactions.take(5).toList();
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [AppColors.cardShadow],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Transacciones Recientes',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...recentTransactions.map((transaction) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: transaction.category.color.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      transaction.category.icon,
-                      color: transaction.category.color,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          transaction.title,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        Text(
-                          transaction.category.displayName,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    '${transaction.type == TransactionType.gasto ? '-' : '+'}${currencyProvider.format(transaction.amount)}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: transaction.type == TransactionType.gasto
-                          ? AppColors.expenseColor
-                          : AppColors.incomeColor,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWelcomeDashboard(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(context),
-          const SizedBox(height: 24),
-
-          // Welcome Card
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: const [AppColors.cardShadow],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: AppColors.white,
-                  size: 48,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  '¡Bienvenido a Billey!',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Comienza tu viaje hacia la libertad financiera',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: AppColors.white.withValues(alpha: 0.9),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const AddTransactionScreen(),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.white,
-                      foregroundColor: AppColors.primaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Text(
-                      'Agregar Primera Transacción',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Info Cards
-          const Text(
-            'Funcionalidades Principales',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 16),
-
+          const SizedBox(height: 8),
           Row(
-            children: [
-              Expanded(
-                child: _buildFeatureCard(
-                  Icons.trending_up,
-                  'Seguimiento',
-                  'Registra ingresos y gastos fácilmente',
-                  AppColors.incomeColor,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildFeatureCard(
-                  Icons.pie_chart,
-                  'Gráficos',
-                  'Visualiza tus patrones de gasto',
-                  AppColors.primaryColor,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          Row(
-            children: [
-              Expanded(
-                child: _buildFeatureCard(
-                  Icons.category,
-                  'Categorías',
-                  'Organiza por tipo de gasto',
-                  AppColors.warningColor,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildFeatureCard(
-                  Icons.insights,
-                  'Reportes',
-                  'Análisis detallado mensual',
-                  AppColors.infoColor,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          // Tips Card
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceColor,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: const [AppColors.cardShadow],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.successColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.lightbulb_outline,
-                        color: AppColors.successColor,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Consejos para Empezar',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildTipItem('📊', 'Registra todas tus transacciones diarias'),
-                _buildTipItem('🏷️', 'Usa categorías para organizar mejor'),
-                _buildTipItem('📈', 'Revisa tus gráficos semanalmente'),
-                _buildTipItem('💡', 'Establece metas de ahorro mensuales'),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 100), // Space for FAB
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureCard(
-      IconData icon, String title, String description, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [AppColors.cardShadow],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 20,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            description,
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary,
-            ),
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: data.monthLabels
+                .map((label) => _ChartLabel(label))
+                .toList(),
           ),
         ],
       ),
     );
-  }
-
-  Widget _buildTipItem(String emoji, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Text(
-            emoji,
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return '¡Buenos días!';
-    if (hour < 18) return '¡Buenas tardes!';
-    return '¡Buenas noches!';
-  }
-
-  List<FlSpot> _getMonthlyData(TransactionProvider provider) {
-    final now = DateTime.now();
-    final data = <FlSpot>[];
-
-    for (int i = 5; i >= 0; i--) {
-      final month = DateTime(now.year, now.month - i, 1);
-      final balance = provider.getMonthlySummary(month);
-      data.add(FlSpot(i.toDouble(), balance.toDouble()));
-    }
-
-    return data;
-  }
-
-  List<CategoryChartData> _getCategoryData(TransactionProvider provider) {
-    final expenses = provider.transactions
-        .where((t) => t.type == TransactionType.gasto)
-        .toList();
-
-    final categoryTotals = <TransactionCategory, double>{};
-
-    for (final expense in expenses) {
-      categoryTotals[expense.category] =
-          (categoryTotals[expense.category] ?? 0) + expense.amount;
-    }
-
-    final totalExpenses =
-        categoryTotals.values.fold(0.0, (sum, amount) => sum + amount);
-
-    return categoryTotals.entries.map((entry) {
-      final percentage =
-          totalExpenses > 0 ? (entry.value / totalExpenses) * 100 : 0.0;
-      return CategoryChartData(
-        category: entry.key,
-        value: entry.value,
-        percentage: percentage.toDouble(),
-        color: entry.key.color,
-      );
-    }).toList();
   }
 }
 
-class CategoryChartData {
-  final TransactionCategory category;
-  final double value;
-  final double percentage;
-  final Color color;
+class _ChartLabel extends StatelessWidget {
+  final String text;
 
-  CategoryChartData({
-    required this.category,
-    required this.value,
-    required this.percentage,
-    required this.color,
+  const _ChartLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: TextStyle(
+        color: AppColors.textLight,
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+}
+
+class _RecentTransactions extends StatelessWidget {
+  final List<TransactionModel> transactions;
+  final CurrencyProvider currencyProvider;
+
+  const _RecentTransactions({
+    required this.transactions,
+    required this.currencyProvider,
   });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                context.l10n.recentTransactions,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const EnhancedTransactionListScreen(),
+                  ),
+                );
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primaryColor,
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(56, 32),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                context.l10n.seeAll,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        if (transactions.isEmpty)
+          const _EmptyRecentTransactions()
+        else
+          ...transactions.map(
+            (transaction) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _RecentTransactionRow(
+                transaction: transaction,
+                currencyProvider: currencyProvider,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _RecentTransactionRow extends StatelessWidget {
+  final TransactionModel transaction;
+  final CurrencyProvider currencyProvider;
+
+  const _RecentTransactionRow({
+    required this.transaction,
+    required this.currencyProvider,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isIncome = transaction.type == TransactionType.ingreso;
+    final amountPrefix = isIncome ? '+' : '-';
+    final amountColor =
+        isIncome ? AppColors.incomeColor : AppColors.textPrimary;
+
+    return Row(
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceColor,
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.borderSubtle),
+          ),
+          child: Icon(
+            isIncome ? Icons.payments_outlined : transaction.category.icon,
+            color: isIncome ? AppColors.incomeColor : AppColors.textPrimary,
+            size: 23,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                transaction.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.25,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                _formatTransactionTime(context, transaction.date),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          '$amountPrefix ${currencyProvider.format(transaction.amount)}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.right,
+          style: TextStyle(
+            color: amountColor,
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.25,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatTransactionTime(BuildContext context, DateTime date) {
+    final l10n = context.l10n;
+    final now = DateTime.now();
+    final sameDay =
+        date.year == now.year && date.month == now.month && date.day == now.day;
+    final yesterday = DateTime(now.year, now.month, now.day - 1);
+    final isYesterday = date.year == yesterday.year &&
+        date.month == yesterday.month &&
+        date.day == yesterday.day;
+    final time = DateFormat('h:mm a').format(date);
+
+    if (sameDay) return l10n.todayAt(time);
+    if (isYesterday) return l10n.yesterdayAt(time);
+    return DateFormat('MMM d, h:mm a').format(date);
+  }
+}
+
+class _EmptyRecentTransactions extends StatelessWidget {
+  const _EmptyRecentTransactions();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Text(
+        context.l10n.noTransactionsYet,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
 }

@@ -31,8 +31,10 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   flutter_tabler_icons: ^1.29.0
-  intl: ^0.17.0
+  intl: ^0.20.2
   provider: ^6.0.0
   flutter_svg: ^2.0.10+1
   uuid: ^4.5.1
@@ -41,11 +43,17 @@ dependencies:
   fl_chart: ^0.68.0
   shimmer: ^3.0.0
   lottie: ^3.1.2
-  share_plus: ^7.2.2
+  share_plus: ^12.0.1
   path_provider: ^2.1.5
   csv: ^5.0.2
   shared_preferences: ^2.5.3
+  image_picker: ^1.1.2
+  speech_to_text: ^7.0.0
   win32: ^5.14.0
+  flutter_local_notifications: ^22.0.0
+  timezone: ^0.11.0
+  flutter_timezone: ^5.1.0
+  pdf: ^3.12.0
   
 dev_dependencies:
 
@@ -83,6 +91,7 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  generate: true
 
   # To add assets to your application, add an assets section, like this:
   assets:
