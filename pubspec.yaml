@@ -67,6 +67,7 @@ dependencies:
   http: ^1.2.2
   http_parser: ^4.1.1
   just_audio: ^0.10.5
+  audio_session: ^0.2.4
   record: ^6.1.1
   
 dev_dependencies:

@@ -220,33 +220,37 @@ class SpeechAssistantController extends ChangeNotifier {
     required String text,
   }) async {
     if (_generateSpeech == null || _playback == null) return;
-    initializePlaybackTracking();
-    var audio = _voicePreviewCache[voiceId];
-    if (audio == null) {
-      _emit(_state.copyWith(
-        status: SpeechAssistantStatus.generatingSpeech,
-        clearError: true,
-      ));
-      final result = await _generateSpeech(text);
-      switch (result) {
-        case Success<GeneratedAudio>():
-          audio = result.value;
-          _voicePreviewCache[voiceId] = audio;
-        case ErrorResult<GeneratedAudio>():
-          _fail(result.failure.message);
-          return;
+    try {
+      initializePlaybackTracking();
+      var audio = _voicePreviewCache[voiceId];
+      if (audio == null) {
+        _emit(_state.copyWith(
+          status: SpeechAssistantStatus.generatingSpeech,
+          clearError: true,
+        ));
+        final result = await _generateSpeech(text);
+        switch (result) {
+          case Success<GeneratedAudio>():
+            audio = result.value;
+            _voicePreviewCache[voiceId] = audio;
+          case ErrorResult<GeneratedAudio>():
+            _fail(result.failure.message);
+            return;
+        }
       }
+      if (_previewVoiceId != voiceId) {
+        await _playback.load(audio);
+        _previewVoiceId = voiceId;
+        _previewPosition = Duration.zero;
+      } else if (_previewDuration > Duration.zero &&
+          _previewPosition >= _previewDuration) {
+        await _playback.seek(Duration.zero);
+      }
+      _emit(_state.copyWith(status: SpeechAssistantStatus.stopped));
+      await _playback.resume();
+    } catch (_) {
+      _fail('No se pudo reproducir el preview de la voz.');
     }
-    if (_previewVoiceId != voiceId) {
-      await _playback.load(audio);
-      _previewVoiceId = voiceId;
-      _previewPosition = Duration.zero;
-    } else if (_previewDuration > Duration.zero &&
-        _previewPosition >= _previewDuration) {
-      await _playback.seek(Duration.zero);
-    }
-    _emit(_state.copyWith(status: SpeechAssistantStatus.stopped));
-    _playback.resume();
   }
 
   Future<void> pauseVoicePreview() async {

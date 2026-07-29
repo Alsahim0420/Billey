@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -12,6 +13,16 @@ class JustAudioPlaybackService implements AudioPlaybackService {
 
   final AudioPlayer _player;
   File? _temporaryAudio;
+  bool _sessionConfigured = false;
+
+  Future<void> _activateAudioSession() async {
+    final session = await AudioSession.instance;
+    if (!_sessionConfigured) {
+      await session.configure(const AudioSessionConfiguration.speech());
+      _sessionConfigured = true;
+    }
+    await session.setActive(true);
+  }
 
   @override
   Stream<Duration> get positionStream => _player.positionStream;
@@ -29,6 +40,7 @@ class JustAudioPlaybackService implements AudioPlaybackService {
 
   @override
   Future<void> load(GeneratedAudio audio) async {
+    await _activateAudioSession();
     await stop();
     final directory = await getTemporaryDirectory();
     final extension =

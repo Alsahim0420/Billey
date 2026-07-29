@@ -125,6 +125,18 @@ class SpeechVoiceSelector extends StatelessWidget {
             );
           }).toList(),
         ),
+        if (speechController.state.status == SpeechAssistantStatus.failure &&
+            speechController.state.errorMessage != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            speechController.state.errorMessage!,
+            style: const TextStyle(
+              color: AppColors.errorColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ],
     );
   }
