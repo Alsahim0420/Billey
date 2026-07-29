@@ -950,6 +950,24 @@ abstract class AppLocalizations {
   /// **'I understood this:'**
   String get voiceConfirmationPrefix;
 
+  /// No description provided for @newTransactionByVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'New transaction'**
+  String get newTransactionByVoice;
+
+  /// No description provided for @voiceTransactionPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me what happened. I will identify whether it is an expense or income and complete the details for you.'**
+  String get voiceTransactionPrompt;
+
+  /// No description provided for @voiceTransactionTypeNotUnderstood.
+  ///
+  /// In en, this message translates to:
+  /// **'I could not identify whether it was an expense or income. Try saying “I spent”, “I bought”, “I was paid”, or “I received”.'**
+  String get voiceTransactionTypeNotUnderstood;
+
   /// No description provided for @salaryQuestionTitle.
   ///
   /// In en, this message translates to:

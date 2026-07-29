@@ -461,6 +461,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get voiceConfirmationPrefix => 'I understood this:';
 
   @override
+  String get newTransactionByVoice => 'New transaction';
+
+  @override
+  String get voiceTransactionPrompt =>
+      'Tell me what happened. I will identify whether it is an expense or income and complete the details for you.';
+
+  @override
+  String get voiceTransactionTypeNotUnderstood =>
+      'I could not identify whether it was an expense or income. Try saying “I spent”, “I bought”, “I was paid”, or “I received”.';
+
+  @override
   String get salaryQuestionTitle => 'What is your usual salary?';
 
   @override

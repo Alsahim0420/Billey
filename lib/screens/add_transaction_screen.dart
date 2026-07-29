@@ -15,6 +15,7 @@ import '../features/speech/application/speech_assistant_controller.dart';
 import '../features/speech/application/speech_assistant_state.dart';
 import '../features/speech/domain/expense_voice_parser.dart';
 import '../features/speech/domain/income_voice_parser.dart';
+import '../features/speech/domain/transaction_voice_classifier.dart';
 import '../models/category.dart';
 import '../models/transaction.dart';
 import '../providers/category_provider.dart';
@@ -27,12 +28,12 @@ import '../theme/billey_theme_scope.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   final TransactionModel? transaction;
-  final TransactionType initialType;
+  final TransactionType? initialType;
 
   const AddTransactionScreen({
     super.key,
     this.transaction,
-    this.initialType = TransactionType.gasto,
+    this.initialType,
   });
 
   @override
@@ -65,6 +66,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   final _salaryService = FirestoreSalaryService();
   double? _rememberedSalary;
   bool _salaryLoaded = false;
+  late bool _awaitingVoiceClassification;
 
   bool get _isIncome => _type == TransactionType.ingreso;
 
@@ -82,6 +84,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     );
 
     final transaction = widget.transaction;
+    _awaitingVoiceClassification =
+        transaction == null && widget.initialType == null;
     _amountController = TextEditingController(
       text: transaction != null ? _initialAmountText(transaction.amount) : '',
     );
@@ -95,7 +99,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     } else {
       _id = DateTime.now().millisecondsSinceEpoch.toString();
       _date = DateTime.now();
-      _type = widget.initialType;
+      _type = widget.initialType ?? TransactionType.gasto;
     }
 
     _animationController.forward();
@@ -165,6 +169,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                   : CategoryModel.getDefaultCategories();
               _selectedCategory ??= _findInitialCategory(categories);
 
+              if (_awaitingVoiceClassification) {
+                return _buildVoiceFirstScreen(speechState);
+              }
+
               if (_isIncome) {
                 return _buildIncomeScreen(categories);
               }
@@ -213,6 +221,48 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildVoiceFirstScreen(SpeechAssistantState speechState) {
+    final l10n = context.l10n;
+    return Column(
+      children: [
+        _ModalHeader(
+          title: l10n.newTransactionByVoice,
+          onClose: () => Navigator.pop(context),
+          onSave: null,
+        ),
+        Expanded(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.voiceTransactionPrompt,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      height: 1.35,
+                    ),
+                  ),
+                  const SizedBox(height: 34),
+                  _VoiceButton(
+                    state: speechState,
+                    resultSummary: _voiceSummary,
+                    onTap: _toggleVoiceListening,
+                    onPlay: _playVoiceConfirmation,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -391,6 +441,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     if (controller.state.status == SpeechAssistantStatus.recording) {
       await controller.stopRecordingAndTranscribe();
     } else {
+      _lastAppliedTranscript = null;
       await controller.startRecording();
     }
   }
@@ -406,6 +457,20 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       return;
     }
     _lastAppliedTranscript = transcript;
+
+    if (_awaitingVoiceClassification) {
+      final detectedType =
+          const TransactionVoiceClassifier().classify(transcript);
+      if (detectedType == null) {
+        _showErrorMessage(context.l10n.voiceTransactionTypeNotUnderstood);
+        return;
+      }
+      setState(() {
+        _type = detectedType;
+        _awaitingVoiceClassification = false;
+        _selectedCategory = null;
+      });
+    }
 
     if (_isIncome) {
       unawaited(_applyIncomeSpeechResult(transcript));
@@ -1587,7 +1652,7 @@ class _AutomatedRuleCard extends StatelessWidget {
 class _ModalHeader extends StatelessWidget {
   final String title;
   final VoidCallback onClose;
-  final VoidCallback onSave;
+  final VoidCallback? onSave;
 
   const _ModalHeader({
     required this.title,
@@ -1623,17 +1688,20 @@ class _ModalHeader extends StatelessWidget {
               ),
             ),
           ),
-          TextButton(
-            onPressed: onSave,
-            child: Text(
-              l10n.save,
-              style: const TextStyle(
-                color: AppColors.primaryColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
+          if (onSave != null)
+            TextButton(
+              onPressed: onSave,
+              child: Text(
+                l10n.save,
+                style: const TextStyle(
+                  color: AppColors.primaryColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-          ),
+            )
+          else
+            const SizedBox(width: 48),
         ],
       ),
     );
