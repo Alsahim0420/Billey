@@ -350,7 +350,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     final controller = context.read<SpeechAssistantController>();
     final transcript = controller.state.transcript?.text;
     if (transcript == null || transcript.isEmpty) return;
-    await controller.generateAndPlaySpeech('Entendí: $transcript');
+    await controller.generateAndPlaySpeech(
+      '${context.l10n.voiceConfirmationPrefix} $transcript',
+    );
   }
 
   Future<void> _showDistributionRulesEditor() async {
@@ -1649,10 +1651,10 @@ class _VoiceButton extends StatelessWidget {
       SpeechAssistantStatus.recording => l10n.listening,
       SpeechAssistantStatus.stoppingRecording ||
       SpeechAssistantStatus.transcribing =>
-        'TRANSCRIBIENDO...',
+        l10n.voiceTranscribing,
       SpeechAssistantStatus.generatingSpeech ||
       SpeechAssistantStatus.playingSpeech =>
-        'REPRODUCIENDO...',
+        l10n.voicePlaying,
       SpeechAssistantStatus.failure ||
       SpeechAssistantStatus.unavailable =>
         state.errorMessage ?? l10n.voiceNotAvailable,
@@ -1729,7 +1731,7 @@ class _VoiceButton extends StatelessWidget {
           TextButton.icon(
             onPressed: state.isBusy ? null : onPlay,
             icon: const Icon(TablerIcons.volume),
-            label: const Text('ESCUCHAR CONFIRMACIÓN'),
+            label: Text(l10n.voiceListenConfirmation),
           ),
         ],
       ],

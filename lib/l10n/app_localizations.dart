@@ -926,6 +926,30 @@ abstract class AppLocalizations {
   /// **'LISTENING...'**
   String get listening;
 
+  /// No description provided for @voiceTranscribing.
+  ///
+  /// In en, this message translates to:
+  /// **'TRANSCRIBING...'**
+  String get voiceTranscribing;
+
+  /// No description provided for @voicePlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'PLAYING...'**
+  String get voicePlaying;
+
+  /// No description provided for @voiceListenConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'LISTEN TO CONFIRMATION'**
+  String get voiceListenConfirmation;
+
+  /// No description provided for @voiceConfirmationPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'I understood:'**
+  String get voiceConfirmationPrefix;
+
   /// No description provided for @confirmExpense.
   ///
   /// In en, this message translates to:

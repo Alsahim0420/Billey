@@ -450,6 +450,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get listening => 'ESCUCHANDO...';
 
   @override
+  String get voiceTranscribing => 'TRANSCRIBIENDO...';
+
+  @override
+  String get voicePlaying => 'REPRODUCIENDO...';
+
+  @override
+  String get voiceListenConfirmation => 'ESCUCHAR CONFIRMACIÓN';
+
+  @override
+  String get voiceConfirmationPrefix => 'Entendí:';
+
+  @override
   String get confirmExpense => 'Confirmar gasto';
 
   @override
