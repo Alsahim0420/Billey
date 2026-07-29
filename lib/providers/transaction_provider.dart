@@ -3,9 +3,11 @@ import 'package:flutter/foundation.dart';
 
 import '../database/data_base_helper.dart';
 import '../models/transaction.dart';
+import '../services/firestore_transaction_service.dart';
 
 class TransactionProvider with ChangeNotifier {
-  final DatabaseHelper dbHelper;
+  final DatabaseHelper? dbHelper;
+  final FirestoreTransactionService? firestoreService;
   List<TransactionModel> _transactions = [];
   List<TransactionModel> _filteredTransactions = [];
   String _searchQuery = '';
@@ -13,10 +15,18 @@ class TransactionProvider with ChangeNotifier {
   TransactionCategory? _filterCategory;
 
   // Constructor por defecto usa DatabaseHelper.instance
-  TransactionProvider() : dbHelper = DatabaseHelper.instance;
+  TransactionProvider()
+      : dbHelper = DatabaseHelper.instance,
+        firestoreService = null;
+
+  TransactionProvider.cloud({FirestoreTransactionService? service})
+      : dbHelper = null,
+        firestoreService = service ?? FirestoreTransactionService();
 
   // Constructor alternativo para tests/mocks
-  TransactionProvider.withDb(this.dbHelper);
+  TransactionProvider.withDb(DatabaseHelper db)
+      : dbHelper = db,
+        firestoreService = null;
 
   List<TransactionModel> get transactions => _filteredTransactions.isEmpty &&
           _searchQuery.isEmpty &&
@@ -32,7 +42,9 @@ class TransactionProvider with ChangeNotifier {
   TransactionCategory? get filterCategory => _filterCategory;
 
   Future<void> loadTransactions() async {
-    final data = await dbHelper.readAllTransactions();
+    final data = firestoreService != null
+        ? await firestoreService!.readAll()
+        : await dbHelper!.readAllTransactions();
     _transactions = data;
     // Sort by date (most recent first)
     _transactions.sort((a, b) => b.date.compareTo(a.date));
@@ -40,17 +52,29 @@ class TransactionProvider with ChangeNotifier {
   }
 
   Future<void> addTransaction(TransactionModel transaction) async {
-    await dbHelper.create(transaction);
+    if (firestoreService != null) {
+      await firestoreService!.create(transaction);
+    } else {
+      await dbHelper!.create(transaction);
+    }
     await loadTransactions();
   }
 
   Future<void> editTransaction(TransactionModel transaction) async {
-    await dbHelper.update(transaction);
+    if (firestoreService != null) {
+      await firestoreService!.update(transaction);
+    } else {
+      await dbHelper!.update(transaction);
+    }
     await loadTransactions();
   }
 
   Future<void> deleteTransaction(String id) async {
-    await dbHelper.delete(id);
+    if (firestoreService != null) {
+      await firestoreService!.delete(id);
+    } else {
+      await dbHelper!.delete(id);
+    }
     await loadTransactions();
   }
 

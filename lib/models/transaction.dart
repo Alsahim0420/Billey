@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/colors/app_colors.dart';
 
 part 'transaction.g.dart';
@@ -60,6 +61,45 @@ class TransactionModel extends HiveObject {
       category: TransactionCategory.values.firstWhere(
           (e) => e.toString().split('.').last == (map['category'] ?? 'other')),
       description: map['description'],
+    );
+  }
+
+  Map<String, dynamic> toFirestore({
+    required String userId,
+  }) {
+    return {
+      'id': id,
+      'userId': userId,
+      'title': title,
+      'amount': amount,
+      'date': Timestamp.fromDate(date),
+      'type': type.name,
+      'category': category.name,
+      'description': description,
+    };
+  }
+
+  factory TransactionModel.fromFirestore(
+    String documentId,
+    Map<String, dynamic> data,
+  ) {
+    final rawDate = data['date'];
+    final date = switch (rawDate) {
+      Timestamp() => rawDate.toDate(),
+      DateTime() => rawDate,
+      String() => DateTime.parse(rawDate),
+      _ => throw const FormatException('Fecha de transacción inválida.'),
+    };
+    return TransactionModel(
+      id: documentId,
+      title: data['title'] as String,
+      amount: (data['amount'] as num).toDouble(),
+      date: date,
+      type: TransactionType.values.byName(data['type'] as String),
+      category: TransactionCategory.values.byName(
+        (data['category'] as String?) ?? TransactionCategory.other.name,
+      ),
+      description: data['description'] as String?,
     );
   }
 }
