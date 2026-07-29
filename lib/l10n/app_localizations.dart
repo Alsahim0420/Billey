@@ -923,7 +923,7 @@ abstract class AppLocalizations {
   /// No description provided for @listening.
   ///
   /// In en, this message translates to:
-  /// **'LISTENING...'**
+  /// **'LISTENING... I\'LL STOP WHEN YOU FINISH SPEAKING'**
   String get listening;
 
   /// No description provided for @voiceTranscribing.

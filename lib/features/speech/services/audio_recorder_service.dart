@@ -10,4 +10,6 @@ abstract interface class AudioRecorderService {
   Future<void> cancel();
 
   Future<bool> get isRecording;
+
+  Future<double> get currentAmplitudeDb;
 }

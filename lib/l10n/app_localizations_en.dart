@@ -446,7 +446,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tapToSpeak => 'TAP TO SPEAK';
 
   @override
-  String get listening => 'LISTENING...';
+  String get listening => 'LISTENING... I\'LL STOP WHEN YOU FINISH SPEAKING';
 
   @override
   String get voiceTranscribing => 'TRANSCRIBING...';

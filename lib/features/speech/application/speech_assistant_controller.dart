@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -35,6 +36,11 @@ class SpeechAssistantController extends ChangeNotifier {
   final AudioPlaybackService? _playback;
   final TranscribeAudioUseCase? _transcribeAudio;
   final GenerateSpeechUseCase? _generateSpeech;
+  Timer? _silenceTimer;
+  DateTime? _recordingStartedAt;
+  DateTime? _lastSpeechAt;
+  bool _speechDetected = false;
+  bool _checkingAmplitude = false;
 
   SpeechAssistantState _state = const SpeechAssistantState();
   SpeechAssistantState get state => _state;
@@ -58,6 +64,7 @@ class SpeechAssistantController extends ChangeNotifier {
       }
       await _recorder.start();
       _emit(_state.copyWith(status: SpeechAssistantStatus.recording));
+      _startSilenceDetection();
     } catch (_) {
       _fail('No se pudo iniciar la grabación.');
     }
@@ -71,6 +78,7 @@ class SpeechAssistantController extends ChangeNotifier {
     }
     RecordedAudio? recording;
     try {
+      _stopSilenceDetection();
       _emit(_state.copyWith(status: SpeechAssistantStatus.stoppingRecording));
       recording = await _recorder.stop();
       _emit(_state.copyWith(status: SpeechAssistantStatus.transcribing));
@@ -96,6 +104,7 @@ class SpeechAssistantController extends ChangeNotifier {
   Future<void> cancelRecording() async {
     if (_recorder == null) return;
     try {
+      _stopSilenceDetection();
       await _recorder.cancel();
       _emit(_state.copyWith(
         status: SpeechAssistantStatus.stopped,
@@ -104,6 +113,53 @@ class SpeechAssistantController extends ChangeNotifier {
     } catch (_) {
       _fail('No se pudo cancelar la grabación.');
     }
+  }
+
+  void _startSilenceDetection() {
+    _stopSilenceDetection();
+    _recordingStartedAt = DateTime.now();
+    _speechDetected = false;
+    _silenceTimer = Timer.periodic(
+      const Duration(milliseconds: 200),
+      (_) => _checkForSilence(),
+    );
+  }
+
+  Future<void> _checkForSilence() async {
+    if (_checkingAmplitude ||
+        _state.status != SpeechAssistantStatus.recording ||
+        _recorder == null) {
+      return;
+    }
+    _checkingAmplitude = true;
+    try {
+      final now = DateTime.now();
+      final startedAt = _recordingStartedAt ?? now;
+      final amplitude = await _recorder.currentAmplitudeDb;
+      if (amplitude > -42) {
+        _speechDetected = true;
+        _lastSpeechAt = now;
+      }
+      final finishedSpeaking = _speechDetected &&
+          _lastSpeechAt != null &&
+          now.difference(_lastSpeechAt!) >= const Duration(milliseconds: 1200);
+      final reachedMaximum =
+          now.difference(startedAt) >= const Duration(seconds: 15);
+      if (finishedSpeaking || reachedMaximum) {
+        await stopRecordingAndTranscribe();
+      }
+    } catch (_) {
+      // Si el dispositivo no informa amplitud, aún se puede detener a mano.
+    } finally {
+      _checkingAmplitude = false;
+    }
+  }
+
+  void _stopSilenceDetection() {
+    _silenceTimer?.cancel();
+    _silenceTimer = null;
+    _recordingStartedAt = null;
+    _lastSpeechAt = null;
   }
 
   Future<void> generateAndPlaySpeech(String text) async {
@@ -163,6 +219,7 @@ class SpeechAssistantController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _stopSilenceDetection();
     _recorder?.cancel();
     _playback?.dispose();
     super.dispose();

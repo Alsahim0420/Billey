@@ -101,6 +101,9 @@ class _FakeRecorder implements AudioRecorderService {
   bool recording = false;
 
   @override
+  Future<double> get currentAmplitudeDb async => -160;
+
+  @override
   Future<void> cancel() async => recording = false;
 
   @override

@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 
 import '../features/speech/application/speech_assistant_controller.dart';
 import '../features/speech/application/speech_assistant_state.dart';
+import '../features/speech/domain/expense_voice_parser.dart';
 import '../models/category.dart';
 import '../models/transaction.dart';
 import '../providers/category_provider.dart';
@@ -52,6 +53,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   double _savingsPercent = 20;
   String _distributionTemplateId = 'balanced_50_30_20';
   bool _distributionLoaded = false;
+  SpeechAssistantController? _speechController;
+  String? _lastAppliedTranscript;
+  String? _voiceSummary;
 
   bool get _isIncome => _type == TransactionType.ingreso;
 
@@ -91,6 +95,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final speechController = context.read<SpeechAssistantController>();
+    if (!identical(_speechController, speechController)) {
+      _speechController?.removeListener(_handleSpeechResult);
+      _speechController = speechController..addListener(_handleSpeechResult);
+    }
     if (_distributionLoaded) return;
 
     final distribution = context.watch<IncomeDistributionProvider>();
@@ -107,6 +116,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
 
   @override
   void dispose() {
+    _speechController?.removeListener(_handleSpeechResult);
     _animationController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
@@ -175,6 +185,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                           const SizedBox(height: 30),
                           _VoiceButton(
                             state: speechState,
+                            resultSummary: _voiceSummary,
                             onTap: _toggleVoiceListening,
                             onPlay: _playVoiceConfirmation,
                           ),
@@ -352,12 +363,59 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     }
   }
 
+  void _handleSpeechResult() {
+    if (!mounted) return;
+    final state = _speechController?.state;
+    if (state?.status != SpeechAssistantStatus.transcriptionSuccess) return;
+    final transcript = state?.transcript?.text.trim();
+    if (transcript == null ||
+        transcript.isEmpty ||
+        transcript == _lastAppliedTranscript) {
+      return;
+    }
+    _lastAppliedTranscript = transcript;
+
+    final provider = context.read<CategoryProvider>();
+    final categories = provider.categories.isNotEmpty
+        ? provider.categories
+        : CategoryModel.getDefaultCategories();
+    final draft = const ExpenseVoiceParser().parse(
+      transcript,
+      now: DateTime.now(),
+      customCategories: {
+        for (final category in categories) category.id: category.name,
+      },
+    );
+    final category = categories.firstWhere(
+      (item) => item.id == draft.categoryId,
+      orElse: () => categories.firstWhere(
+        (item) => item.id == 'other',
+        orElse: () => categories.first,
+      ),
+    );
+    final title = draft.title == 'Gasto' && category.id != 'other'
+        ? category.name
+        : draft.title;
+
+    setState(() {
+      _titleController.text = title;
+      if (draft.amount != null) {
+        _amountController.text = _initialAmountText(draft.amount!);
+      }
+      _selectedCategory = category;
+      _date = draft.date;
+      _voiceSummary = draft.amount == null
+          ? '$title · ${category.name}'
+          : '$title · \$${NumberFormat('#,##0', 'es').format(draft.amount)} · ${category.name}';
+    });
+  }
+
   Future<void> _playVoiceConfirmation() async {
     final controller = context.read<SpeechAssistantController>();
-    final transcript = controller.state.transcript?.text;
-    if (transcript == null || transcript.isEmpty) return;
+    final summary = _voiceSummary;
+    if (summary == null || summary.isEmpty) return;
     await controller.generateAndPlaySpeech(
-      '${context.l10n.voiceConfirmationPrefix} $transcript',
+      '${context.l10n.voiceConfirmationPrefix} $summary',
     );
   }
 
@@ -1639,11 +1697,13 @@ class _AmountInputFieldState extends State<_AmountInputField> {
 
 class _VoiceButton extends StatelessWidget {
   final SpeechAssistantState state;
+  final String? resultSummary;
   final VoidCallback onTap;
   final VoidCallback onPlay;
 
   const _VoiceButton({
     required this.state,
+    required this.resultSummary,
     required this.onTap,
     required this.onPlay,
   });
@@ -1664,7 +1724,7 @@ class _VoiceButton extends StatelessWidget {
       SpeechAssistantStatus.failure ||
       SpeechAssistantStatus.unavailable =>
         state.errorMessage ?? l10n.voiceNotAvailable,
-      _ => transcript.isEmpty ? l10n.tapToSpeak : transcript,
+      _ => transcript.isEmpty ? l10n.tapToSpeak : resultSummary ?? transcript,
     };
     final canTap =
         !state.isBusy && state.status != SpeechAssistantStatus.playingSpeech;

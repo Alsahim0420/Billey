@@ -21,6 +21,10 @@ class RecordAudioRecorderService implements AudioRecorderService {
   Future<bool> get isRecording => _recorder.isRecording();
 
   @override
+  Future<double> get currentAmplitudeDb async =>
+      (await _recorder.getAmplitude()).current;
+
+  @override
   Future<void> start() async {
     if (await isRecording) {
       throw StateError('Ya existe una grabación activa.');
