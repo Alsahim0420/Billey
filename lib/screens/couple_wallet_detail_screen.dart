@@ -150,6 +150,7 @@ class CoupleWalletDetailScreen extends StatelessWidget {
     final titleController = TextEditingController();
     final amountController = TextEditingController();
     final link = couple.link;
+    final currency = context.read<CurrencyProvider>();
 
     final saved = await showModalBottomSheet<bool>(
       context: context,
@@ -190,6 +191,8 @@ class CoupleWalletDetailScreen extends StatelessWidget {
               TextField(
                 controller: amountController,
                 keyboardType: TextInputType.number,
+                inputFormatters:
+                    currency.usesDecimals ? null : [currency.inputFormatter],
                 decoration: InputDecoration(
                   labelText: l10n.coupleExpenseAmount,
                 ),
@@ -197,8 +200,7 @@ class CoupleWalletDetailScreen extends StatelessWidget {
               const SizedBox(height: 20),
               FilledButton(
                 onPressed: () {
-                  final amount =
-                      double.tryParse(amountController.text.trim()) ?? 0;
+                  final amount = currency.parseValue(amountController.text) ?? 0;
                   if (titleController.text.trim().length < 2 || amount <= 0) {
                     return;
                   }
@@ -214,7 +216,7 @@ class CoupleWalletDetailScreen extends StatelessWidget {
 
     if (saved != true || !context.mounted) return;
 
-    final amount = double.tryParse(amountController.text.trim()) ?? 0;
+    final amount = currency.parseValue(amountController.text) ?? 0;
     await couple.addExpense(
       walletId: wallet.id,
       title: titleController.text.trim(),
