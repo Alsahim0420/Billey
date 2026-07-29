@@ -39,4 +39,16 @@ void main() {
     expect(draft.amount, 80000);
     expect(draft.categoryId, 'pets');
   });
+
+  test('extracts helados as the concept and categorizes them as food', () {
+    final draft = parser.parse(
+      'Me gasté 100.000 en helados para mi equipo',
+      now: now,
+    );
+
+    expect(draft.amount, 100000);
+    expect(draft.title, 'Helados');
+    expect(draft.categoryId, 'food');
+    expect(draft.date, DateTime(2026, 7, 28));
+  });
 }

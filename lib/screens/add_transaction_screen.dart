@@ -57,6 +57,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   bool _speechSessionInitialized = false;
   String? _lastAppliedTranscript;
   String? _voiceSummary;
+  String? _voiceConfirmationText;
 
   bool get _isIncome => _type == TransactionType.ingreso;
 
@@ -410,6 +411,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       }
       _selectedCategory = category;
       _date = draft.date;
+      _voiceConfirmationText = transcript;
       _voiceSummary = draft.amount == null
           ? '$title · ${category.name}'
           : '$title · \$${NumberFormat('#,##0', 'es').format(draft.amount)} · ${category.name}';
@@ -418,11 +420,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
 
   Future<void> _playVoiceConfirmation() async {
     final controller = context.read<SpeechAssistantController>();
-    final summary = _voiceSummary;
-    if (summary == null || summary.isEmpty) return;
-    await controller.generateAndPlaySpeech(
-      '${context.l10n.voiceConfirmationPrefix} $summary',
-    );
+    final confirmationText = _voiceConfirmationText;
+    if (confirmationText == null || confirmationText.isEmpty) return;
+    await controller.generateAndPlaySpeech(confirmationText);
   }
 
   Future<void> _showDistributionRulesEditor() async {
