@@ -70,12 +70,29 @@ class TransactionProvider with ChangeNotifier {
   }
 
   Future<void> deleteTransaction(String id) async {
-    if (firestoreService != null) {
-      await firestoreService!.delete(id);
-    } else {
-      await dbHelper!.delete(id);
+    final index =
+        _transactions.indexWhere((transaction) => transaction.id == id);
+    final removed = index == -1 ? null : _transactions.removeAt(index);
+    _refreshFilteredTransactions();
+    notifyListeners();
+
+    try {
+      if (firestoreService != null) {
+        await firestoreService!.delete(id);
+      } else {
+        await dbHelper!.delete(id);
+      }
+    } catch (_) {
+      if (removed != null) {
+        _transactions.insert(
+          index.clamp(0, _transactions.length),
+          removed,
+        );
+        _refreshFilteredTransactions();
+        notifyListeners();
+      }
+      rethrow;
     }
-    await loadTransactions();
   }
 
   double getTotalIncome() {
@@ -167,6 +184,16 @@ class TransactionProvider with ChangeNotifier {
     }
 
     _filteredTransactions = filtered;
+  }
+
+  void _refreshFilteredTransactions() {
+    if (_searchQuery.isEmpty &&
+        _filterType == null &&
+        _filterCategory == null) {
+      _filteredTransactions = [];
+      return;
+    }
+    _applyFilters();
   }
 
   List<TransactionModel> getTransactionsByDateRange(

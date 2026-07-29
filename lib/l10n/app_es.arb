@@ -169,6 +169,7 @@
   "selectCategory": "Selecciona una categoría",
   "transactionAdded": "Transacción agregada correctamente",
   "transactionUpdated": "Transacción actualizada correctamente",
+  "transactionDeleteError": "No se pudo eliminar la transacción. Se restauró en la lista.",
   "voiceNotAvailable": "Voz no disponible. Detén la app, ejecuta \"flutter pub get\", luego \"cd ios && pod install\" y vuelve a abrir con flutter run (no uses hot reload).",
   "micPermissionRequired": "Activa el permiso de micrófono para registrar gastos por voz.",
   "voiceAmountNotUnderstood": "No entendí el monto. Prueba: \"Gasté 50000 en comida\" o \"Pagué 25 mil de taxi\".",

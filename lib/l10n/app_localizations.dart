@@ -1064,6 +1064,12 @@ abstract class AppLocalizations {
   /// **'Transaction updated successfully'**
   String get transactionUpdated;
 
+  /// No description provided for @transactionDeleteError.
+  ///
+  /// In en, this message translates to:
+  /// **'The transaction could not be deleted. It was restored to the list.'**
+  String get transactionDeleteError;
+
   /// No description provided for @voiceNotAvailable.
   ///
   /// In en, this message translates to:
