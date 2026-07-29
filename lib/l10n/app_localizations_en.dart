@@ -458,7 +458,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get voiceListenConfirmation => 'LISTEN TO CONFIRMATION';
 
   @override
-  String get voiceConfirmationPrefix => 'I understood:';
+  String get voiceConfirmationPrefix => 'I understood this:';
 
   @override
   String get confirmExpense => 'Confirm Expense';

@@ -186,7 +186,7 @@
   "voiceTranscribing": "TRANSCRIBING...",
   "voicePlaying": "PLAYING...",
   "voiceListenConfirmation": "LISTEN TO CONFIRMATION",
-  "voiceConfirmationPrefix": "I understood:",
+  "voiceConfirmationPrefix": "I understood this:",
   "confirmExpense": "Confirm Expense",
   "updateExpense": "Update Expense",
   "confirmIncome": "Confirm Income",

@@ -422,7 +422,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     final controller = context.read<SpeechAssistantController>();
     final confirmationText = _voiceConfirmationText;
     if (confirmationText == null || confirmationText.isEmpty) return;
-    await controller.generateAndPlaySpeech(confirmationText);
+    await controller.generateAndPlaySpeech(
+      '${context.l10n.voiceConfirmationPrefix} $confirmationText',
+    );
   }
 
   Future<void> _showDistributionRulesEditor() async {
