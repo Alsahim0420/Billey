@@ -1,3 +1,4 @@
+import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:flutter/material.dart';
 // ignore: unused_import
 import 'package:provider/provider.dart';
@@ -11,9 +12,11 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Financial Manager'),
+        title: Text(l10n.financialManager),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),

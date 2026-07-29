@@ -1,9 +1,12 @@
+import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:provider/provider.dart';
 import '../providers/category_provider.dart';
 import '../models/category.dart';
 import '../theme/colors/app_colors.dart';
+import '../services/category_suggestion_service.dart';
+import '../theme/billey_theme_scope.dart';
 
 class AddEditCategoryScreen extends StatefulWidget {
   final CategoryModel? category;
@@ -25,6 +28,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   late Color _selectedSectionColor;
   bool _isEditing = false;
   bool _isCustomSection = false;
+  bool _visualsCustomized = false;
 
   @override
   void initState() {
@@ -48,10 +52,43 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
       _selectedSection = CategoryModel.defaultSections.first;
       _selectedSectionColor = CategoryModel.availableColors.first;
     }
+
+    _visualsCustomized = _isEditing;
+    _nameController.addListener(_onNameChanged);
+  }
+
+  void _onNameChanged() {
+    if (_visualsCustomized) {
+      setState(() {});
+      return;
+    }
+
+    final suggestion = CategorySuggestionService.suggest(_nameController.text);
+    if (suggestion == null) {
+      setState(() {});
+      return;
+    }
+
+    setState(() {
+      _selectedIcon = suggestion.icon;
+      _selectedColor = suggestion.color;
+      if (suggestion.section != null &&
+          CategoryModel.defaultSections.contains(suggestion.section)) {
+        _selectedSection = suggestion.section!;
+        _selectedSectionColor = suggestion.color;
+      }
+    });
+  }
+
+  void _markVisualsCustomized() {
+    if (!_visualsCustomized) {
+      setState(() => _visualsCustomized = true);
+    }
   }
 
   @override
   void dispose() {
+    _nameController.removeListener(_onNameChanged);
     _nameController.dispose();
     _sectionController.dispose();
     super.dispose();
@@ -59,12 +96,14 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    BilleyThemeScope.isDarkOf(context);
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
         title: Text(
-          _isEditing ? 'Editar Categoría' : 'Nueva Categoría',
-          style: const TextStyle(
+          _isEditing ? l10n.editCategory : l10n.newCategory,
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
           ),
@@ -72,14 +111,14 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
         backgroundColor: AppColors.surfaceColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           TextButton(
             onPressed: _saveCategory,
             child: Text(
-              _isEditing ? 'GUARDAR' : 'CREAR',
+              _isEditing ? l10n.saveUpper : l10n.createUpper,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: AppColors.primaryColor,
@@ -114,18 +153,20 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   }
 
   Widget _buildPreview() {
+    final l10n = context.l10n;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [AppColors.cardShadow],
+        boxShadow: [AppColors.cardShadow],
       ),
       child: Column(
         children: [
-          const Text(
-            'Vista Previa',
+          Text(
+            l10n.preview,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -160,7 +201,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                     children: [
                       Text(
                         _nameController.text.isEmpty
-                            ? 'Nombre de la categoría'
+                            ? l10n.categoryNamePlaceholder
                             : _nameController.text,
                         style: TextStyle(
                           fontSize: 16,
@@ -174,7 +215,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                       Text(
                         _isCustomSection
                             ? (_sectionController.text.isEmpty
-                                ? 'Sección personalizada'
+                                ? l10n.customSectionPlaceholder
                                 : _sectionController.text)
                             : _selectedSection,
                         style: TextStyle(
@@ -195,11 +236,13 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   }
 
   Widget _buildNameField() {
+    final l10n = context.l10n;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Nombre de la Categoría',
+        Text(
+          l10n.categoryName,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -211,14 +254,15 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
           decoration: BoxDecoration(
             color: AppColors.surfaceColor,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: const [AppColors.cardShadow],
+            boxShadow: [AppColors.cardShadow],
           ),
           child: TextFormField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              hintText: 'Ej: Gimnasio, Mascotas, etc.',
-              prefixIcon: Icon(TablerIcons.tag, color: AppColors.primaryColor),
-              border: OutlineInputBorder(
+            decoration: InputDecoration(
+              hintText: l10n.categoryNameHint,
+              prefixIcon:
+                  const Icon(TablerIcons.tag, color: AppColors.primaryColor),
+              border: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(12)),
                 borderSide: BorderSide.none,
               ),
@@ -227,36 +271,62 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
             ),
             textCapitalization: TextCapitalization.words,
             maxLength: 20,
-            onChanged: (value) => setState(() {}),
+            onChanged: (_) => _onNameChanged(),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Por favor ingresa un nombre';
+                return l10n.enterCategoryName;
               }
               if (value.trim().length < 2) {
-                return 'El nombre debe tener al menos 2 caracteres';
+                return l10n.categoryNameMinLength;
               }
 
               final provider =
                   Provider.of<CategoryProvider>(context, listen: false);
               if (provider.isNameTaken(value.trim(),
                   excludeId: widget.category?.id)) {
-                return 'Ya existe una categoría con este nombre';
+                return l10n.categoryNameExists;
               }
 
               return null;
             },
           ),
         ),
+        if (!_visualsCustomized && _nameController.text.trim().length >= 2)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 4),
+            child: Row(
+              children: [
+                const Icon(
+                  TablerIcons.sparkles,
+                  size: 14,
+                  color: AppColors.primaryColor,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    l10n.categoryAutoSuggested,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
 
   Widget _buildSectionSelector() {
+    final l10n = context.l10n;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Sección',
+        Text(
+          l10n.section,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -269,11 +339,10 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
           decoration: BoxDecoration(
             color: AppColors.surfaceColor,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: const [AppColors.cardShadow],
+            boxShadow: [AppColors.cardShadow],
           ),
           child: Column(
             children: [
-              // Selector de sección predefinida o personalizada
               RadioGroup<bool>(
                 groupValue: _isCustomSection,
                 onChanged: (value) => setState(() => _isCustomSection = value!),
@@ -309,7 +378,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                               const SizedBox(width: 4),
                               Flexible(
                                 child: Text(
-                                  'Predefinida',
+                                  l10n.predefined,
                                   style: TextStyle(
                                     color: !_isCustomSection
                                         ? _selectedSectionColor
@@ -356,7 +425,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                               const SizedBox(width: 4),
                               Flexible(
                                 child: Text(
-                                  'Personalizada',
+                                  l10n.customSection,
                                   style: TextStyle(
                                     color: _isCustomSection
                                         ? _selectedSectionColor
@@ -377,12 +446,11 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Selector de sección o campo personalizado
               if (_isCustomSection)
                 TextFormField(
                   controller: _sectionController,
                   decoration: InputDecoration(
-                    hintText: 'Nombre de la sección',
+                    hintText: l10n.sectionNameHint,
                     prefixIcon:
                         Icon(TablerIcons.folder, color: _selectedSectionColor),
                     border: const OutlineInputBorder(
@@ -396,7 +464,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                   maxLength: 20,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'El nombre de la sección es requerido';
+                      return l10n.sectionNameRequired;
                     }
                     return null;
                   },
@@ -407,7 +475,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                 DropdownButtonFormField<String>(
                   initialValue: _selectedSection,
                   decoration: InputDecoration(
-                    hintText: 'Seleccionar sección',
+                    hintText: l10n.selectSection,
                     prefixIcon:
                         Icon(TablerIcons.folder, color: _selectedSectionColor),
                     border: const OutlineInputBorder(
@@ -429,9 +497,8 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
 
               const SizedBox(height: 16),
 
-              // Selector de color de sección
-              const Text(
-                'Color de la sección',
+              Text(
+                l10n.sectionColor,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -456,7 +523,10 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                       _selectedSectionColor.toARGB32() == color.toARGB32();
 
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedSectionColor = color),
+                    onTap: () => setState(() {
+                      _markVisualsCustomized();
+                      _selectedSectionColor = color;
+                    }),
                     child: Container(
                       decoration: BoxDecoration(
                         color: color,
@@ -492,11 +562,13 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   }
 
   Widget _buildIconSelector() {
+    final l10n = context.l10n;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Selecciona un Ícono',
+        Text(
+          l10n.selectIcon,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -509,7 +581,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
           decoration: BoxDecoration(
             color: AppColors.surfaceColor,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: const [AppColors.cardShadow],
+            boxShadow: [AppColors.cardShadow],
           ),
           child: GridView.builder(
             shrinkWrap: true,
@@ -525,7 +597,10 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
               final isSelected = icon.codePoint == _selectedIcon.codePoint;
 
               return GestureDetector(
-                onTap: () => setState(() => _selectedIcon = icon),
+                onTap: () => setState(() {
+                  _markVisualsCustomized();
+                  _selectedIcon = icon;
+                }),
                 child: Container(
                   decoration: BoxDecoration(
                     color: isSelected
@@ -553,11 +628,13 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   }
 
   Widget _buildColorSelector() {
+    final l10n = context.l10n;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Selecciona un Color',
+        Text(
+          l10n.selectColor,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -570,7 +647,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
           decoration: BoxDecoration(
             color: AppColors.surfaceColor,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: const [AppColors.cardShadow],
+            boxShadow: [AppColors.cardShadow],
           ),
           child: GridView.builder(
             shrinkWrap: true,
@@ -586,7 +663,10 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
               final isSelected = color.toARGB32() == _selectedColor.toARGB32();
 
               return GestureDetector(
-                onTap: () => setState(() => _selectedColor = color),
+                onTap: () => setState(() {
+                  _markVisualsCustomized();
+                  _selectedColor = color;
+                }),
                 child: Container(
                   width: 40,
                   height: 40,
@@ -624,6 +704,8 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   }
 
   Widget _buildSaveButton() {
+    final l10n = context.l10n;
+
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -631,7 +713,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
         onPressed: _saveCategory,
         icon: Icon(_isEditing ? TablerIcons.device_floppy : TablerIcons.plus),
         label: Text(
-          _isEditing ? 'Guardar Cambios' : 'Crear Categoría',
+          _isEditing ? l10n.saveChanges : l10n.createCategory,
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -650,6 +732,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
 
   void _saveCategory() {
     if (_formKey.currentState!.validate()) {
+      final l10n = context.l10n;
       final provider = Provider.of<CategoryProvider>(context, listen: false);
 
       final finalSection =
@@ -668,12 +751,11 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
 
       if (_isEditing) {
         provider.updateCategory(category);
-        _showSnackBar('Categoría actualizada correctamente');
+        _showSnackBar(l10n.categoryUpdated);
         Navigator.pop(context);
       } else {
         provider.addCategory(category);
-        _showSnackBar('Categoría creada correctamente');
-        // Regresar la nueva categoría para que pueda ser seleccionada automáticamente
+        _showSnackBar(l10n.categoryCreated);
         Navigator.pop(context, category);
       }
     }

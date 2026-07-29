@@ -162,6 +162,21 @@ class CategoryModel extends HiveObject {
         Icons.card_giftcard,
         Icons.savings,
         Icons.payment,
+        Icons.volunteer_activism,
+        Icons.favorite,
+        Icons.church,
+        Icons.shopping_bag,
+        Icons.local_hospital,
+        Icons.attach_money,
+        Icons.account_balance,
+        Icons.receipt_long,
+        Icons.coffee,
+        Icons.fastfood,
+        Icons.flight,
+        Icons.train,
+        Icons.directions_bus,
+        Icons.electric_bolt,
+        Icons.eco,
       ];
 
   static final Map<int, IconData> _iconsByCodePoint = {

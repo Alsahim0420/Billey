@@ -1,4 +1,5 @@
 // lib/screens/monthly_summary_screen.dart
+import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
@@ -9,6 +10,7 @@ import '../models/category.dart';
 import '../theme/colors/app_colors.dart';
 import '../providers/category_provider.dart';
 import '../providers/currency_provider.dart';
+import '../theme/billey_theme_scope.dart';
 
 class MonthlySummaryScreen extends StatefulWidget {
   final DateTime? initialMonth;
@@ -18,7 +20,6 @@ class MonthlySummaryScreen extends StatefulWidget {
   State<MonthlySummaryScreen> createState() => _MonthlySummaryScreenState();
 }
 
-// Clase auxiliar para los datos del gráfico de categorías
 class CategoryChartData {
   final CategoryModel category;
   final double value;
@@ -40,7 +41,6 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
   void initState() {
     super.initState();
     final initialMonth = widget.initialMonth ?? DateTime.now();
-    // Normalizar la fecha para que solo tenga año y mes
     _selectedMonth = DateTime(initialMonth.year, initialMonth.month);
   }
 
@@ -64,6 +64,8 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    BilleyThemeScope.isDarkOf(context);
     final provider = Provider.of<TransactionProvider>(context);
     final currencyProvider =
         Provider.of<CurrencyProvider>(context, listen: false);
@@ -81,12 +83,10 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
         .fold(0.0, (sum, t) => sum + t.amount);
     final netBalance = totalIncome - totalExpense;
 
-    // Agrupar gastos por categoría usando TransactionCategory
     final Map<CategoryModel, double> expensesByCategory = {};
     final categoryProvider =
         Provider.of<CategoryProvider>(context, listen: false);
     for (var t in transactions.where((t) => t.type == TransactionType.gasto)) {
-      // Buscar la categoría por TransactionCategory
       final category = categoryProvider.categories.firstWhere(
         (c) => c.transactionCategory == t.category,
         orElse: () => CategoryModel.getDefaultCategories()
@@ -99,7 +99,7 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text('Resumen Mensual'),
+        title: Text(l10n.monthlySummary),
         backgroundColor: AppColors.surfaceColor,
         elevation: 0,
       ),
@@ -125,6 +125,7 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
   }
 
   Widget _buildMonthSelector() {
+    final locale = Localizations.localeOf(context).toString();
     final months =
         List.generate(12, (i) => DateTime(DateTime.now().year, i + 1));
     return Row(
@@ -139,7 +140,7 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
         DropdownButton<DateTime>(
           value: _selectedMonth,
           dropdownColor: AppColors.surfaceColor,
-          style: const TextStyle(
+          style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold),
@@ -147,13 +148,12 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
           items: months.map((month) {
             return DropdownMenuItem(
               value: month,
-              child: Text(DateFormat('MMMM yyyy', 'es').format(month)),
+              child: Text(DateFormat('MMMM yyyy', locale).format(month)),
             );
           }).toList(),
           onChanged: (value) {
             if (value != null) {
               setState(() {
-                // Normalizar la fecha seleccionada para que solo tenga año y mes
                 _selectedMonth = DateTime(value.year, value.month);
               });
             }
@@ -171,30 +171,30 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
 
   Widget _buildTotals(double income, double expense, double net,
       CurrencyProvider currencyProvider) {
+    final l10n = context.l10n;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [AppColors.softShadow],
+        boxShadow: [AppColors.softShadow],
       ),
       child: Column(
         children: [
-          // Balance arriba
           _buildTotalItem(
-              'Balance', net, AppColors.primaryColor, currencyProvider,
+              l10n.balance, net, AppColors.primaryColor, currencyProvider,
               isMain: true),
           const SizedBox(height: 16),
-          // Ingresos y Gastos abajo
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               Expanded(
-                child: _buildTotalItem('Ingresos', income,
+                child: _buildTotalItem(l10n.income, income,
                     AppColors.incomeColor, currencyProvider),
               ),
               Expanded(
-                child: _buildTotalItem('Gastos', expense,
+                child: _buildTotalItem(l10n.expenses, expense,
                     AppColors.expenseColor, currencyProvider),
               ),
             ],
@@ -229,17 +229,19 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
   }
 
   Widget _buildBarChart(double income, double expense) {
+    final l10n = context.l10n;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [AppColors.softShadow],
+        boxShadow: [AppColors.softShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Ingresos vs Gastos',
+          Text(l10n.incomeVsExpenses,
               style: TextStyle(
                   fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
           const SizedBox(height: 16),
@@ -260,13 +262,13 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
                       getTitlesWidget: (value, meta) {
                         switch (value.toInt()) {
                           case 0:
-                            return const Text('Ingresos',
-                                style: TextStyle(
+                            return Text(l10n.income,
+                                style: const TextStyle(
                                     color: AppColors.incomeColor,
                                     fontWeight: FontWeight.bold));
                           case 1:
-                            return const Text('Gastos',
-                                style: TextStyle(
+                            return Text(l10n.expenses,
+                                style: const TextStyle(
                                     color: AppColors.expenseColor,
                                     fontWeight: FontWeight.bold));
                         }
@@ -326,10 +328,11 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
   }
 
   Widget _buildPieChart(Map<CategoryModel, double> data) {
+    final l10n = context.l10n;
     final categoryData = _getCategoryData(data);
     if (categoryData.isEmpty) {
-      return const Center(
-        child: Text('No hay gastos este mes',
+      return Center(
+        child: Text(l10n.noExpensesThisMonth,
             style: TextStyle(color: AppColors.textSecondary)),
       );
     }
@@ -338,12 +341,12 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
       decoration: BoxDecoration(
         color: AppColors.surfaceColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [AppColors.softShadow],
+        boxShadow: [AppColors.softShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Gastos por Categoría',
+          Text(l10n.expensesByCategory,
               style: TextStyle(
                   fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
           const SizedBox(height: 16),
@@ -375,6 +378,7 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
   }
 
   Widget _buildLegend(Map<CategoryModel, double> data) {
+    final l10n = context.l10n;
     final categoryData = _getCategoryData(data);
     if (categoryData.isEmpty) return const SizedBox();
     final currencyProvider =
@@ -382,7 +386,7 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Detalle por Categoría',
+        Text(l10n.categoryDetail,
             style: TextStyle(
                 fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
         const SizedBox(height: 12),
@@ -405,10 +409,10 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
                         color: data.color, fontWeight: FontWeight.w600)),
                 const SizedBox(width: 8),
                 Text('${data.percentage.toStringAsFixed(1)}%',
-                    style: const TextStyle(color: AppColors.textSecondary)),
+                    style: TextStyle(color: AppColors.textSecondary)),
                 const SizedBox(width: 8),
                 Text(currencyProvider.format(data.value),
-                    style: const TextStyle(color: AppColors.textPrimary)),
+                    style: TextStyle(color: AppColors.textPrimary)),
               ],
             ),
           );

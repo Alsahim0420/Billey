@@ -1,6 +1,8 @@
+import 'package:billey/l10n/l10n_extensions.dart';
+import 'package:billey/providers/currency_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../providers/transaction_provider.dart';
 import '../models/transaction.dart';
@@ -10,6 +12,9 @@ class MonthlySummaryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final currencyProvider =
+        Provider.of<CurrencyProvider>(context, listen: false);
     final transactionProvider = Provider.of<TransactionProvider>(context);
     final currentMonth = DateTime.now();
     final transactions =
@@ -21,10 +26,15 @@ class MonthlySummaryScreen extends StatelessWidget {
     final totalExpense = transactions
         .where((tx) => tx.type == TransactionType.gasto)
         .fold(0.0, (sum, tx) => sum + tx.amount);
+    final balance = totalIncome - totalExpense;
+
+    final monthLabel = DateFormat.yMMMM(
+      Localizations.localeOf(context).toString(),
+    ).format(currentMonth);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Monthly Summary'),
+        title: Text(l10n.monthlySummary),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -32,15 +42,14 @@ class MonthlySummaryScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(
-              'Summary for ${DateFormat.yMMMM().format(currentMonth)}',
+              l10n.summaryFor(monthLabel),
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            Text('Total Income: \$${totalIncome.toStringAsFixed(2)}'),
-            Text('Total Expense: \$${totalExpense.toStringAsFixed(2)}'),
+            Text(l10n.totalIncomeLine(currencyProvider.format(totalIncome))),
+            Text(l10n.totalExpenseLine(currencyProvider.format(totalExpense))),
             const Divider(),
-            Text(
-                'Balance: \$${(totalIncome - totalExpense).toStringAsFixed(2)}'),
+            Text(l10n.balanceLine(currencyProvider.format(balance))),
           ],
         ),
       ),

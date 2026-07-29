@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:billey/models/transaction.dart';
@@ -84,290 +85,195 @@ class _TransactionCardState extends State<TransactionCard>
               onTapUp: (_) => _animationController.reverse(),
               onTapCancel: () => _animationController.reverse(),
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.surfaceColor,
-                      AppColors.surfaceColor.withValues(alpha: 0.8),
-                    ],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: isIncome
-                          ? AppColors.incomeColor.withValues(alpha: 0.15)
-                          : AppColors.expenseColor.withValues(alpha: 0.15),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
-                      spreadRadius: 0,
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                      spreadRadius: 0,
-                    ),
-                  ],
-                  border: Border.all(
-                    color: isIncome
-                        ? AppColors.incomeColor.withValues(alpha: 0.2)
-                        : AppColors.expenseColor.withValues(alpha: 0.2),
-                    width: 1.5,
-                  ),
+                  color: AppColors.surfaceColor,
+                  border: Border.all(color: AppColors.borderSubtle),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: Stack(
-                    children: [
-                      // Gradiente sutil de fondo
-                      Positioned(
-                        right: -30,
-                        top: -30,
-                        child: Container(
-                          width: 100,
-                          height: 100,
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                (isIncome
-                                        ? AppColors.incomeColor
-                                        : AppColors.expenseColor)
-                                    .withValues(alpha: 0.1),
-                                Colors.transparent,
-                              ],
-                            ),
+                            color: (isIncome
+                                    ? AppColors.incomeColor
+                                    : widget.transaction.category.color)
+                                .withValues(alpha: 0.12),
+                          ),
+                          child: Icon(
+                            isIncome
+                                ? TablerIcons.wallet
+                                : widget.transaction.category.icon,
+                            color: isIncome
+                                ? AppColors.incomeColor
+                                : widget.transaction.category.color,
+                            size: 24,
                           ),
                         ),
-                      ),
 
-                      // Contenido principal
-                      Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Row(
-                          children: [
-                            // Icono principal con gradiente
-                            Container(
-                              width: 56,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: isIncome
-                                      ? [
-                                          AppColors.incomeColor,
-                                          AppColors.incomeColor
-                                              .withValues(alpha: 0.7),
-                                        ]
-                                      : [
-                                          AppColors.expenseColor,
-                                          AppColors.expenseColor
-                                              .withValues(alpha: 0.7),
-                                        ],
+                        const SizedBox(width: 16),
+
+                        // Información de la transacción
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Título
+                              Text(
+                                widget.transaction.title,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                  letterSpacing: -0.1,
                                 ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: (isIncome
-                                            ? AppColors.incomeColor
-                                            : AppColors.expenseColor)
-                                        .withValues(alpha: 0.3),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              child: Icon(
-                                _getTransactionIcon(),
-                                color: AppColors.white,
-                                size: 28,
-                              ),
-                            ),
 
-                            const SizedBox(width: 16),
+                              const SizedBox(height: 4),
 
-                            // Información de la transacción
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              // Fecha y categoría
+                              Row(
                                 children: [
-                                  // Título
-                                  Text(
-                                    widget.transaction.title,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.textPrimary,
-                                      letterSpacing: -0.5,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
+                                  Icon(
+                                    TablerIcons.calendar_time,
+                                    size: 16,
+                                    color: AppColors.textSecondary,
                                   ),
-
-                                  const SizedBox(height: 4),
-
-                                  // Fecha y categoría
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        TablerIcons.calendar_time,
-                                        size: 16,
-                                        color: AppColors.textSecondary,
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    formattedDate,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Flexible(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
                                       ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        formattedDate,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: AppColors.textSecondary,
-                                          fontWeight: FontWeight.w500,
+                                      decoration: BoxDecoration(
+                                        color: widget.transaction.category.color
+                                            .withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: widget
+                                              .transaction.category.color
+                                              .withValues(alpha: 0.3),
+                                          width: 0.5,
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
-                                      Flexible(
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 3,
-                                          ),
-                                          decoration: BoxDecoration(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            widget.transaction.category.icon,
+                                            size: 12,
                                             color: widget
-                                                .transaction.category.color
-                                                .withValues(alpha: 0.15),
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            border: Border.all(
-                                              color: widget
-                                                  .transaction.category.color
-                                                  .withValues(alpha: 0.3),
-                                              width: 0.5,
-                                            ),
+                                                .transaction.category.color,
                                           ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                widget
-                                                    .transaction.category.icon,
-                                                size: 12,
+                                          const SizedBox(width: 4),
+                                          Flexible(
+                                            child: Text(
+                                              widget.transaction.category
+                                                  .displayName,
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
                                                 color: widget
                                                     .transaction.category.color,
                                               ),
-                                              const SizedBox(width: 4),
-                                              Flexible(
-                                                child: Text(
-                                                  widget.transaction.category
-                                                      .displayName,
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: widget.transaction
-                                                        .category.color,
-                                                  ),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                ),
-                                              ),
-                                            ],
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 8),
-
-                                  // Monto
-                                  Row(
-                                    children: [
-                                      Text(
-                                        isIncome ? '+' : '-',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: isIncome
-                                              ? AppColors.incomeColor
-                                              : AppColors.expenseColor,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Flexible(
-                                        child: Text(
-                                          currencyProvider.format(amount),
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: isIncome
-                                                ? AppColors.incomeColor
-                                                : AppColors.expenseColor,
-                                            letterSpacing: -0.5,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  // Descripción (si existe)
-                                  if (widget.transaction.description != null &&
-                                      widget.transaction.description!
-                                          .isNotEmpty) ...[
-                                    const SizedBox(height: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.textLight
-                                            .withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        widget.transaction.description!,
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          color: AppColors.textSecondary,
-                                          fontStyle: FontStyle.italic,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
+                                        ],
                                       ),
                                     ),
-                                  ],
+                                  ),
                                 ],
                               ),
-                            ),
 
-                            // Botones de acción
-                            if (!widget.isFromMonth) ...[
-                              const SizedBox(width: 12),
-                              Column(
-                                children: [
-                                  _buildActionButton(
-                                    icon: TablerIcons.edit,
-                                    color: AppColors.primaryColor,
-                                    onPressed: widget.onPressedEdit,
+                              const SizedBox(height: 8),
+
+                              // Monto
+                              Text(
+                                '${isIncome ? '+' : '-'}${currencyProvider.format(amount)}',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: isIncome
+                                      ? AppColors.incomeColor
+                                      : AppColors.textPrimary,
+                                  letterSpacing: -0.3,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+
+                              // Descripción (si existe)
+                              if (widget.transaction.description != null &&
+                                  widget
+                                      .transaction.description!.isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
                                   ),
-                                  const SizedBox(height: 8),
-                                  _buildActionButton(
-                                    icon: TablerIcons.trash,
-                                    color: AppColors.errorColor,
-                                    onPressed: () =>
-                                        _showConfirmationDialog(context),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.textLight
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                ],
+                                  child: Text(
+                                    widget.transaction.description!,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.textSecondary,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+
+                        if (!widget.isFromMonth) ...[
+                          const SizedBox(width: 8),
+                          Column(
+                            children: [
+                              _buildActionButton(
+                                icon: TablerIcons.edit,
+                                color: AppColors.primaryColor,
+                                onPressed: widget.onPressedEdit,
+                              ),
+                              const SizedBox(height: 8),
+                              _buildActionButton(
+                                icon: TablerIcons.trash,
+                                color: AppColors.errorColor,
+                                onPressed: () =>
+                                    _showConfirmationDialog(context),
                               ),
                             ],
-                          ],
-                        ),
-                      ),
-                    ],
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -408,16 +314,6 @@ class _TransactionCardState extends State<TransactionCard>
         ),
       ),
     );
-  }
-
-  IconData _getTransactionIcon() {
-    final isIncome = widget.transaction.type == TransactionType.ingreso;
-
-    if (isIncome) {
-      return TablerIcons.trending_up;
-    } else {
-      return TablerIcons.trending_down;
-    }
   }
 
   void _showConfirmationDialog(BuildContext context) {
@@ -472,8 +368,8 @@ class _TransactionCardState extends State<TransactionCard>
                 const SizedBox(height: 20),
 
                 // Título
-                const Text(
-                  '¿Eliminar transacción?',
+                Text(
+                  context.l10n.deleteTransactionCardTitle,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -485,8 +381,11 @@ class _TransactionCardState extends State<TransactionCard>
 
                 // Mensaje
                 Text(
-                  'Se eliminará "${widget.transaction.title}" por ${currencyProvider.format(widget.transaction.amount)}.\n\nEsta acción no se puede deshacer.',
-                  style: const TextStyle(
+                  context.l10n.deleteTransactionCardMessage(
+                    widget.transaction.title,
+                    currencyProvider.format(widget.transaction.amount),
+                  ),
+                  style: TextStyle(
                     fontSize: 16,
                     color: AppColors.textSecondary,
                     height: 1.4,
@@ -517,9 +416,9 @@ class _TransactionCardState extends State<TransactionCard>
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text(
-                            'Cancelar',
-                            style: TextStyle(
+                          child: Text(
+                            context.l10n.cancel,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -560,14 +459,14 @@ class _TransactionCardState extends State<TransactionCard>
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(TablerIcons.trash, size: 18),
-                              SizedBox(width: 8),
+                              const Icon(TablerIcons.trash, size: 18),
+                              const SizedBox(width: 8),
                               Text(
-                                'Eliminar',
-                                style: TextStyle(
+                                context.l10n.delete,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -595,17 +494,17 @@ class _TransactionCardState extends State<TransactionCard>
               borderRadius: BorderRadius.circular(12),
             ),
             margin: const EdgeInsets.all(16),
-            content: const Row(
+            content: Row(
               children: [
-                Icon(
+                const Icon(
                   TablerIcons.check,
                   color: AppColors.white,
                   size: 20,
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Text(
-                  'Transacción eliminada correctamente',
-                  style: TextStyle(
+                  context.l10n.transactionDeleted,
+                  style: const TextStyle(
                     color: AppColors.white,
                     fontWeight: FontWeight.w500,
                   ),

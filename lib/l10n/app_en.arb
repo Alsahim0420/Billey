@@ -1,0 +1,560 @@
+{
+  "@@locale": "en",
+  "appTitle": "Billey",
+  "financialManager": "Financial Manager",
+
+  "navHome": "Home",
+  "navGoals": "Goals",
+  "navActivity": "Activity",
+  "navProfile": "Profile",
+  "addIncome": "Add Income",
+  "addIncomeSubtitle": "Deposit funds and distribute income",
+  "addExpense": "Add Expense",
+  "addExpenseSubtitle": "Record a purchase or payment",
+
+  "splashSubtitle": "Manage your money smartly",
+  "loading": "Loading...",
+
+  "introSmartTracking": "Smart tracking",
+  "introAutomatedInsights": "Automated insights",
+  "introGetStarted": "Get Started",
+  "introTakeControl": "Take Control of",
+  "introYourWealth": "Your Wealth",
+
+  "setupPagePersonalData": "Personal data",
+  "setupPageGoals": "Savings goals",
+  "setupPageDistribution": "Income distribution",
+  "setupSubtitlePersonalData": "What we call you and your email",
+  "setupSubtitleGoals": "Choose how to start with your goals",
+  "setupSubtitleDistribution": "How to split what you earn",
+  "continueButton": "Continue",
+  "finishButton": "Finish",
+  "fullName": "Full name",
+  "fullNameHint": "What should we call you?",
+  "nameMinLength": "Enter at least 2 characters",
+  "email": "Email",
+  "emailHint": "For notifications and exporting data",
+  "emailRequired": "Email is required",
+  "emailInvalid": "Enter a valid email",
+  "setupGoalsHelp": "Goals are savings targets in your currency (Colombian pesos by default). You can leave them empty, use suggested ones, or create your own now.",
+  "goalsEmpty": "Empty",
+  "goalsSuggested": "Suggested",
+  "goalsCustom": "Custom",
+  "setupGoalsEmptyHelp": "You'll start with no goals. You can create them later from the Goals tab.",
+  "setupSuggestedHeader": "These goals will be created for you:",
+  "goalEmergencyTitle": "Emergency fund",
+  "goalEmergencySubtitle": "Safety",
+  "goalTripTitle": "Trip",
+  "goalTripSubtitle": "Personal goal",
+  "setupCustomEmpty": "You don't have goals yet. Tap the button below to create the first one.",
+  "addCustomGoal": "Add custom goal",
+  "setupDistributionHelp": "The template defines how to split your income (needs, wants, savings). Pick a template or customize your percentages.",
+  "chooseTemplate": "Choose a template",
+  "customTemplate": "Custom",
+  "setupPercentTip": "Tip: they don't have to add up to 100 exactly; the app normalizes them.",
+  "needs": "Needs",
+  "wants": "Wants",
+  "savings": "Savings",
+  "addGoalOrChooseOption": "Add at least one goal or choose another option",
+  "reviewNameEmail": "Check your name and email and try again",
+  "newGoal": "New goal",
+  "editGoal": "Edit goal",
+  "goalName": "Name",
+  "goalNameHint": "E.g. Emergency fund",
+  "goalCategory": "Category",
+  "goalCategoryHint": "E.g. Safety",
+  "goalTargetAmount": "Target amount",
+  "goalSavedAmount": "Saved amount",
+  "monthsRemaining": "Months remaining",
+  "style": "Style",
+  "add": "Add",
+  "save": "Save",
+  "validGoalName": "Enter a valid name",
+  "goalTargetPositive": "Target must be greater than 0",
+  "goalPersonalDefault": "Personal",
+  "goalPreviewMeta": "{subtitle} · Target {amount}",
+  "@goalPreviewMeta": {
+    "placeholders": {
+      "subtitle": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "goalPreviewWithMonths": "{subtitle} · Target {amount} · {months} months",
+  "@goalPreviewWithMonths": {
+    "placeholders": {
+      "subtitle": { "type": "String" },
+      "amount": { "type": "String" },
+      "months": { "type": "int" }
+    }
+  },
+  "targetLabel": "Target",
+
+  "welcomeBack": "Welcome back",
+  "totalBalance": "Total Balance",
+  "income": "Income",
+  "expenses": "Expenses",
+  "recentMonths": "Recent months",
+  "homeChartTrend": "Trend",
+  "homeChartByCategory": "By category",
+  "noExpensesInPeriod": "No expenses in this period",
+  "recentTransactions": "Recent Transactions",
+  "seeAll": "See all",
+  "noTransactionsYet": "No transactions yet",
+  "todayAt": "Today, {time}",
+  "@todayAt": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "yesterdayAt": "Yesterday, {time}",
+  "@yesterdayAt": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+
+  "financialFreedom": "FINANCIAL FREEDOM",
+  "yourGoals": "Your Goals",
+  "totalSavings": "Total Savings",
+  "newGoalSheet": "New Goal",
+  "editGoalSheet": "Edit Goal",
+  "goalTitle": "Title",
+  "goalTitleHint": "Emergency Fund",
+  "goalCategoryLabel": "Category",
+  "goalCategorySheetHint": "Safety Net",
+  "saved": "Saved",
+  "target": "Target",
+  "monthsLeft": "Months left",
+  "goalDefaultSubtitle": "Goal",
+  "createGoal": "Create Goal",
+  "saveGoal": "Save Goal",
+  "deleteGoal": "Delete Goal",
+  "monthsLeftBadge": "{count} mos left",
+  "@monthsLeftBadge": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "transactions": "Transactions",
+  "searchHint": "Search merchant or category...",
+  "filterAll": "All",
+  "filterIncome": "Income",
+  "filterExpenses": "Expenses",
+  "filterPending": "Pending",
+  "noTransactionsFound": "No transactions found",
+  "dateToday": "TODAY",
+  "dateYesterday": "YESTERDAY",
+  "deleteTransactionTitle": "Delete transaction?",
+  "deleteTransactionMessage": "This will remove \"{title}\" permanently.",
+  "@deleteTransactionMessage": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "cancel": "Cancel",
+  "delete": "Delete",
+
+  "newExpense": "New Expense",
+  "editExpense": "Edit Expense",
+  "addIncomeTitle": "Add Income",
+  "editIncomeTitle": "Edit Income",
+  "source": "Source",
+  "sourceHint": "Client Payment",
+  "date": "Date",
+  "todayDate": "Today, {date}",
+  "@todayDate": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "autoDistributeIncome": "Auto-distribute Income",
+  "usingTemplate": "Using {name}",
+  "@usingTemplate": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "distributionPaused": "Distribution paused",
+  "percentAllocation": "{percent}% allocation",
+  "@percentAllocation": {
+    "placeholders": { "percent": { "type": "String" } }
+  },
+  "editDistributionRules": "Edit Distribution Rules",
+  "depositFunds": "Deposit Funds",
+  "automatedRules": "Automated Rules",
+  "reset": "Reset",
+  "totalAllocation": "TOTAL ALLOCATION",
+  "saveRules": "Save Rules",
+  "monthlyAllocation": "{amount} monthly",
+  "@monthlyAllocation": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "done": "Done",
+  "chooseCategory": "Choose category",
+  "expenseHint": "Dinner at Nobu",
+  "tapToSpeak": "TAP TO SPEAK",
+  "listening": "LISTENING...",
+  "confirmExpense": "Confirm Expense",
+  "updateExpense": "Update Expense",
+  "confirmIncome": "Confirm Income",
+  "updateIncome": "Confirm Income",
+  "conceptMinLength": "Enter a description of at least 3 characters",
+  "amountMustBePositive": "Enter an amount greater than 0",
+  "selectCategory": "Select a category",
+  "transactionAdded": "Transaction added successfully",
+  "transactionUpdated": "Transaction updated successfully",
+  "voiceNotAvailable": "Voice not available. Stop the app, run \"flutter pub get\", then \"cd ios && pod install\" and reopen with flutter run (don't use hot reload).",
+  "micPermissionRequired": "Enable microphone permission to record expenses by voice.",
+  "voiceAmountNotUnderstood": "Couldn't understand the amount. Try: \"Spent 50000 on food\" or \"Paid 25 thousand for taxi\".",
+  "voiceAmountDetected": "Amount detected. Adjust the description or speak again with more detail.",
+  "autoDistributionNote": "Auto-distribution: Needs {essentials}%, Wants {wants}%, Savings {savings}%",
+  "@autoDistributionNote": {
+    "placeholders": {
+      "essentials": { "type": "String" },
+      "wants": { "type": "String" },
+      "savings": { "type": "String" }
+    }
+  },
+
+  "autoDistribution": "Auto-distribution",
+  "templatesSection": "TEMPLATES",
+  "customRuleSection": "CUSTOM RULE",
+  "customTemplateSubtitle": "Adjust percentages to your reality",
+  "disabledForNewDeposits": "Disabled for new deposits",
+  "totalAllocationLabel": "Total allocation",
+  "saveCustomRule": "Save Custom Rule",
+  "customRuleSaved": "Custom rule saved",
+
+  "settings": "Settings",
+  "generalSection": "GENERAL",
+  "dataPrivacySection": "DATA & PRIVACY",
+  "personalInformation": "Personal Information",
+  "accountSecurity": "Account Security",
+  "currencySetting": "Currency",
+  "budgetLimits": "Budget Limits",
+  "dataExport": "Data Export",
+  "csvPdf": "CSV/PDF",
+  "darkMode": "Dark Mode",
+  "language": "Language",
+  "languageSystem": "System default",
+  "languageEnglish": "English",
+  "languageSpanish": "Spanish",
+  "selectLanguage": "Select Language",
+  "versionInfo": "Version 1.0.0 (Build 1)",
+  "selectCurrency": "Select Currency",
+  "currencyItem": "{name} ({code})",
+  "@currencyItem": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "code": { "type": "String" }
+    }
+  },
+  "csvHeaders": "Date, Type, Category, Concept, Amount, Description",
+  "exportShareText": "My Billey transactions",
+  "exportFailed": "Could not export data. Please try again.",
+  "exportDataTitle": "Export data",
+  "exportFormatSection": "Format",
+  "exportFormatCsv": "CSV",
+  "exportFormatPdf": "PDF",
+  "exportContentSection": "Content",
+  "exportContentAll": "All (income and expenses)",
+  "exportContentExpenses": "Expenses only",
+  "exportContentIncome": "Income only",
+  "exportButton": "Export",
+  "exportNoData": "No transactions match this selection.",
+  "exportPdfTitle": "Billey transactions",
+  "exportPdfGenerated": "Generated on {date}",
+  "@exportPdfGenerated": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "exportPdfSummaryIncome": "Total income",
+  "exportPdfSummaryExpenses": "Total expenses",
+  "exportPdfSummaryCount": "Records",
+  "transactionTypeIncome": "Income",
+  "transactionTypeExpense": "Expense",
+  "profilePhoto": "Profile photo",
+  "chooseFromGallery": "Choose from gallery",
+  "removePhoto": "Remove photo",
+  "photoUpdated": "Profile photo updated",
+  "photoRemoved": "Profile photo removed",
+  "editProfile": "Edit profile",
+  "dataStoredLocally": "Data is stored only on this device.",
+  "yourName": "Your name",
+  "emailHintShort": "you@email.com",
+  "profileUpdated": "Profile updated",
+  "checkNameEmail": "Check your name and email",
+  "completeProfile": "Complete your profile",
+  "addYourEmail": "Add your email",
+  "featureComingSoon": "{feature} will be available soon",
+  "@featureComingSoon": {
+    "placeholders": { "feature": { "type": "String" } }
+  },
+  "logOut": "Log Out",
+  "logOutMessage": "Your local session will remain secure on this device.",
+
+  "spendingInsights": "Spending Insights",
+  "monthlyComparison": "Monthly Comparison",
+  "viewReport": "View Report",
+  "topCategories": "Top Categories",
+  "totalSpend": "Total Spend",
+  "insight": "Insight",
+  "youSpent": "You spent",
+  "less": "less",
+  "more": "more",
+  "insightBudgetTight": "this month. Nice work keeping the budget tight.",
+  "monthlySpending": "Monthly spending",
+  "lastMonth": "Last Month",
+  "thisMonth": "This Month",
+
+  "categoryManagement": "Category Management",
+  "deactivatedCategories": "Deactivated Categories",
+  "defaultBadge": "Default",
+  "deactivatedBadge": "Deactivated",
+  "edit": "Edit",
+  "activate": "Activate",
+  "addNewCategory": "Add New Category",
+  "deleteCategoryTitle": "Delete Category",
+  "deleteCategoryMessage": "Are you sure you want to delete the category \"{name}\"?",
+  "@deleteCategoryMessage": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "deleteDefaultCategoryWarning": "This is a default category. It can be deleted but may affect functionality.",
+  "actionCannotBeUndone": "This action cannot be undone.",
+  "categoryActivated": "Category \"{name}\" activated",
+  "@categoryActivated": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "categoryDeleted": "Category \"{name}\" deleted",
+  "@categoryDeleted": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "editCategory": "Edit Category",
+  "newCategory": "New Category",
+  "saveUpper": "SAVE",
+  "createUpper": "CREATE",
+  "preview": "Preview",
+  "categoryNamePlaceholder": "Category name",
+  "customSectionPlaceholder": "Custom section",
+  "categoryName": "Category Name",
+  "categoryNameHint": "E.g.: Gym, Pets, etc.",
+  "categoryAutoSuggested": "Icon and color suggested from the name",
+  "enterCategoryName": "Please enter a name",
+  "categoryNameMinLength": "Name must be at least 2 characters",
+  "categoryNameExists": "A category with this name already exists",
+  "section": "Section",
+  "predefined": "Predefined",
+  "customSection": "Custom",
+  "sectionNameHint": "Section name",
+  "sectionNameRequired": "Section name is required",
+  "selectSection": "Select section",
+  "sectionColor": "Section color",
+  "selectIcon": "Select an Icon",
+  "selectColor": "Select a Color",
+  "saveChanges": "Save Changes",
+  "createCategory": "Create Category",
+  "categoryUpdated": "Category updated successfully",
+  "categoryCreated": "Category created successfully",
+
+  "monthlySummary": "Monthly Summary",
+  "balance": "Balance",
+  "incomeVsExpenses": "Income vs Expenses",
+  "noExpensesThisMonth": "No expenses this month",
+  "expensesByCategory": "Expenses by Category",
+  "categoryDetail": "Category Detail",
+
+  "summaryFor": "Summary for {month}",
+  "@summaryFor": {
+    "placeholders": { "month": { "type": "String" } }
+  },
+  "totalIncomeLine": "Total Income: {amount}",
+  "@totalIncomeLine": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "totalExpenseLine": "Total Expense: {amount}",
+  "@totalExpenseLine": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "balanceLine": "Balance: {amount}",
+  "@balanceLine": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+
+  "firstTransactionTitle": "Your first transaction awaits!",
+  "firstTransactionMessage": "Start recording your income and expenses to take full control of your money.",
+  "addTransaction": "Add Transaction",
+  "summary": "Summary",
+
+  "deleteTransactionCardTitle": "Delete transaction?",
+  "deleteTransactionCardMessage": "\"{title}\" for {amount} will be removed.\n\nThis action cannot be undone.",
+  "@deleteTransactionCardMessage": {
+    "placeholders": {
+      "title": { "type": "String" },
+      "amount": { "type": "String" }
+    }
+  },
+  "transactionDeleted": "Transaction deleted successfully",
+
+  "defaultUser": "User",
+  "greetingMorning": "Good morning, {name}",
+  "@greetingMorning": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "greetingAfternoon": "Good afternoon, {name}",
+  "@greetingAfternoon": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "greetingEvening": "Good evening, {name}",
+  "@greetingEvening": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "currencyCop": "Colombian peso",
+  "currencyUsd": "US dollar",
+  "currencyEur": "Euro",
+  "currencyMxn": "Mexican peso",
+  "currencyBrl": "Brazilian real",
+
+  "goalStyleEmergency": "Emergency",
+  "goalStyleTrip": "Trip",
+  "goalStyleCar": "Car",
+  "goalStyleHome": "Home",
+  "goalStyleEducation": "Education",
+  "goalStyleHealth": "Health",
+  "goalStyleTech": "Technology",
+  "goalStyleWedding": "Wedding",
+  "goalStyleBusiness": "Business",
+  "goalStyleGift": "Gift",
+
+  "bucketEssentials": "Essentials",
+  "bucketWants": "Wants",
+  "bucketSavings": "Savings",
+  "bucketDebts": "Debts",
+  "bucketInvesting": "Investing",
+  "bucketBuffer": "Buffer",
+
+  "templateBalancedName": "50/30/20 Balanced",
+  "templateBalancedSubtitle": "Needs, wants and savings",
+  "templateDebtFirstName": "Debt first",
+  "templateDebtFirstSubtitle": "Adds a dedicated envelope for debt",
+  "templateInvestorName": "Investor mode",
+  "templateInvestorSubtitle": "Savings separate from investing",
+  "templateVariableName": "Variable income",
+  "templateVariableSubtitle": "Includes buffer for slow months",
+  "templateCustomName": "Custom",
+  "templateCustomSubtitle": "Your own distribution rule",
+
+  "txnCategoryFood": "Food",
+  "txnCategoryTransport": "Transport",
+  "txnCategoryEntertainment": "Entertainment",
+  "txnCategoryHealth": "Health",
+  "txnCategoryEducation": "Education",
+  "txnCategoryOther": "Other",
+
+  "insightDemoHousing": "Housing",
+  "insightDemoHousingSubtitle": "Rent & Utilities",
+  "insightDemoFoodDining": "Food & Dining",
+  "insightDemoFoodDiningSubtitle": "Groceries, Restaurants",
+  "insightDemoFun": "Fun",
+  "insightDemoFunSubtitle": "Entertainment",
+  "insightDemoTransport": "Transport",
+  "insightDemoTransportSubtitle": "Mobility",
+
+  "paymentReminders": "Payment reminders",
+  "addPaymentReminder": "Add reminder",
+  "editPaymentReminder": "Edit reminder",
+  "paymentRemindersEmpty": "Create reminders for your bills and payments. You can set them to repeat every month.",
+  "paymentReminderName": "Payment name",
+  "paymentReminderNameHint": "E.g. Rent, Netflix, Credit card",
+  "paymentReminderNameRequired": "Enter a name with at least 2 characters",
+  "paymentReminderAmount": "Amount (optional)",
+  "paymentReminderAmountHint": "500000",
+  "paymentReminderTime": "Time",
+  "paymentReminderDayOfMonth": "Day of the month",
+  "paymentReminderDayOption": "Day {day}",
+  "@paymentReminderDayOption": {
+    "placeholders": { "day": { "type": "int" } }
+  },
+  "paymentReminderDate": "Payment date",
+  "paymentReminderRepeatMonthly": "Repeat monthly",
+  "paymentReminderRepeatMonthlyHint": "Get notified on the same day every month",
+  "paymentReminderEnabled": "Reminder enabled",
+  "paymentReminderScheduleMonthly": "Day {day} at {time} · Monthly",
+  "@paymentReminderScheduleMonthly": {
+    "placeholders": {
+      "day": { "type": "int" },
+      "time": { "type": "String" }
+    }
+  },
+  "paymentReminderScheduleOnce": "{date} at {time} · One time",
+  "@paymentReminderScheduleOnce": {
+    "placeholders": {
+      "date": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
+  "paymentReminderBody": "Payment due: {amount}",
+  "@paymentReminderBody": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "paymentReminderBodySimple": "Payment reminder",
+  "deletePaymentReminderTitle": "Delete reminder?",
+  "deletePaymentReminderMessage": "Delete \"{title}\"?",
+  "@deletePaymentReminderMessage": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "notificationPermissionDenied": "Enable notifications in settings to receive payment reminders",
+
+  "coupleFinanceTitle": "Shared finances",
+  "couplePairingIntro": "Link your phone with family or friends by scanning a QR code. Then share transfers and track spending by syncing with QR.",
+  "couplePartnerName": "Name of person you share with",
+  "couplePartnerNameHint": "E.g. Maria, dad, sibling",
+  "couplePartnerNameRequired": "Enter a name",
+  "coupleShowPairingQr": "Show pairing QR",
+  "coupleScanPairingQr": "Scan QR",
+  "couplePairingQrTitle": "Link",
+  "couplePairingQrSubtitle": "Ask {name} to scan this code",
+  "@couplePairingQrSubtitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "coupleQrHint": "Keep this code visible until it is scanned from Billey.",
+  "coupleScanQr": "Scan QR",
+  "coupleScanHint": "Point the camera at the Billey QR code.",
+  "coupleScanFromCamera": "Scanning with Billey's camera",
+  "coupleScanFromGallery": "Choose from gallery",
+  "coupleQrNotFound": "No Billey QR detected. Try again with better lighting.",
+  "couplePasteHint": "If the camera does not work, paste here the code shown under the QR.",
+  "couplePasteConfirm": "Use code",
+  "coupleLinkedWith": "Sharing with {name}",
+  "@coupleLinkedWith": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "coupleSyncReminder": "After each expense, share an update via QR so both of you see the movements.",
+  "coupleShareUpdate": "Share QR",
+  "coupleScanUpdate": "Scan",
+  "coupleSharedWallets": "Shared transfers",
+  "coupleWalletsEmpty": "Create a transfer (e.g. 2M) and share the QR so they receive it on their phone.",
+  "coupleNewTransfer": "New transfer",
+  "coupleTransferTitle": "Title",
+  "coupleTransferTitleHint": "E.g. March budget",
+  "coupleTransferAmount": "Amount",
+  "coupleHolderIsPartner": "Used by {name}",
+  "@coupleHolderIsPartner": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "coupleWalletCreated": "Transfer created. Show the QR to share it.",
+  "coupleSyncQrTitle": "Sync",
+  "coupleSyncQrSubtitle": "Scan to update \"{title}\"",
+  "@coupleSyncQrSubtitle": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "coupleSyncQrSubtitleAll": "Scan to update all transfers and expenses",
+  "coupleSyncSuccess": "Data synced successfully",
+  "coupleSyncInvalid": "Could not read the QR. Make sure it's from Billey.",
+  "coupleLinkedSuccess": "Successfully linked!",
+  "coupleUnlink": "Unlink",
+  "coupleUnlinkTitle": "Unlink shared finances?",
+  "coupleUnlinkMessage": "Shared transfers on this device will be deleted. The other person keeps their local copy.",
+  "coupleUnlinked": "Unlinked successfully",
+  "coupleSharedWallet": "Shared transfer",
+  "coupleWalletNotFound": "Transfer not found",
+  "coupleAddExpense": "Add expense",
+  "coupleExpenseTitle": "Expense description",
+  "coupleExpenseAmount": "Amount",
+  "coupleBudget": "Budget",
+  "coupleSpent": "Spent",
+  "coupleRemaining": "Remaining",
+  "coupleFrom": "From",
+  "coupleFor": "For",
+  "coupleExpenses": "Expenses",
+  "coupleNoExpensesYet": "No expenses in this transfer yet"
+}

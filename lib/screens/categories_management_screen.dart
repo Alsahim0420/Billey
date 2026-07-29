@@ -1,3 +1,4 @@
+import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:provider/provider.dart';
@@ -5,17 +6,20 @@ import '../providers/category_provider.dart';
 import '../models/category.dart';
 import '../theme/colors/app_colors.dart';
 import 'add_edit_category_screen.dart';
+import '../theme/billey_theme_scope.dart';
 
 class CategoriesManagementScreen extends StatelessWidget {
   const CategoriesManagementScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    BilleyThemeScope.isDarkOf(context);
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text(
-          'Gestión de Categorías',
+        title: Text(
+          l10n.categoryManagement,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
@@ -24,7 +28,7 @@ class CategoriesManagementScreen extends StatelessWidget {
         backgroundColor: AppColors.surfaceColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
@@ -45,7 +49,6 @@ class CategoriesManagementScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Secciones de categorías activas
                 ...categoriesBySection.entries.map((entry) {
                   final section = entry.key;
                   final categories = entry.value;
@@ -55,11 +58,10 @@ class CategoriesManagementScreen extends StatelessWidget {
                       context, section, categories, sectionColor);
                 }).toList(),
 
-                // Categorías desactivadas
                 if (inactiveCategories.isNotEmpty) ...[
                   const SizedBox(height: 32),
                   _buildSectionHeader(
-                      'Categorías Desactivadas', inactiveCategories.length),
+                      l10n.deactivatedCategories, inactiveCategories.length),
                   const SizedBox(height: 12),
                   ...inactiveCategories
                       .map((category) => _buildCategoryTile(
@@ -69,7 +71,7 @@ class CategoriesManagementScreen extends StatelessWidget {
 
                 const SizedBox(height: 32),
                 _buildAddCategoryButton(context),
-                const SizedBox(height: 100), // Space for FAB
+                const SizedBox(height: 100),
               ],
             ),
           );
@@ -83,7 +85,7 @@ class CategoriesManagementScreen extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
@@ -124,7 +126,6 @@ class CategoriesManagementScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header de la sección
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -171,7 +172,6 @@ class CategoriesManagementScreen extends StatelessWidget {
             ),
           ),
 
-          // Categorías de la sección
           ...categories
               .map((category) => _buildCategoryTile(context, category,
                   Provider.of<CategoryProvider>(context), true))
@@ -187,12 +187,14 @@ class CategoriesManagementScreen extends StatelessWidget {
     CategoryProvider provider,
     bool isActive,
   ) {
+    final l10n = context.l10n;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: AppColors.surfaceColor,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: const [AppColors.cardShadow],
+        boxShadow: [AppColors.cardShadow],
         border: !isActive
             ? Border.all(
                 color: AppColors.textLight.withValues(alpha: 0.3),
@@ -245,9 +247,9 @@ class CategoriesManagementScreen extends StatelessWidget {
                       color: AppColors.infoColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Text(
-                      'Por defecto',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.defaultBadge,
+                      style: const TextStyle(
                         fontSize: 10,
                         color: AppColors.infoColor,
                         fontWeight: FontWeight.w500,
@@ -264,9 +266,9 @@ class CategoriesManagementScreen extends StatelessWidget {
                       color: AppColors.warningColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: const Text(
-                      'Desactivada',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.deactivatedBadge,
+                      style: const TextStyle(
                         fontSize: 10,
                         color: AppColors.warningColor,
                         fontWeight: FontWeight.w500,
@@ -279,7 +281,7 @@ class CategoriesManagementScreen extends StatelessWidget {
           ],
         ),
         trailing: PopupMenuButton<String>(
-          icon: const Icon(
+          icon: Icon(
             TablerIcons.dots_vertical,
             color: AppColors.textSecondary,
           ),
@@ -287,41 +289,41 @@ class CategoriesManagementScreen extends StatelessWidget {
               _handleMenuAction(context, value, category, provider),
           itemBuilder: (context) => [
             if (isActive) ...[
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'edit',
                 child: Row(
                   children: [
-                    Icon(TablerIcons.edit, size: 16),
-                    SizedBox(width: 8),
-                    Text('Editar'),
+                    const Icon(TablerIcons.edit, size: 16),
+                    const SizedBox(width: 8),
+                    Text(l10n.edit),
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(TablerIcons.trash,
+                    const Icon(TablerIcons.trash,
                         size: 16, color: AppColors.errorColor),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
-                      'Eliminar',
-                      style: TextStyle(color: AppColors.errorColor),
+                      l10n.delete,
+                      style: const TextStyle(color: AppColors.errorColor),
                     ),
                   ],
                 ),
               ),
             ] else ...[
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'restore',
                 child: Row(
                   children: [
-                    Icon(TablerIcons.refresh,
+                    const Icon(TablerIcons.refresh,
                         size: 16, color: AppColors.successColor),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
-                      'Activar',
-                      style: TextStyle(color: AppColors.successColor),
+                      l10n.activate,
+                      style: const TextStyle(color: AppColors.successColor),
                     ),
                   ],
                 ),
@@ -334,6 +336,8 @@ class CategoriesManagementScreen extends StatelessWidget {
   }
 
   Widget _buildAddCategoryButton(BuildContext context) {
+    final l10n = context.l10n;
+
     return Container(
       width: double.infinity,
       height: 56,
@@ -350,9 +354,9 @@ class CategoriesManagementScreen extends StatelessWidget {
           TablerIcons.plus,
           color: AppColors.primaryColor,
         ),
-        label: const Text(
-          'Agregar Nueva Categoría',
-          style: TextStyle(
+        label: Text(
+          l10n.addNewCategory,
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: AppColors.primaryColor,
@@ -400,7 +404,7 @@ class CategoriesManagementScreen extends StatelessWidget {
         provider.restoreCategory(category.id);
         _showSnackBar(
           context,
-          'Categoría "${category.name}" activada',
+          context.l10n.categoryActivated(category.name),
           AppColors.successColor,
         );
         break;
@@ -412,19 +416,21 @@ class CategoriesManagementScreen extends StatelessWidget {
     CategoryModel category,
     CategoryProvider provider,
   ) {
+    final l10n = context.l10n;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: const Text('Eliminar Categoría'),
+        title: Text(l10n.deleteCategoryTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '¿Estás seguro de que quieres eliminar la categoría "${category.name}"?',
+              l10n.deleteCategoryMessage(category.name),
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 8),
@@ -435,18 +441,18 @@ class CategoriesManagementScreen extends StatelessWidget {
                   color: AppColors.warningColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       TablerIcons.alert_triangle,
                       color: AppColors.warningColor,
                       size: 20,
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Es una categoría por defecto. Se puede eliminar pero podría afectar el funcionamiento.',
-                        style: TextStyle(
+                        l10n.deleteDefaultCategoryWarning,
+                        style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.warningColor,
                           fontWeight: FontWeight.w500,
@@ -457,8 +463,8 @@ class CategoriesManagementScreen extends StatelessWidget {
                 ),
               ),
             const SizedBox(height: 8),
-            const Text(
-              'Esta acción no se puede deshacer.',
+            Text(
+              l10n.actionCannotBeUndone,
               style: TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
@@ -469,7 +475,7 @@ class CategoriesManagementScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -477,14 +483,14 @@ class CategoriesManagementScreen extends StatelessWidget {
               provider.deleteCategory(category.id);
               _showSnackBar(
                 context,
-                'Categoría "${category.name}" eliminada',
+                l10n.categoryDeleted(category.name),
                 AppColors.errorColor,
               );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.errorColor,
             ),
-            child: const Text('Eliminar'),
+            child: Text(l10n.delete),
           ),
         ],
       ),

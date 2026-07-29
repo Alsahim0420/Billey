@@ -1,18 +1,19 @@
+import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:provider/provider.dart';
+
+import '../models/transaction.dart';
+import '../services/local_profile_storage.dart';
+import '../providers/theme_settings_provider.dart';
 import '../theme/colors/app_colors.dart';
+import 'add_transaction_screen.dart';
 import 'dashboard_screen.dart';
 import 'enhanced_transaction_list_screen.dart';
-import 'add_transaction_screen.dart';
-import 'monthly_summary_screen.dart';
-import 'categories_management_screen.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:csv/csv.dart';
-import 'package:provider/provider.dart';
-import '../providers/transaction_provider.dart';
-import '../providers/currency_provider.dart';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'profile_screen.dart';
+import 'profile_setup_screen.dart';
+import 'savings_goals_screen.dart';
+import '../theme/billey_theme_scope.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -21,144 +22,69 @@ class MainNavigationScreen extends StatefulWidget {
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState extends State<MainNavigationScreen>
-    with TickerProviderStateMixin {
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
-  late AnimationController _fabAnimationController;
-  late AnimationController _pulseAnimationController;
-  late Animation<double> _fabAnimation;
-  late Animation<double> _pulseAnimation;
-
-  final List<Widget> _screens = [
-    const DashboardScreen(),
-    const EnhancedTransactionListScreen(),
-    MonthlySummaryScreen(
-        initialMonth: DateTime.now()), // Will use current month
-  ];
+  bool _checkedProfileSetup = false;
 
   @override
-  void initState() {
-    super.initState();
-    _fabAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _pulseAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
-      vsync: this,
-    );
-    _fabAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fabAnimationController,
-      curve: Curves.easeInOut,
-    ));
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _pulseAnimationController,
-      curve: Curves.easeInOut,
-    ));
-    _fabAnimationController.forward();
-    _pulseAnimationController.repeat(reverse: true);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_checkedProfileSetup) return;
+    _checkedProfileSetup = true;
+    _validateProfileSetup();
   }
 
-  @override
-  void dispose() {
-    _fabAnimationController.dispose();
-    _pulseAnimationController.dispose();
-    super.dispose();
+  Future<void> _validateProfileSetup() async {
+    final hasCustomProfile = await LocalProfileStorage.hasCustomProfile();
+    if (!hasCustomProfile && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const ProfileSetupScreen(),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    BilleyThemeScope.isDarkOf(context);
+    final isDark = context.watch<ThemeSettingsProvider>().isDarkMode;
+
+    final screens = [
+      DashboardScreen(key: ValueKey('dash-$isDark')),
+      SavingsGoalsScreen(key: ValueKey('goals-$isDark')),
+      EnhancedTransactionListScreen(key: ValueKey('activity-$isDark')),
+    ];
+
     return Scaffold(
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
-        child: _screens[_selectedIndex],
+        child: screens[_selectedIndex],
       ),
-      floatingActionButton: AnimatedBuilder(
-        animation: Listenable.merge([_fabAnimation, _pulseAnimation]),
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _fabAnimation.value * _pulseAnimation.value,
-            child: Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryColor.withValues(alpha: 0.4),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                  BoxShadow(
-                    color: AppColors.primaryColor.withValues(alpha: 0.2),
-                    blurRadius: 40,
-                    offset: const Offset(0, 16),
-                  ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppColors.backgroundAlt,
+          border: Border(
+            top: BorderSide(color: AppColors.borderSubtle),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 72,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                children: [
+                  _buildNavItem(0, TablerIcons.home, l10n.navHome),
+                  _buildNavItem(1, TablerIcons.flag, l10n.navGoals),
+                  _buildAddNavButton(),
+                  _buildNavItem(2, TablerIcons.cash, l10n.navActivity),
+                  _buildProfileNavItem(),
                 ],
               ),
-              child: Material(
-                color: Colors.transparent,
-                shape: const CircleBorder(),
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            const AddTransactionScreen(),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          return SlideTransition(
-                            position: animation.drive(
-                              Tween(
-                                begin: const Offset(0.0, 1.0),
-                                end: Offset.zero,
-                              ).chain(CurveTween(curve: Curves.easeInOut)),
-                            ),
-                            child: child,
-                          );
-                        },
-                      ),
-                    );
-                  },
-                  child: const Center(
-                    child: Icon(
-                      TablerIcons.plus,
-                      color: Colors.white,
-                      size: 32,
-                    ),
-                  ),
-                ),
-              ),
             ),
-          );
-        },
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        color: AppColors.surfaceColor,
-        elevation: 16,
-        child: Container(
-          height: 80,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(0, TablerIcons.home, 'Inicio'),
-              _buildNavItem(1, TablerIcons.list, 'Lista'),
-              const SizedBox(width: 40), // Space for FAB
-              _buildNavItem(2, TablerIcons.chart_pie, 'Gráficos'),
-              _buildNavItem(3, TablerIcons.settings, 'Ajustes'),
-            ],
           ),
         ),
       ),
@@ -168,36 +94,42 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = _selectedIndex == index;
 
-    return GestureDetector(
-      onTap: () {
-        if (index == 3) {
-          // Show settings bottom sheet
-          _showSettingsBottomSheet();
-        } else {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
           setState(() {
             _selectedIndex = index;
           });
-        }
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primaryColor.withValues(alpha: 0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
+        },
+        behavior: HitTestBehavior.opaque,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              width: isSelected ? 32 : 0,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 14),
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor,
+                borderRadius: BorderRadius.circular(999),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: AppColors.primaryColor.withValues(alpha: 0.55),
+                          blurRadius: 10,
+                        ),
+                      ]
+                    : null,
+              ),
+            ),
             Icon(
               icon,
               color:
                   isSelected ? AppColors.primaryColor : AppColors.textSecondary,
               size: 28,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               label,
               style: TextStyle(
@@ -215,326 +147,182 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
     );
   }
 
-  void _showSettingsBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surfaceColor,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: AppColors.textLight,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(
-                    'Configuración',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                // Selector de divisa
-                Consumer<CurrencyProvider>(
-                  builder: (context, currencyProvider, _) {
-                    final selected = currencyProvider.selectedCurrency;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ListTile(
-                          contentPadding:
-                              const EdgeInsets.symmetric(horizontal: 16.0),
-                          leading: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color:
-                                  AppColors.primaryColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(_getFlag(selected.code),
-                                style: const TextStyle(fontSize: 22)),
-                          ),
-                          title: Text(
-                            '${selected.name} (${selected.code})',
-                            style: const TextStyle(
-                                fontSize: 16, color: AppColors.textPrimary),
-                          ),
-                          trailing: Text(
-                            selected.symbol,
-                          ),
-                          onTap: () async {
-                            final selectedCurrency =
-                                await showModalBottomSheet<Currency>(
-                              context: context,
-                              backgroundColor: AppColors.surfaceColor,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(20)),
-                              ),
-                              builder: (context) {
-                                return Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      'Selecciona tu divisa',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                    ),
-                                    const Divider(),
-                                    ...CurrencyProvider.supportedCurrencies
-                                        .map((currency) {
-                                      final isSelected = currency == selected;
-                                      return ListTile(
-                                        leading: Text(_getFlag(currency.code),
-                                            style:
-                                                const TextStyle(fontSize: 24)),
-                                        title: Text(
-                                            '${currency.name} (${currency.code})'),
-                                        trailing: Text(currency.symbol,
-                                            style:
-                                                const TextStyle(fontSize: 20)),
-                                        selected: isSelected,
-                                        selectedTileColor: AppColors
-                                            .primaryColor
-                                            .withValues(alpha: 0.08),
-                                        onTap: () {
-                                          Navigator.pop(context, currency);
-                                        },
-                                      );
-                                    }).toList(),
-                                    const SizedBox(height: 16),
-                                  ],
-                                );
-                              },
-                            );
-                            if (selectedCurrency != null) {
-                              currencyProvider.setCurrency(selectedCurrency);
-                            }
-                          },
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                // Resto de opciones
-                _buildSettingsItem(
-                  TablerIcons.category,
-                  'Gestionar Categorías',
-                  'Agregar, editar o eliminar categorías',
-                  () {
-                    Navigator.pop(context);
-                    _navigateToCategories();
-                  },
-                ),
-                _buildSettingsItem(
-                  TablerIcons.download,
-                  'Exportar Datos',
-                  'Descargar tus transacciones',
-                  () {
-                    Navigator.pop(context);
-                    _exportData();
-                  },
-                ),
-                _buildSettingsItem(
-                  TablerIcons.share,
-                  'Compartir App',
-                  'Recomienda la app a tus amigos',
-                  () {
-                    Navigator.pop(context);
-                    _shareApp();
-                  },
-                ),
-                _buildSettingsItem(
-                  TablerIcons.info_circle,
-                  'Acerca de',
-                  'Información de la aplicación',
-                  () {
-                    Navigator.pop(context);
-                    _showAboutDialog();
-                  },
-                ),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSettingsItem(
-    IconData icon,
-    String title,
-    String subtitle,
-    VoidCallback onTap,
-  ) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: AppColors.primaryColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          icon,
-          color: AppColors.primaryColor,
-          size: 24,
-        ),
-      ),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textPrimary,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(
-          fontSize: 14,
-          color: AppColors.textSecondary,
-        ),
-      ),
-      trailing: const Icon(
-        Icons.arrow_forward_ios,
-        size: 16,
-        color: AppColors.textLight,
-      ),
-      onTap: onTap,
-    );
-  }
-
-  void _navigateToCategories() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const CategoriesManagementScreen(),
-      ),
-    );
-  }
-
-  void _exportData() async {
-    final provider = Provider.of<TransactionProvider>(context, listen: false);
-    final transactions = provider.transactions;
-
-    // Generar datos CSV
-    List<List<dynamic>> rows = [
-      ['Fecha', 'Tipo', 'Categoría', 'Monto', 'Descripción'],
-      ...transactions.map((t) => [
-            t.date.toIso8601String(),
-            t.type.toString().split('.').last,
-            t.category.toString(),
-            t.amount.toString(),
-            t.description ?? ''
-          ])
-    ];
-    String csvData = const ListToCsvConverter().convert(rows);
-
-    // Compartir archivo CSV
-    final tempDir = await getTemporaryDirectory();
-    final file =
-        await File('${tempDir.path}/transacciones.csv').writeAsString(csvData);
-    await Share.shareXFiles([XFile(file.path)],
-        text: 'Mis transacciones de Billey');
-  }
-
-  void _shareApp() async {
-    await Share.share(
-      '¡Descarga Billey y gestiona tus finanzas personales! https://tulink.com/app',
-      subject: 'Te recomiendo Billey',
-    );
-  }
-
-  void _showAboutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text(
-          'Billey',
-          style: TextStyle(
+  Widget _buildAddNavButton() {
+    return Expanded(
+      child: Center(
+        child: Container(
+          width: 58,
+          height: 58,
+          decoration: BoxDecoration(
             color: AppColors.primaryColor,
-            fontWeight: FontWeight.bold,
+            shape: BoxShape.circle,
+            boxShadow: [
+              AppColors.glow(AppColors.primaryColor),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: _navigateToAddTransaction,
+              child: const Icon(
+                TablerIcons.plus,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
           ),
         ),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+      ),
+    );
+  }
+
+  Widget _buildProfileNavItem() {
+    final l10n = context.l10n;
+    return Expanded(
+      child: GestureDetector(
+        onTap: _openProfile,
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Versión 1.0.0',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+            const SizedBox(height: 18),
+            Icon(
+              TablerIcons.user,
+              color: AppColors.textSecondary,
+              size: 28,
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
-              'Una aplicación para gestionar tus finanzas personales de manera simple y efectiva.',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Desarrollado con 💙 usando Flutter',
+              l10n.navProfile,
               style: TextStyle(
                 fontSize: 12,
-                color: AppColors.textLight,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textSecondary,
+                height: 1.0,
               ),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
-          ),
-        ],
       ),
     );
   }
-}
 
-String _getFlag(String code) {
-  switch (code) {
-    case 'EUR':
-      return '🇪🇸';
-    case 'USD':
-      return '🇺🇸';
-    case 'COP':
-      return '🇨🇴';
-    case 'MXN':
-      return '🇲🇽';
-    case 'BRL':
-      return '🇧🇷';
-    default:
-      return '🏳️';
+  void _navigateToAddTransaction() {
+    final l10n = context.l10n;
+    showModalBottomSheet<TransactionType>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 26),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 48,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 18),
+                decoration: BoxDecoration(
+                  color: AppColors.textLight.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+              _buildTransactionTypeOption(
+                icon: TablerIcons.arrow_up,
+                title: l10n.addIncome,
+                subtitle: l10n.addIncomeSubtitle,
+                color: AppColors.incomeColor,
+                type: TransactionType.ingreso,
+              ),
+              const SizedBox(height: 10),
+              _buildTransactionTypeOption(
+                icon: TablerIcons.arrow_down,
+                title: l10n.addExpense,
+                subtitle: l10n.addExpenseSubtitle,
+                color: AppColors.expenseColor,
+                type: TransactionType.gasto,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).then((type) {
+      if (type == null || !mounted) return;
+      _openAddTransaction(type);
+    });
+  }
+
+  Widget _buildTransactionTypeOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required TransactionType type,
+  }) {
+    return ListTile(
+      onTap: () => Navigator.pop(context, type),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      leading: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.14),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: color),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 16,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  void _openAddTransaction(TransactionType type) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            AddTransactionScreen(initialType: type),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position: animation.drive(
+              Tween(
+                begin: const Offset(0.0, 1.0),
+                end: Offset.zero,
+              ).chain(CurveTween(curve: Curves.easeInOut)),
+            ),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+
+  void _openProfile() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const ProfileScreen(),
+      ),
+    );
   }
 }

@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "233183310004",
+    "project_id": "billey-64a3b",
+    "storage_bucket": "billey-64a3b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:233183310004:android:df868d93fd7c6fd9ac27e1",
+        "android_client_info": {
+          "package_name": "com.billey.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "233183310004-vuo03l3j0u19eo810huqdf56elu1h4n4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.billey.app",
+            "certificate_hash": "e2112e405e3409e33ab4e7eb4da32b3638a477aa"
+          }
+        },
+        {
+          "client_id": "233183310004-d1t8a2efo220q10rhr7u377rlspr2vah.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDx5N6TKbmgfkF7jDuKb9G0Mu8g21032zM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "233183310004-d1t8a2efo220q10rhr7u377rlspr2vah.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "233183310004-9q0d88081i34ecbanpumvtnrvc8u7956.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.billey"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:233183310004:android:f828324d5d9b3ac0ac27e1",
+        "android_client_info": {
+          "package_name": "com.example.billey"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "233183310004-d1t8a2efo220q10rhr7u377rlspr2vah.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDx5N6TKbmgfkF7jDuKb9G0Mu8g21032zM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "233183310004-d1t8a2efo220q10rhr7u377rlspr2vah.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "233183310004-9q0d88081i34ecbanpumvtnrvc8u7956.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.billey"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
