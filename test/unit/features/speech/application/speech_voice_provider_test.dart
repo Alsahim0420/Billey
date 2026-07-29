@@ -9,7 +9,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  test('uses Bella by default', () async {
+  test('uses Jessica by default', () async {
     final provider = SpeechVoiceProvider();
 
     await provider.initialize();
@@ -26,5 +26,17 @@ void main() {
     final restoredProvider = SpeechVoiceProvider();
     await restoredProvider.initialize();
     expect(restoredProvider.selectedVoice, SpeechVoiceProvider.maleVoice);
+  });
+
+  test('migrates a removed catalog voice to Jessica', () async {
+    SharedPreferences.setMockInitialValues({
+      'billey_speech_voice_id': 'hpp4J3VqNfWAUOO0d1Us',
+    });
+    final provider = SpeechVoiceProvider();
+
+    await provider.initialize();
+
+    expect(provider.selectedVoice, SpeechVoiceProvider.femaleVoice);
+    expect(provider.selectedVoice.name, 'Jessica');
   });
 }
