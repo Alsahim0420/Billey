@@ -40,9 +40,11 @@ class SpeechAssistantController extends ChangeNotifier {
   SpeechAssistantState get state => _state;
 
   Future<void> startRecording() async {
-    if (_state.isBusy ||
-        _state.status == SpeechAssistantStatus.recording ||
-        _recorder == null) {
+    if (_recorder == null) {
+      _emit(_state);
+      return;
+    }
+    if (_state.isBusy || _state.status == SpeechAssistantStatus.recording) {
       return;
     }
     _emit(_state.copyWith(

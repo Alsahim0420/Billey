@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
+import '../config/configuration_exception.dart';
 import '../config/eleven_labs_config.dart';
 import '../domain/speech_entities.dart';
 import 'eleven_labs_exception.dart';
@@ -33,6 +34,11 @@ class HttpElevenLabsRemoteDataSource implements ElevenLabsRemoteDataSource {
 
   @override
   Future<GeneratedAudioDto> synthesize(String text) async {
+    if (_config.voiceId.isEmpty) {
+      throw const ConfigurationException(
+        'Configura ELEVENLABS_VOICE_ID para generar audio.',
+      );
+    }
     final uri = _config.baseUrl.replace(
       path: '/v1/text-to-speech/${_config.voiceId}',
       queryParameters: {'output_format': _config.outputFormat},

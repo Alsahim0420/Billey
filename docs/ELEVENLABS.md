@@ -48,6 +48,13 @@ flutter run \
   --dart-define=ENV_ENCRYPTION_KEY="$ENV_ENCRYPTION_KEY"
 ```
 
+Para desarrollo local también puedes guardar la clave en
+`.env.encryption.key` (está ignorada por Git) y ejecutar:
+
+```bash
+./tool/run_with_environment.sh
+```
+
 Si falta el asset, la clave o alguna variable obligatoria, el resto de Billey
 inicia normalmente y la función de voz muestra un error de configuración.
 

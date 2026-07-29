@@ -17,7 +17,8 @@ class ElevenLabsConfig {
     return ElevenLabsConfig(
       baseUrl: Uri.parse('https://api.elevenlabs.io'),
       apiKey: secrets.getRequired('ELEVENLABS_API_KEY'),
-      voiceId: secrets.getRequired('ELEVENLABS_VOICE_ID'),
+      // STT does not require a voice. TTS validates this value on demand.
+      voiceId: secrets.getOptional('ELEVENLABS_VOICE_ID')?.trim() ?? '',
       textToSpeechModelId:
           secrets.getOptional('ELEVENLABS_TTS_MODEL_ID') ?? 'eleven_flash_v2_5',
       speechToTextModelId:

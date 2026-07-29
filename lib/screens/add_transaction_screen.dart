@@ -339,6 +339,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
 
   Future<void> _toggleVoiceListening() async {
     final controller = context.read<SpeechAssistantController>();
+    if (controller.state.status == SpeechAssistantStatus.unavailable) {
+      _showErrorMessage(
+        controller.state.errorMessage ?? context.l10n.voiceNotAvailable,
+      );
+      return;
+    }
     if (controller.state.status == SpeechAssistantStatus.recording) {
       await controller.stopRecordingAndTranscribe();
     } else {
@@ -1660,9 +1666,8 @@ class _VoiceButton extends StatelessWidget {
         state.errorMessage ?? l10n.voiceNotAvailable,
       _ => transcript.isEmpty ? l10n.tapToSpeak : transcript,
     };
-    final canTap = !state.isBusy &&
-        state.status != SpeechAssistantStatus.unavailable &&
-        state.status != SpeechAssistantStatus.playingSpeech;
+    final canTap =
+        !state.isBusy && state.status != SpeechAssistantStatus.playingSpeech;
 
     return Column(
       children: [
