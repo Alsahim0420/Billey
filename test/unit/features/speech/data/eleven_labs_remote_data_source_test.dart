@@ -83,6 +83,7 @@ void main() {
 
   for (final entry in <int, ElevenLabsErrorKind>{
     401: ElevenLabsErrorKind.unauthorized,
+    402: ElevenLabsErrorKind.quotaExceeded,
     403: ElevenLabsErrorKind.forbidden,
     422: ElevenLabsErrorKind.invalidAudio,
     429: ElevenLabsErrorKind.quotaExceeded,

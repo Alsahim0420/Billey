@@ -171,6 +171,12 @@ class HttpElevenLabsRemoteDataSource implements ElevenLabsRemoteDataSource {
           'La credencial de ElevenLabs no es válida.',
           statusCode: statusCode,
         );
+      case 402:
+        throw ElevenLabsException(
+          ElevenLabsErrorKind.quotaExceeded,
+          'Tu plan de ElevenLabs no permite utilizar esta voz mediante API.',
+          statusCode: statusCode,
+        );
       case 403:
         throw ElevenLabsException(
           ElevenLabsErrorKind.forbidden,
