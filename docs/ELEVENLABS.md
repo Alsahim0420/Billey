@@ -55,6 +55,11 @@ Para desarrollo local también puedes guardar la clave en
 ./tool/run_with_environment.sh
 ```
 
+En VS Code/Cursor selecciona la configuración de ejecución
+`Billey (encrypted environment)`. Esta lee
+`.env.dart-defines.json`, un archivo local ignorado por Git que contiene
+únicamente el `dart-define` necesario para descifrar el asset.
+
 Si falta el asset, la clave o alguna variable obligatoria, el resto de Billey
 inicia normalmente y la función de voz muestra un error de configuración.
 
