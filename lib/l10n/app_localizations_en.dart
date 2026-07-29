@@ -486,6 +486,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'I could not load or save your salary. Check your connection and try again.';
 
   @override
+  String get salaryVoiceQuestion =>
+      'I do not know your usual salary yet. How much do you normally receive?';
+
+  @override
+  String get salaryVoiceListeningPrompt =>
+      'Tell me how much you normally receive';
+
+  @override
+  String get salaryVoiceNotUnderstood =>
+      'I did not understand your salary amount. Try saying, for example, three million pesos.';
+
+  @override
   String get confirmExpense => 'Confirm Expense';
 
   @override

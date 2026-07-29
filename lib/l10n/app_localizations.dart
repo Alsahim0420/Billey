@@ -992,6 +992,24 @@ abstract class AppLocalizations {
   /// **'I could not load or save your salary. Check your connection and try again.'**
   String get salarySaveError;
 
+  /// No description provided for @salaryVoiceQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'I do not know your usual salary yet. How much do you normally receive?'**
+  String get salaryVoiceQuestion;
+
+  /// No description provided for @salaryVoiceListeningPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me how much you normally receive'**
+  String get salaryVoiceListeningPrompt;
+
+  /// No description provided for @salaryVoiceNotUnderstood.
+  ///
+  /// In en, this message translates to:
+  /// **'I did not understand your salary amount. Try saying, for example, three million pesos.'**
+  String get salaryVoiceNotUnderstood;
+
   /// No description provided for @confirmExpense.
   ///
   /// In en, this message translates to:

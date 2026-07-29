@@ -67,6 +67,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   double? _rememberedSalary;
   bool _salaryLoaded = false;
   late bool _awaitingVoiceClassification;
+  bool _awaitingSalaryVoiceAnswer = false;
+  String? _pendingSalaryTransactionTranscript;
 
   bool get _isIncome => _type == TransactionType.ingreso;
 
@@ -458,6 +460,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     }
     _lastAppliedTranscript = transcript;
 
+    if (_awaitingSalaryVoiceAnswer) {
+      unawaited(_applySalaryVoiceAnswer(transcript));
+      return;
+    }
+
     if (_awaitingVoiceClassification) {
       final detectedType =
           const TransactionVoiceClassifier().classify(transcript);
@@ -521,22 +528,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       }
       if (!mounted) return;
 
-      var draft = const IncomeVoiceParser().parse(
+      final draft = const IncomeVoiceParser().parse(
         transcript,
         now: DateTime.now(),
         rememberedSalary: _rememberedSalary,
       );
 
       if (draft.requiresRememberedSalary) {
-        final salary = await _askForSalary();
-        if (salary == null || !mounted) return;
-        await _salaryService.save(salary);
-        _rememberedSalary = salary;
-        draft = const IncomeVoiceParser().parse(
-          transcript,
-          now: DateTime.now(),
-          rememberedSalary: salary,
-        );
+        await _requestSalaryByVoice(transcript, draft);
+        return;
       } else if (draft.isSalary &&
           !draft.hasSalaryAdjustment &&
           draft.amount != null &&
@@ -546,17 +546,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       }
       if (!mounted) return;
 
-      setState(() {
-        _titleController.text = draft.source;
-        if (draft.amount != null) {
-          _amountController.text = _initialAmountText(draft.amount!);
-        }
-        _date = draft.date;
-        _voiceConfirmationText = transcript;
-        _voiceSummary = draft.amount == null
-            ? draft.source
-            : '${draft.source} · \$${NumberFormat('#,##0', 'es').format(draft.amount)}';
-      });
+      _applyIncomeDraft(draft, transcript);
     } catch (error) {
       if (mounted) {
         _showErrorMessage(context.l10n.salarySaveError);
@@ -564,64 +554,78 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     }
   }
 
-  Future<double?> _askForSalary() async {
-    final controller = TextEditingController();
-    final result = await showDialog<double>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surfaceInput,
-        title: Text(
-          context.l10n.salaryQuestionTitle,
-          style: TextStyle(color: AppColors.textPrimary),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              context.l10n.salaryQuestionMessage,
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 18),
-            TextField(
-              controller: controller,
-              autofocus: true,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-              ],
-              style: TextStyle(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                prefixText: '\$ ',
-                hintText: context.l10n.salaryAmountHint,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(context.l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              final salary = _parseSpokenCurrency(controller.text);
-              if (salary != null && salary > 0) {
-                Navigator.pop(dialogContext, salary);
-              }
-            },
-            child: Text(context.l10n.save),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    return result;
+  Future<void> _requestSalaryByVoice(
+    String transactionTranscript,
+    IncomeVoiceDraft draft,
+  ) async {
+    if (!mounted) return;
+    setState(() {
+      _titleController.text = draft.source;
+      _awaitingSalaryVoiceAnswer = true;
+      _pendingSalaryTransactionTranscript = transactionTranscript;
+      _voiceSummary = context.l10n.salaryVoiceListeningPrompt;
+      _voiceConfirmationText = null;
+    });
+
+    final controller = context.read<SpeechAssistantController>();
+    await controller.generateAndPlaySpeech(context.l10n.salaryVoiceQuestion);
+    if (!mounted || !_awaitingSalaryVoiceAnswer) return;
+    _lastAppliedTranscript = null;
+    await controller.startRecording();
   }
 
-  static double? _parseSpokenCurrency(String value) {
-    return double.tryParse(value.replaceAll(RegExp(r'[.,]'), '').trim());
+  Future<void> _applySalaryVoiceAnswer(String answer) async {
+    final salary =
+        const ExpenseVoiceParser().parse(answer, now: DateTime.now()).amount;
+    if (salary == null || salary <= 0) {
+      if (!mounted) return;
+      _showErrorMessage(context.l10n.salaryVoiceNotUnderstood);
+      final controller = context.read<SpeechAssistantController>();
+      await controller.generateAndPlaySpeech(
+        context.l10n.salaryVoiceNotUnderstood,
+      );
+      if (!mounted || !_awaitingSalaryVoiceAnswer) return;
+      _lastAppliedTranscript = null;
+      await controller.startRecording();
+      return;
+    }
+
+    try {
+      await _salaryService.save(salary);
+      _rememberedSalary = salary;
+      final transactionTranscript = _pendingSalaryTransactionTranscript;
+      if (transactionTranscript == null || !mounted) return;
+      final draft = const IncomeVoiceParser().parse(
+        transactionTranscript,
+        now: DateTime.now(),
+        rememberedSalary: salary,
+      );
+      setState(() {
+        _awaitingSalaryVoiceAnswer = false;
+        _pendingSalaryTransactionTranscript = null;
+      });
+      _applyIncomeDraft(draft, transactionTranscript);
+    } catch (_) {
+      if (mounted) _showErrorMessage(context.l10n.salarySaveError);
+    }
+  }
+
+  void _applyIncomeDraft(
+    IncomeVoiceDraft draft,
+    String transactionTranscript,
+  ) {
+    if (!mounted) return;
+    setState(() {
+      _titleController.text = draft.source;
+      if (draft.amount != null) {
+        _amountController.text = _initialAmountText(draft.amount!);
+      }
+      _date = draft.date;
+      _voiceConfirmationText = transactionTranscript;
+      _voiceSummary = draft.amount == null
+          ? draft.source
+          : '${draft.source} · \$${NumberFormat('#,##0', 'es').format(draft.amount)}';
+    });
   }
 
   Future<void> _playVoiceConfirmation() async {

@@ -487,6 +487,18 @@ class AppLocalizationsEs extends AppLocalizations {
       'No pude consultar o guardar tu sueldo. Revisa tu conexión e inténtalo nuevamente.';
 
   @override
+  String get salaryVoiceQuestion =>
+      'Todavía no conozco tu sueldo habitual. ¿Cuánto recibes normalmente?';
+
+  @override
+  String get salaryVoiceListeningPrompt =>
+      'Dime por voz cuánto recibes normalmente';
+
+  @override
+  String get salaryVoiceNotUnderstood =>
+      'No entendí el valor de tu sueldo. Intenta decir, por ejemplo, tres millones de pesos.';
+
+  @override
   String get confirmExpense => 'Confirmar gasto';
 
   @override
