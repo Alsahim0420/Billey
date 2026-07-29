@@ -947,7 +947,7 @@ abstract class AppLocalizations {
   /// No description provided for @voiceConfirmationPrefix.
   ///
   /// In en, this message translates to:
-  /// **'I understood:'**
+  /// **'I understood this:'**
   String get voiceConfirmationPrefix;
 
   /// No description provided for @confirmExpense.

@@ -128,6 +128,8 @@ class ExpenseVoiceParser {
     'desayuno': 'Desayuno',
     'cena': 'Cena',
     'comida': 'Comida',
+    'helados': 'Helados',
+    'helado': 'Helado',
     'gasolina': 'Gasolina',
     'uber': 'Uber',
     'taxi': 'Taxi',
@@ -152,6 +154,8 @@ class ExpenseVoiceParser {
       'cafe',
       'hamburguesa',
       'pizza',
+      'helado',
+      'helados',
     ],
     'transport': [
       'transporte',

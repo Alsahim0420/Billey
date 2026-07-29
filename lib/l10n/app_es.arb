@@ -149,7 +149,7 @@
   "voiceTranscribing": "TRANSCRIBIENDO...",
   "voicePlaying": "REPRODUCIENDO...",
   "voiceListenConfirmation": "ESCUCHAR CONFIRMACIÓN",
-  "voiceConfirmationPrefix": "Entendí:",
+  "voiceConfirmationPrefix": "Entendí esto:",
   "confirmExpense": "Confirmar gasto",
   "updateExpense": "Actualizar gasto",
   "confirmIncome": "Confirmar ingreso",

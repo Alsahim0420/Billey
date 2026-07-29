@@ -9,6 +9,26 @@ service cloud.firestore {
       allow create, update: if request.auth != null
                             && request.auth.uid == userId
                             && request.resource.data.uid == request.auth.uid;
+
+      match /transactions/{transactionId} {
+        allow read: if request.auth != null
+                    && request.auth.uid == userId;
+
+        allow create: if request.auth != null
+                      && request.auth.uid == userId
+                      && request.resource.data.userId == request.auth.uid
+                      && request.resource.data.id == transactionId;
+
+        allow update: if request.auth != null
+                      && request.auth.uid == userId
+                      && resource.data.userId == request.auth.uid
+                      && request.resource.data.userId == request.auth.uid
+                      && request.resource.data.id == transactionId;
+
+        allow delete: if request.auth != null
+                      && request.auth.uid == userId
+                      && resource.data.userId == request.auth.uid;
+      }
     }
   }
 }
