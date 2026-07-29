@@ -462,6 +462,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get voiceConfirmationPrefix => 'Entendí esto:';
 
   @override
+  String get salaryQuestionTitle => '¿Cuál es tu sueldo habitual?';
+
+  @override
+  String get salaryQuestionMessage =>
+      'Lo guardaré de forma segura en tu perfil para entender futuros ingresos, descuentos o pagos adicionales.';
+
+  @override
+  String get salaryAmountHint => 'Ej. 3.000.000';
+
+  @override
+  String get salarySaveError =>
+      'No pude consultar o guardar tu sueldo. Revisa tu conexión e inténtalo nuevamente.';
+
+  @override
   String get confirmExpense => 'Confirmar gasto';
 
   @override

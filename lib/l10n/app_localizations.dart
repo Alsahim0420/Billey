@@ -950,6 +950,30 @@ abstract class AppLocalizations {
   /// **'I understood this:'**
   String get voiceConfirmationPrefix;
 
+  /// No description provided for @salaryQuestionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your usual salary?'**
+  String get salaryQuestionTitle;
+
+  /// No description provided for @salaryQuestionMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'I will securely save it in your profile to understand future income, deductions, or additional payments.'**
+  String get salaryQuestionMessage;
+
+  /// No description provided for @salaryAmountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g. 3,000,000'**
+  String get salaryAmountHint;
+
+  /// No description provided for @salarySaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'I could not load or save your salary. Check your connection and try again.'**
+  String get salarySaveError;
+
   /// No description provided for @confirmExpense.
   ///
   /// In en, this message translates to:

@@ -1,5 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 
+import 'dart:async';
+
 import 'package:billey/l10n/app_localizations.dart';
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/l10n/localization_helpers.dart';
@@ -12,12 +14,14 @@ import 'package:provider/provider.dart';
 import '../features/speech/application/speech_assistant_controller.dart';
 import '../features/speech/application/speech_assistant_state.dart';
 import '../features/speech/domain/expense_voice_parser.dart';
+import '../features/speech/domain/income_voice_parser.dart';
 import '../models/category.dart';
 import '../models/transaction.dart';
 import '../providers/category_provider.dart';
 import '../providers/currency_provider.dart';
 import '../providers/income_distribution_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../services/firestore_salary_service.dart';
 import '../theme/colors/app_colors.dart';
 import '../theme/billey_theme_scope.dart';
 
@@ -58,6 +62,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   String? _lastAppliedTranscript;
   String? _voiceSummary;
   String? _voiceConfirmationText;
+  final _salaryService = FirestoreSalaryService();
+  double? _rememberedSalary;
+  bool _salaryLoaded = false;
 
   bool get _isIncome => _type == TransactionType.ingreso;
 
@@ -254,6 +261,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                         date: _date,
                         onTap: _presentDatePicker,
                       ),
+                      const SizedBox(height: 28),
+                      Center(
+                        child: _VoiceButton(
+                          state:
+                              context.watch<SpeechAssistantController>().state,
+                          resultSummary: _voiceSummary,
+                          onTap: _toggleVoiceListening,
+                          onPlay: _playVoiceConfirmation,
+                        ),
+                      ),
                       const SizedBox(height: 40),
                       _DistributionCard(
                         amount: amount,
@@ -337,7 +354,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
 
   CategoryModel _findInitialCategory(List<CategoryModel> categories) {
     final transaction = widget.transaction;
-    if (transaction == null) return categories.first;
+    if (transaction == null) {
+      if (_isIncome) {
+        return categories.firstWhere(
+          (category) => category.id == 'other',
+          orElse: () => categories.first,
+        );
+      }
+      return categories.first;
+    }
 
     return categories.firstWhere(
       (category) => category.transactionCategory == transaction.category,
@@ -382,6 +407,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     }
     _lastAppliedTranscript = transcript;
 
+    if (_isIncome) {
+      unawaited(_applyIncomeSpeechResult(transcript));
+      return;
+    }
+
     final provider = context.read<CategoryProvider>();
     final categories = provider.categories.isNotEmpty
         ? provider.categories
@@ -416,6 +446,117 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
           ? '$title · ${category.name}'
           : '$title · \$${NumberFormat('#,##0', 'es').format(draft.amount)} · ${category.name}';
     });
+  }
+
+  Future<void> _applyIncomeSpeechResult(String transcript) async {
+    try {
+      if (!_salaryLoaded) {
+        _rememberedSalary = await _salaryService.load();
+        _salaryLoaded = true;
+      }
+      if (!mounted) return;
+
+      var draft = const IncomeVoiceParser().parse(
+        transcript,
+        now: DateTime.now(),
+        rememberedSalary: _rememberedSalary,
+      );
+
+      if (draft.requiresRememberedSalary) {
+        final salary = await _askForSalary();
+        if (salary == null || !mounted) return;
+        await _salaryService.save(salary);
+        _rememberedSalary = salary;
+        draft = const IncomeVoiceParser().parse(
+          transcript,
+          now: DateTime.now(),
+          rememberedSalary: salary,
+        );
+      } else if (draft.isSalary &&
+          !draft.hasSalaryAdjustment &&
+          draft.amount != null &&
+          _rememberedSalary == null) {
+        await _salaryService.save(draft.amount!);
+        _rememberedSalary = draft.amount;
+      }
+      if (!mounted) return;
+
+      setState(() {
+        _titleController.text = draft.source;
+        if (draft.amount != null) {
+          _amountController.text = _initialAmountText(draft.amount!);
+        }
+        _date = draft.date;
+        _voiceConfirmationText = transcript;
+        _voiceSummary = draft.amount == null
+            ? draft.source
+            : '${draft.source} · \$${NumberFormat('#,##0', 'es').format(draft.amount)}';
+      });
+    } catch (error) {
+      if (mounted) {
+        _showErrorMessage(context.l10n.salarySaveError);
+      }
+    }
+  }
+
+  Future<double?> _askForSalary() async {
+    final controller = TextEditingController();
+    final result = await showDialog<double>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surfaceInput,
+        title: Text(
+          context.l10n.salaryQuestionTitle,
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              context.l10n.salaryQuestionMessage,
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 18),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+              ],
+              style: TextStyle(color: AppColors.textPrimary),
+              decoration: InputDecoration(
+                prefixText: '\$ ',
+                hintText: context.l10n.salaryAmountHint,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(context.l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              final salary = _parseSpokenCurrency(controller.text);
+              if (salary != null && salary > 0) {
+                Navigator.pop(dialogContext, salary);
+              }
+            },
+            child: Text(context.l10n.save),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    return result;
+  }
+
+  static double? _parseSpokenCurrency(String value) {
+    return double.tryParse(value.replaceAll(RegExp(r'[.,]'), '').trim());
   }
 
   Future<void> _playVoiceConfirmation() async {
