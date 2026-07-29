@@ -44,6 +44,7 @@ class SpeechAssistantController extends ChangeNotifier {
   final Map<String, GeneratedAudio> _voicePreviewCache = {};
   final List<StreamSubscription<dynamic>> _playbackSubscriptions = [];
   String? _previewVoiceId;
+  String? _previewText;
   Duration _previewPosition = Duration.zero;
   Duration _previewDuration = Duration.zero;
   bool _previewPlaying = false;
@@ -222,7 +223,8 @@ class SpeechAssistantController extends ChangeNotifier {
     if (_generateSpeech == null || _playback == null) return;
     try {
       initializePlaybackTracking();
-      var audio = _voicePreviewCache[voiceId];
+      final cacheKey = '$voiceId::$text';
+      var audio = _voicePreviewCache[cacheKey];
       if (audio == null) {
         _emit(_state.copyWith(
           status: SpeechAssistantStatus.generatingSpeech,
@@ -232,15 +234,16 @@ class SpeechAssistantController extends ChangeNotifier {
         switch (result) {
           case Success<GeneratedAudio>():
             audio = result.value;
-            _voicePreviewCache[voiceId] = audio;
+            _voicePreviewCache[cacheKey] = audio;
           case ErrorResult<GeneratedAudio>():
             _fail(result.failure.message);
             return;
         }
       }
-      if (_previewVoiceId != voiceId) {
+      if (_previewVoiceId != voiceId || _previewText != text) {
         await _playback.load(audio);
         _previewVoiceId = voiceId;
+        _previewText = text;
         _previewPosition = Duration.zero;
       } else if (_previewDuration > Duration.zero &&
           _previewPosition >= _previewDuration) {
@@ -284,6 +287,7 @@ class SpeechAssistantController extends ChangeNotifier {
     _recorder?.cancel();
     _playback?.stop();
     _previewVoiceId = null;
+    _previewText = null;
     _previewPosition = Duration.zero;
     _previewDuration = Duration.zero;
     _previewPlaying = false;

@@ -456,5 +456,12 @@
   "assistantFemaleVoice": "Femenina cálida",
   "assistantMaleVoice": "Masculina cálida",
   "assistantVoicePreview": "Escuchar",
-  "assistantVoicePreviewMessage": "Hola. Te acompañaré a registrar tus gastos y confirmar que todo esté correcto en Billey."
+  "assistantVoicePreviewMessage": "Hola, {name}. Te acompañaré a registrar tus gastos y confirmar que todo esté correcto en Billey.",
+  "@assistantVoicePreviewMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

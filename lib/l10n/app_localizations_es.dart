@@ -1357,6 +1357,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get assistantVoicePreview => 'Escuchar';
 
   @override
-  String get assistantVoicePreviewMessage =>
-      'Hola. Te acompañaré a registrar tus gastos y confirmar que todo esté correcto en Billey.';
+  String assistantVoicePreviewMessage(String name) {
+    return 'Hola, $name. Te acompañaré a registrar tus gastos y confirmar que todo esté correcto en Billey.';
+  }
 }

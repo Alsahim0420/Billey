@@ -3,6 +3,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:provider/provider.dart';
 
 import '../../../l10n/l10n_extensions.dart';
+import '../../../providers/profile_provider.dart';
 import '../../../theme/colors/app_colors.dart';
 import '../application/speech_assistant_controller.dart';
 import '../application/speech_assistant_state.dart';
@@ -15,7 +16,11 @@ class SpeechVoiceSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final provider = context.watch<SpeechVoiceProvider>();
+    final profile = context.watch<ProfileProvider>();
     final speechController = context.watch<SpeechAssistantController>();
+    final previewText = l10n.assistantVoicePreviewMessage(
+      profile.firstName.isEmpty ? l10n.defaultUser : profile.firstName,
+    );
     final isGenerating =
         speechController.state.status == SpeechAssistantStatus.generatingSpeech;
 
@@ -100,7 +105,10 @@ class SpeechVoiceSelector extends StatelessWidget {
                           ),
                           const SizedBox(height: 10),
                           if (isActivePreview)
-                            _VoiceMiniPlayer(controller: speechController)
+                            _VoiceMiniPlayer(
+                              controller: speechController,
+                              previewText: previewText,
+                            )
                           else
                             TextButton.icon(
                               onPressed: isGenerating
@@ -109,6 +117,7 @@ class SpeechVoiceSelector extends StatelessWidget {
                                         context,
                                         provider,
                                         voice,
+                                        previewText,
                                       ),
                               icon: isGenerating && selected
                                   ? const SizedBox.square(
@@ -155,20 +164,25 @@ class SpeechVoiceSelector extends StatelessWidget {
     BuildContext context,
     SpeechVoiceProvider provider,
     SpeechVoiceOption voice,
+    String previewText,
   ) async {
     await provider.selectVoice(voice);
     if (!context.mounted) return;
     await context.read<SpeechAssistantController>().playVoicePreview(
           voiceId: voice.id,
-          text: context.l10n.assistantVoicePreviewMessage,
+          text: previewText,
         );
   }
 }
 
 class _VoiceMiniPlayer extends StatelessWidget {
-  const _VoiceMiniPlayer({required this.controller});
+  const _VoiceMiniPlayer({
+    required this.controller,
+    required this.previewText,
+  });
 
   final SpeechAssistantController controller;
+  final String previewText;
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +201,7 @@ class _VoiceMiniPlayer extends StatelessWidget {
                   ? controller.pauseVoicePreview
                   : () => controller.playVoicePreview(
                         voiceId: controller.previewVoiceId!,
-                        text: context.l10n.assistantVoicePreviewMessage,
+                        text: previewText,
                       ),
               icon: Icon(
                 controller.previewPlaying

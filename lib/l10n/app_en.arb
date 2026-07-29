@@ -566,5 +566,12 @@
   "assistantFemaleVoice": "Warm female",
   "assistantMaleVoice": "Warm male",
   "assistantVoicePreview": "Listen",
-  "assistantVoicePreviewMessage": "Hi. I'll help you record your expenses and confirm that everything is correct in Billey."
+  "assistantVoicePreviewMessage": "Hi, {name}. I'll help you record your expenses and confirm that everything is correct in Billey.",
+  "@assistantVoicePreviewMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }
