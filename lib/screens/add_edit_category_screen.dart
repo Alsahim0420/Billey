@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../providers/category_provider.dart';
 import '../models/category.dart';
 import '../theme/colors/app_colors.dart';
+import '../services/category_suggestion_service.dart';
 import '../theme/billey_theme_scope.dart';
 
 class AddEditCategoryScreen extends StatefulWidget {
@@ -27,6 +28,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   late Color _selectedSectionColor;
   bool _isEditing = false;
   bool _isCustomSection = false;
+  bool _visualsCustomized = false;
 
   @override
   void initState() {
@@ -50,10 +52,43 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
       _selectedSection = CategoryModel.defaultSections.first;
       _selectedSectionColor = CategoryModel.availableColors.first;
     }
+
+    _visualsCustomized = _isEditing;
+    _nameController.addListener(_onNameChanged);
+  }
+
+  void _onNameChanged() {
+    if (_visualsCustomized) {
+      setState(() {});
+      return;
+    }
+
+    final suggestion = CategorySuggestionService.suggest(_nameController.text);
+    if (suggestion == null) {
+      setState(() {});
+      return;
+    }
+
+    setState(() {
+      _selectedIcon = suggestion.icon;
+      _selectedColor = suggestion.color;
+      if (suggestion.section != null &&
+          CategoryModel.defaultSections.contains(suggestion.section)) {
+        _selectedSection = suggestion.section!;
+        _selectedSectionColor = suggestion.color;
+      }
+    });
+  }
+
+  void _markVisualsCustomized() {
+    if (!_visualsCustomized) {
+      setState(() => _visualsCustomized = true);
+    }
   }
 
   @override
   void dispose() {
+    _nameController.removeListener(_onNameChanged);
     _nameController.dispose();
     _sectionController.dispose();
     super.dispose();
@@ -236,7 +271,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
             ),
             textCapitalization: TextCapitalization.words,
             maxLength: 20,
-            onChanged: (value) => setState(() {}),
+            onChanged: (_) => _onNameChanged(),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return l10n.enterCategoryName;
@@ -256,6 +291,30 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
             },
           ),
         ),
+        if (!_visualsCustomized && _nameController.text.trim().length >= 2)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 4),
+            child: Row(
+              children: [
+                const Icon(
+                  TablerIcons.sparkles,
+                  size: 14,
+                  color: AppColors.primaryColor,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    l10n.categoryAutoSuggested,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
@@ -464,7 +523,10 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                       _selectedSectionColor.toARGB32() == color.toARGB32();
 
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedSectionColor = color),
+                    onTap: () => setState(() {
+                      _markVisualsCustomized();
+                      _selectedSectionColor = color;
+                    }),
                     child: Container(
                       decoration: BoxDecoration(
                         color: color,
@@ -535,7 +597,10 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
               final isSelected = icon.codePoint == _selectedIcon.codePoint;
 
               return GestureDetector(
-                onTap: () => setState(() => _selectedIcon = icon),
+                onTap: () => setState(() {
+                  _markVisualsCustomized();
+                  _selectedIcon = icon;
+                }),
                 child: Container(
                   decoration: BoxDecoration(
                     color: isSelected
@@ -598,7 +663,10 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
               final isSelected = color.toARGB32() == _selectedColor.toARGB32();
 
               return GestureDetector(
-                onTap: () => setState(() => _selectedColor = color),
+                onTap: () => setState(() {
+                  _markVisualsCustomized();
+                  _selectedColor = color;
+                }),
                 child: Container(
                   width: 40,
                   height: 40,

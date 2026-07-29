@@ -1,8 +1,10 @@
 // lib/main.dart
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:billey/screens/splash_screen.dart';
+import 'package:billey/screens/auth/auth_screen.dart';
 import 'package:billey/theme/app_theme.dart';
 import 'package:billey/theme/billey_theme_scope.dart';
 import 'package:billey/l10n/app_localizations.dart';
@@ -15,13 +17,16 @@ import 'providers/profile_provider.dart';
 import 'providers/theme_settings_provider.dart';
 import 'providers/locale_settings_provider.dart';
 import 'providers/payment_reminder_provider.dart';
+import 'providers/couple_finance_provider.dart';
 import 'models/transaction.dart';
 import 'models/category.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:billey/core/responsive/responsive.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await initializeDateFormatting('es');
   await initializeDateFormatting('en');
 
@@ -41,6 +46,9 @@ void main() async {
   final paymentReminders = PaymentReminderProvider();
   await paymentReminders.initialize();
 
+  final coupleFinance = CoupleFinanceProvider.instance;
+  await coupleFinance.initialize();
+
   runApp(
     MultiProvider(
       providers: [
@@ -52,6 +60,7 @@ void main() async {
         ChangeNotifierProvider.value(value: themeSettings),
         ChangeNotifierProvider.value(value: localeSettings),
         ChangeNotifierProvider.value(value: paymentReminders),
+        ChangeNotifierProvider.value(value: coupleFinance),
       ],
       child: const MyApp(),
     ),
@@ -89,6 +98,10 @@ class MyApp extends StatelessWidget {
             );
           },
           home: const SplashScreen(),
+          routes: {
+            '/home': (context) => const SplashScreen(),
+            '/auth': (context) => const AuthScreen(),
+          },
         );
       },
     );

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:billey/l10n/app_localizations.dart';
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/l10n/localization_helpers.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:provider/provider.dart';
@@ -78,8 +79,20 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   void initState() {
     super.initState();
     final profile = context.read<ProfileProvider>();
-    _nameController = TextEditingController(text: profile.displayName);
-    _emailController = TextEditingController(text: profile.email);
+    final googleUser = FirebaseAuth.instance.currentUser;
+    final savedName = profile.displayName.trim();
+    final savedEmail = profile.email.trim();
+
+    _nameController = TextEditingController(
+      text: savedName.isNotEmpty
+          ? savedName
+          : (googleUser?.displayName?.trim() ?? ''),
+    );
+    _emailController = TextEditingController(
+      text: savedEmail.isNotEmpty
+          ? savedEmail
+          : (googleUser?.email?.trim() ?? ''),
+    );
   }
 
   @override
@@ -386,7 +399,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                             valueColor: AlwaysStoppedAnimation(Colors.white),
                           ),
                         )
-                      : Text(isLastPage ? l10n.finishButton : l10n.continueButton),
+                      : Text(
+                          isLastPage ? l10n.finishButton : l10n.continueButton),
                 ),
               ),
             ),
@@ -550,13 +564,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   Widget _buildTemplatePage(AppLocalizations l10n) {
-    final selectedTemplate = _selectedTemplateId ==
-            IncomeDistributionProvider.customTemplateId
-        ? null
-        : IncomeDistributionProvider.templates
-            .where((t) => t.id == _selectedTemplateId)
-            .cast<IncomeDistributionTemplate?>()
-            .firstOrNull;
+    final selectedTemplate =
+        _selectedTemplateId == IncomeDistributionProvider.customTemplateId
+            ? null
+            : IncomeDistributionProvider.templates
+                .where((t) => t.id == _selectedTemplateId)
+                .cast<IncomeDistributionTemplate?>()
+                .firstOrNull;
 
     return ListView(
       physics: const BouncingScrollPhysics(),
@@ -895,8 +909,7 @@ class _SetupGoalSheetState extends State<_SetupGoalSheet> {
     super.initState();
     final existing = widget.existing;
     _titleController = TextEditingController(text: existing?.title ?? '');
-    _subtitleController =
-        TextEditingController(text: existing?.subtitle ?? '');
+    _subtitleController = TextEditingController(text: existing?.subtitle ?? '');
     _targetController = TextEditingController(
       text: existing != null && existing.targetAmount > 0
           ? existing.targetAmount.toStringAsFixed(0)
@@ -944,14 +957,12 @@ class _SetupGoalSheetState extends State<_SetupGoalSheet> {
     Navigator.pop(
       context,
       _SetupGoal(
-        id: existing?.id ??
-            'custom_${DateTime.now().millisecondsSinceEpoch}',
+        id: existing?.id ?? 'custom_${DateTime.now().millisecondsSinceEpoch}',
         title: title,
         subtitle: _subtitleController.text.trim().isEmpty
             ? l10n.goalPersonalDefault
             : _subtitleController.text.trim(),
-        currentAmount:
-            double.tryParse(_currentController.text.trim()) ?? 0,
+        currentAmount: double.tryParse(_currentController.text.trim()) ?? 0,
         targetAmount: target,
         monthsLeft: int.tryParse(_monthsController.text.trim()) ?? 6,
         style: _style,

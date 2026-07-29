@@ -25,6 +25,8 @@ class TransactionProvider with ChangeNotifier {
       ? _transactions
       : _filteredTransactions;
 
+  List<TransactionModel> get allTransactions => _transactions;
+
   String get searchQuery => _searchQuery;
   TransactionType? get filterType => _filterType;
   TransactionCategory? get filterCategory => _filterCategory;

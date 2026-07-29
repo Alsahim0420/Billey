@@ -45,6 +45,19 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.233183310004-ofo45i0lhk9bhrrd09ehs24gi996ek5t</string>
+			</array>
+		</dict>
+	</array>
+	<key>GIDClientID</key>
+	<string>233183310004-ofo45i0lhk9bhrrd09ehs24gi996ek5t.apps.googleusercontent.com</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Billey necesita el micrófono para registrar gastos por voz.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
@@ -52,6 +65,6 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Billey necesita acceso a tus fotos para elegir tu imagen de perfil.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Billey puede usar la cámara para tomar tu foto de perfil.</string>
+	<string>Billey usa la cámara para escanear códigos QR y tu foto de perfil.</string>
 </dict>
 </plist>

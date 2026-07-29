@@ -554,6 +554,24 @@ abstract class AppLocalizations {
   /// **'Recent months'**
   String get recentMonths;
 
+  /// No description provided for @homeChartTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend'**
+  String get homeChartTrend;
+
+  /// No description provided for @homeChartByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'By category'**
+  String get homeChartByCategory;
+
+  /// No description provided for @noExpensesInPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses in this period'**
+  String get noExpensesInPeriod;
+
   /// No description provided for @recentTransactions.
   ///
   /// In en, this message translates to:
@@ -1574,6 +1592,12 @@ abstract class AppLocalizations {
   /// **'E.g.: Gym, Pets, etc.'**
   String get categoryNameHint;
 
+  /// No description provided for @categoryAutoSuggested.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon and color suggested from the name'**
+  String get categoryAutoSuggested;
+
   /// No description provided for @enterCategoryName.
   ///
   /// In en, this message translates to:
@@ -2203,6 +2227,312 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Enable notifications in settings to receive payment reminders'**
   String get notificationPermissionDenied;
+
+  /// No description provided for @coupleFinanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared finances'**
+  String get coupleFinanceTitle;
+
+  /// No description provided for @couplePairingIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Link your phone with family or friends by scanning a QR code. Then share transfers and track spending by syncing with QR.'**
+  String get couplePairingIntro;
+
+  /// No description provided for @couplePartnerName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name of person you share with'**
+  String get couplePartnerName;
+
+  /// No description provided for @couplePartnerNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g. Maria, dad, sibling'**
+  String get couplePartnerNameHint;
+
+  /// No description provided for @couplePartnerNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name'**
+  String get couplePartnerNameRequired;
+
+  /// No description provided for @coupleShowPairingQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Show pairing QR'**
+  String get coupleShowPairingQr;
+
+  /// No description provided for @coupleScanPairingQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR'**
+  String get coupleScanPairingQr;
+
+  /// No description provided for @couplePairingQrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get couplePairingQrTitle;
+
+  /// No description provided for @couplePairingQrSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask {name} to scan this code'**
+  String couplePairingQrSubtitle(String name);
+
+  /// No description provided for @coupleQrHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this code visible until it is scanned from Billey.'**
+  String get coupleQrHint;
+
+  /// No description provided for @coupleScanQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR'**
+  String get coupleScanQr;
+
+  /// No description provided for @coupleScanHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Point the camera at the Billey QR code.'**
+  String get coupleScanHint;
+
+  /// No description provided for @coupleScanFromCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanning with Billey\'s camera'**
+  String get coupleScanFromCamera;
+
+  /// No description provided for @coupleScanFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get coupleScanFromGallery;
+
+  /// No description provided for @coupleQrNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No Billey QR detected. Try again with better lighting.'**
+  String get coupleQrNotFound;
+
+  /// No description provided for @couplePasteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'If the camera does not work, paste here the code shown under the QR.'**
+  String get couplePasteHint;
+
+  /// No description provided for @couplePasteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Use code'**
+  String get couplePasteConfirm;
+
+  /// No description provided for @coupleLinkedWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing with {name}'**
+  String coupleLinkedWith(String name);
+
+  /// No description provided for @coupleSyncReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'After each expense, share an update via QR so both of you see the movements.'**
+  String get coupleSyncReminder;
+
+  /// No description provided for @coupleShareUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Share QR'**
+  String get coupleShareUpdate;
+
+  /// No description provided for @coupleScanUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan'**
+  String get coupleScanUpdate;
+
+  /// No description provided for @coupleSharedWallets.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared transfers'**
+  String get coupleSharedWallets;
+
+  /// No description provided for @coupleWalletsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a transfer (e.g. 2M) and share the QR so they receive it on their phone.'**
+  String get coupleWalletsEmpty;
+
+  /// No description provided for @coupleNewTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'New transfer'**
+  String get coupleNewTransfer;
+
+  /// No description provided for @coupleTransferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get coupleTransferTitle;
+
+  /// No description provided for @coupleTransferTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g. March budget'**
+  String get coupleTransferTitleHint;
+
+  /// No description provided for @coupleTransferAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get coupleTransferAmount;
+
+  /// No description provided for @coupleHolderIsPartner.
+  ///
+  /// In en, this message translates to:
+  /// **'Used by {name}'**
+  String coupleHolderIsPartner(String name);
+
+  /// No description provided for @coupleWalletCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer created. Show the QR to share it.'**
+  String get coupleWalletCreated;
+
+  /// No description provided for @coupleSyncQrTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync'**
+  String get coupleSyncQrTitle;
+
+  /// No description provided for @coupleSyncQrSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to update \"{title}\"'**
+  String coupleSyncQrSubtitle(String title);
+
+  /// No description provided for @coupleSyncQrSubtitleAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to update all transfers and expenses'**
+  String get coupleSyncQrSubtitleAll;
+
+  /// No description provided for @coupleSyncSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Data synced successfully'**
+  String get coupleSyncSuccess;
+
+  /// No description provided for @coupleSyncInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the QR. Make sure it\'s from Billey.'**
+  String get coupleSyncInvalid;
+
+  /// No description provided for @coupleLinkedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully linked!'**
+  String get coupleLinkedSuccess;
+
+  /// No description provided for @coupleUnlink.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink'**
+  String get coupleUnlink;
+
+  /// No description provided for @coupleUnlinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink shared finances?'**
+  String get coupleUnlinkTitle;
+
+  /// No description provided for @coupleUnlinkMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared transfers on this device will be deleted. The other person keeps their local copy.'**
+  String get coupleUnlinkMessage;
+
+  /// No description provided for @coupleUnlinked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlinked successfully'**
+  String get coupleUnlinked;
+
+  /// No description provided for @coupleSharedWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared transfer'**
+  String get coupleSharedWallet;
+
+  /// No description provided for @coupleWalletNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer not found'**
+  String get coupleWalletNotFound;
+
+  /// No description provided for @coupleAddExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Add expense'**
+  String get coupleAddExpense;
+
+  /// No description provided for @coupleExpenseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense description'**
+  String get coupleExpenseTitle;
+
+  /// No description provided for @coupleExpenseAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get coupleExpenseAmount;
+
+  /// No description provided for @coupleBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget'**
+  String get coupleBudget;
+
+  /// No description provided for @coupleSpent.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent'**
+  String get coupleSpent;
+
+  /// No description provided for @coupleRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining'**
+  String get coupleRemaining;
+
+  /// No description provided for @coupleFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get coupleFrom;
+
+  /// No description provided for @coupleFor.
+  ///
+  /// In en, this message translates to:
+  /// **'For'**
+  String get coupleFor;
+
+  /// No description provided for @coupleExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses'**
+  String get coupleExpenses;
+
+  /// No description provided for @coupleNoExpensesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses in this transfer yet'**
+  String get coupleNoExpensesYet;
 }
 
 class _AppLocalizationsDelegate

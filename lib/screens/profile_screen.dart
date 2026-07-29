@@ -17,6 +17,8 @@ import '../services/transaction_export_service.dart';
 import '../theme/billey_theme_scope.dart';
 import '../theme/colors/app_colors.dart';
 import '../utils/share_origin.dart';
+import 'couple_finance_screen.dart';
+import 'categories_management_screen.dart';
 import 'income_distribution_screen.dart';
 import 'payment_reminders_screen.dart';
 import 'spending_insights_screen.dart';
@@ -85,6 +87,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: () => _showCurrencyPicker(currencyProvider),
                 );
               },
+            ),
+            const SizedBox(height: 10),
+            _ProfileSettingTile(
+              icon: TablerIcons.users,
+              title: l10n.coupleFinanceTitle,
+              onTap: _openCoupleFinance,
+            ),
+            const SizedBox(height: 10),
+            _ProfileSettingTile(
+              icon: TablerIcons.category,
+              title: l10n.categoryManagement,
+              onTap: _openCategoriesManagement,
             ),
             const SizedBox(height: 10),
             _ProfileSettingTile(
@@ -182,6 +196,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         builder: (context) => const SpendingInsightsScreen(),
       ),
     );
+  }
+
+  void _openCategoriesManagement() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const CategoriesManagementScreen(),
+      ),
+    );
+  }
+
+  void _openCoupleFinance() {
+    Navigator.of(context).push(CoupleFinanceScreen.route());
   }
 
   void _openIncomeDistribution() {

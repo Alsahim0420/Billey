@@ -247,6 +247,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recentMonths => 'Recent months';
 
   @override
+  String get homeChartTrend => 'Trend';
+
+  @override
+  String get homeChartByCategory => 'By category';
+
+  @override
+  String get noExpensesInPeriod => 'No expenses in this period';
+
+  @override
   String get recentTransactions => 'Recent Transactions';
 
   @override
@@ -794,6 +803,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryNameHint => 'E.g.: Gym, Pets, etc.';
 
   @override
+  String get categoryAutoSuggested => 'Icon and color suggested from the name';
+
+  @override
   String get enterCategoryName => 'Please enter a name';
 
   @override
@@ -1138,4 +1150,175 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notificationPermissionDenied =>
       'Enable notifications in settings to receive payment reminders';
+
+  @override
+  String get coupleFinanceTitle => 'Shared finances';
+
+  @override
+  String get couplePairingIntro =>
+      'Link your phone with family or friends by scanning a QR code. Then share transfers and track spending by syncing with QR.';
+
+  @override
+  String get couplePartnerName => 'Name of person you share with';
+
+  @override
+  String get couplePartnerNameHint => 'E.g. Maria, dad, sibling';
+
+  @override
+  String get couplePartnerNameRequired => 'Enter a name';
+
+  @override
+  String get coupleShowPairingQr => 'Show pairing QR';
+
+  @override
+  String get coupleScanPairingQr => 'Scan QR';
+
+  @override
+  String get couplePairingQrTitle => 'Link';
+
+  @override
+  String couplePairingQrSubtitle(String name) {
+    return 'Ask $name to scan this code';
+  }
+
+  @override
+  String get coupleQrHint =>
+      'Keep this code visible until it is scanned from Billey.';
+
+  @override
+  String get coupleScanQr => 'Scan QR';
+
+  @override
+  String get coupleScanHint => 'Point the camera at the Billey QR code.';
+
+  @override
+  String get coupleScanFromCamera => 'Scanning with Billey\'s camera';
+
+  @override
+  String get coupleScanFromGallery => 'Choose from gallery';
+
+  @override
+  String get coupleQrNotFound =>
+      'No Billey QR detected. Try again with better lighting.';
+
+  @override
+  String get couplePasteHint =>
+      'If the camera does not work, paste here the code shown under the QR.';
+
+  @override
+  String get couplePasteConfirm => 'Use code';
+
+  @override
+  String coupleLinkedWith(String name) {
+    return 'Sharing with $name';
+  }
+
+  @override
+  String get coupleSyncReminder =>
+      'After each expense, share an update via QR so both of you see the movements.';
+
+  @override
+  String get coupleShareUpdate => 'Share QR';
+
+  @override
+  String get coupleScanUpdate => 'Scan';
+
+  @override
+  String get coupleSharedWallets => 'Shared transfers';
+
+  @override
+  String get coupleWalletsEmpty =>
+      'Create a transfer (e.g. 2M) and share the QR so they receive it on their phone.';
+
+  @override
+  String get coupleNewTransfer => 'New transfer';
+
+  @override
+  String get coupleTransferTitle => 'Title';
+
+  @override
+  String get coupleTransferTitleHint => 'E.g. March budget';
+
+  @override
+  String get coupleTransferAmount => 'Amount';
+
+  @override
+  String coupleHolderIsPartner(String name) {
+    return 'Used by $name';
+  }
+
+  @override
+  String get coupleWalletCreated =>
+      'Transfer created. Show the QR to share it.';
+
+  @override
+  String get coupleSyncQrTitle => 'Sync';
+
+  @override
+  String coupleSyncQrSubtitle(String title) {
+    return 'Scan to update \"$title\"';
+  }
+
+  @override
+  String get coupleSyncQrSubtitleAll =>
+      'Scan to update all transfers and expenses';
+
+  @override
+  String get coupleSyncSuccess => 'Data synced successfully';
+
+  @override
+  String get coupleSyncInvalid =>
+      'Could not read the QR. Make sure it\'s from Billey.';
+
+  @override
+  String get coupleLinkedSuccess => 'Successfully linked!';
+
+  @override
+  String get coupleUnlink => 'Unlink';
+
+  @override
+  String get coupleUnlinkTitle => 'Unlink shared finances?';
+
+  @override
+  String get coupleUnlinkMessage =>
+      'Shared transfers on this device will be deleted. The other person keeps their local copy.';
+
+  @override
+  String get coupleUnlinked => 'Unlinked successfully';
+
+  @override
+  String get coupleSharedWallet => 'Shared transfer';
+
+  @override
+  String get coupleWalletNotFound => 'Transfer not found';
+
+  @override
+  String get coupleAddExpense => 'Add expense';
+
+  @override
+  String get coupleExpenseTitle => 'Expense description';
+
+  @override
+  String get coupleExpenseAmount => 'Amount';
+
+  @override
+  String get coupleBudget => 'Budget';
+
+  @override
+  String get coupleSpent => 'Spent';
+
+  @override
+  String get coupleRemaining => 'Remaining';
+
+  @override
+  String get coupleFrom => 'From';
+
+  @override
+  String get coupleFor => 'For';
+
+  @override
+  String get coupleExpenses => 'Expenses';
+
+  @override
+  String get coupleNoExpensesYet => 'No expenses in this transfer yet';
 }

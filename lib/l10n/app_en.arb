@@ -94,6 +94,9 @@
   "income": "Income",
   "expenses": "Expenses",
   "recentMonths": "Recent months",
+  "homeChartTrend": "Trend",
+  "homeChartByCategory": "By category",
+  "noExpensesInPeriod": "No expenses in this period",
   "recentTransactions": "Recent Transactions",
   "seeAll": "See all",
   "noTransactionsYet": "No transactions yet",
@@ -324,6 +327,7 @@
   "customSectionPlaceholder": "Custom section",
   "categoryName": "Category Name",
   "categoryNameHint": "E.g.: Gym, Pets, etc.",
+  "categoryAutoSuggested": "Icon and color suggested from the name",
   "enterCategoryName": "Please enter a name",
   "categoryNameMinLength": "Name must be at least 2 characters",
   "categoryNameExists": "A category with this name already exists",
@@ -488,5 +492,69 @@
   "@deletePaymentReminderMessage": {
     "placeholders": { "title": { "type": "String" } }
   },
-  "notificationPermissionDenied": "Enable notifications in settings to receive payment reminders"
+  "notificationPermissionDenied": "Enable notifications in settings to receive payment reminders",
+
+  "coupleFinanceTitle": "Shared finances",
+  "couplePairingIntro": "Link your phone with family or friends by scanning a QR code. Then share transfers and track spending by syncing with QR.",
+  "couplePartnerName": "Name of person you share with",
+  "couplePartnerNameHint": "E.g. Maria, dad, sibling",
+  "couplePartnerNameRequired": "Enter a name",
+  "coupleShowPairingQr": "Show pairing QR",
+  "coupleScanPairingQr": "Scan QR",
+  "couplePairingQrTitle": "Link",
+  "couplePairingQrSubtitle": "Ask {name} to scan this code",
+  "@couplePairingQrSubtitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "coupleQrHint": "Keep this code visible until it is scanned from Billey.",
+  "coupleScanQr": "Scan QR",
+  "coupleScanHint": "Point the camera at the Billey QR code.",
+  "coupleScanFromCamera": "Scanning with Billey's camera",
+  "coupleScanFromGallery": "Choose from gallery",
+  "coupleQrNotFound": "No Billey QR detected. Try again with better lighting.",
+  "couplePasteHint": "If the camera does not work, paste here the code shown under the QR.",
+  "couplePasteConfirm": "Use code",
+  "coupleLinkedWith": "Sharing with {name}",
+  "@coupleLinkedWith": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "coupleSyncReminder": "After each expense, share an update via QR so both of you see the movements.",
+  "coupleShareUpdate": "Share QR",
+  "coupleScanUpdate": "Scan",
+  "coupleSharedWallets": "Shared transfers",
+  "coupleWalletsEmpty": "Create a transfer (e.g. 2M) and share the QR so they receive it on their phone.",
+  "coupleNewTransfer": "New transfer",
+  "coupleTransferTitle": "Title",
+  "coupleTransferTitleHint": "E.g. March budget",
+  "coupleTransferAmount": "Amount",
+  "coupleHolderIsPartner": "Used by {name}",
+  "@coupleHolderIsPartner": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "coupleWalletCreated": "Transfer created. Show the QR to share it.",
+  "coupleSyncQrTitle": "Sync",
+  "coupleSyncQrSubtitle": "Scan to update \"{title}\"",
+  "@coupleSyncQrSubtitle": {
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "coupleSyncQrSubtitleAll": "Scan to update all transfers and expenses",
+  "coupleSyncSuccess": "Data synced successfully",
+  "coupleSyncInvalid": "Could not read the QR. Make sure it's from Billey.",
+  "coupleLinkedSuccess": "Successfully linked!",
+  "coupleUnlink": "Unlink",
+  "coupleUnlinkTitle": "Unlink shared finances?",
+  "coupleUnlinkMessage": "Shared transfers on this device will be deleted. The other person keeps their local copy.",
+  "coupleUnlinked": "Unlinked successfully",
+  "coupleSharedWallet": "Shared transfer",
+  "coupleWalletNotFound": "Transfer not found",
+  "coupleAddExpense": "Add expense",
+  "coupleExpenseTitle": "Expense description",
+  "coupleExpenseAmount": "Amount",
+  "coupleBudget": "Budget",
+  "coupleSpent": "Spent",
+  "coupleRemaining": "Remaining",
+  "coupleFrom": "From",
+  "coupleFor": "For",
+  "coupleExpenses": "Expenses",
+  "coupleNoExpensesYet": "No expenses in this transfer yet"
 }

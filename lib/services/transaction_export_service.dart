@@ -37,14 +37,14 @@ class ExportFileResult {
 }
 
 class _PdfPalette {
-  static final primary = PdfColor.fromInt(0xFF1FAD98);
-  static final primaryDark = PdfColor.fromInt(0xFF168675);
-  static final income = PdfColor.fromInt(0xFF1FAD98);
-  static final expense = PdfColor.fromInt(0xFFFF6B6B);
-  static final textPrimary = PdfColor.fromInt(0xFF111827);
-  static final textSecondary = PdfColor.fromInt(0xFF6B7280);
-  static final backgroundAlt = PdfColor.fromInt(0xFFF3F4F6);
-  static final white = PdfColor.fromInt(0xFFFFFFFF);
+  static const primary = PdfColor.fromInt(0xFF1FAD98);
+  static const primaryDark = PdfColor.fromInt(0xFF168675);
+  static const income = PdfColor.fromInt(0xFF1FAD98);
+  static const expense = PdfColor.fromInt(0xFFFF6B6B);
+  static const textPrimary = PdfColor.fromInt(0xFF111827);
+  static const textSecondary = PdfColor.fromInt(0xFF6B7280);
+  static const backgroundAlt = PdfColor.fromInt(0xFFF3F4F6);
+  static const white = PdfColor.fromInt(0xFFFFFFFF);
 }
 
 class TransactionExportService {
@@ -101,7 +101,8 @@ class TransactionExportService {
     final userSegment =
         safeName.isEmpty ? _sanitizeFileSegment(fallbackUserName) : safeName;
     final resolvedUser = userSegment.isEmpty ? 'usuario' : userSegment;
-    final timestamp = DateFormat('yyyy-MM-dd HH-mm', locale).format(generatedAt);
+    final timestamp =
+        DateFormat('yyyy-MM-dd HH-mm', locale).format(generatedAt);
     return 'resumen billey $resolvedUser $timestamp.$extension';
   }
 
@@ -222,7 +223,7 @@ class TransactionExportService {
                 ),
                 child: pw.Text(
                   l10n.exportNoData,
-                  style: pw.TextStyle(
+                  style: const pw.TextStyle(
                     fontSize: 12,
                     color: _PdfPalette.textSecondary,
                   ),
@@ -262,7 +263,7 @@ class TransactionExportService {
               ),
               pw.Text(
                 '${context.pageNumber}/${context.pagesCount}',
-                style: pw.TextStyle(
+                style: const pw.TextStyle(
                   fontSize: 9,
                   color: _PdfPalette.textSecondary,
                 ),
@@ -287,9 +288,7 @@ class TransactionExportService {
   }
 
   static String _pdfSafeText(String input) {
-    return input
-        .replaceAll(RegExp(r'[\u00A0\u202F\u2009\u2007]'), ' ')
-        .trim();
+    return input.replaceAll(RegExp(r'[\u00A0\u202F\u2009\u2007]'), ' ').trim();
   }
 
   static pw.Widget _pdfHeader({
@@ -346,7 +345,7 @@ class TransactionExportService {
                     pw.SizedBox(height: 6),
                     pw.Text(
                       userName,
-                      style: pw.TextStyle(
+                      style: const pw.TextStyle(
                         color: _PdfPalette.white,
                         fontSize: 11,
                       ),
@@ -354,7 +353,7 @@ class TransactionExportService {
                     pw.SizedBox(height: 2),
                     pw.Text(
                       _pdfSafeText(generatedAt),
-                      style: pw.TextStyle(
+                      style: const pw.TextStyle(
                         color: _PdfPalette.white,
                         fontSize: 10,
                       ),
@@ -439,7 +438,7 @@ class TransactionExportService {
     final headers = l10n.csvHeaders.split(', ');
 
     return pw.Table(
-      border: pw.TableBorder(
+      border: const pw.TableBorder(
         horizontalInside: pw.BorderSide(
           color: _PdfPalette.backgroundAlt,
           width: 0.8,
@@ -455,9 +454,9 @@ class TransactionExportService {
       },
       children: [
         pw.TableRow(
-          decoration: pw.BoxDecoration(
+          decoration: const pw.BoxDecoration(
             color: _PdfPalette.primary,
-            borderRadius: const pw.BorderRadius.vertical(
+            borderRadius: pw.BorderRadius.vertical(
               top: pw.Radius.circular(10),
             ),
           ),
@@ -521,7 +520,8 @@ class TransactionExportService {
         style: pw.TextStyle(
           fontSize: isHeader ? 9 : 8.5,
           fontWeight: isHeader ? pw.FontWeight.bold : fontWeight,
-          color: isHeader ? _PdfPalette.white : (color ?? _PdfPalette.textPrimary),
+          color:
+              isHeader ? _PdfPalette.white : (color ?? _PdfPalette.textPrimary),
         ),
       ),
     );

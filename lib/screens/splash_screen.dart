@@ -1,4 +1,5 @@
 import 'package:billey/l10n/l10n_extensions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,6 +13,7 @@ import '../theme/colors/app_colors.dart';
 import 'main_navigation_screen.dart';
 import 'profile_setup_screen.dart';
 import 'slide_show_intro_screen.dart';
+import 'auth/auth_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -127,11 +129,14 @@ class _SplashScreenState extends State<SplashScreen>
     if (mounted) {
       _fadeController.forward().then((_) {
         if (mounted) {
-          final target = !hasSeenOnboarding
-              ? const IntroScreen()
-              : hasCustomProfile
-                  ? const MainNavigationScreen()
-                  : const ProfileSetupScreen();
+          final currentUser = FirebaseAuth.instance.currentUser;
+          final target = currentUser == null
+              ? const AuthScreen()
+              : (!hasSeenOnboarding
+                  ? const IntroScreen()
+                  : hasCustomProfile
+                      ? const MainNavigationScreen()
+                      : const ProfileSetupScreen());
 
           Navigator.of(context).pushReplacement(
             PageRouteBuilder(

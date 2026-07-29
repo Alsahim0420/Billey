@@ -248,6 +248,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get recentMonths => 'Últimos meses';
 
   @override
+  String get homeChartTrend => 'Tendencia';
+
+  @override
+  String get homeChartByCategory => 'Por categoría';
+
+  @override
+  String get noExpensesInPeriod => 'No hay gastos en este período';
+
+  @override
   String get recentTransactions => 'Transacciones recientes';
 
   @override
@@ -799,6 +808,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get categoryNameHint => 'Ej: Gimnasio, Mascotas, etc.';
 
   @override
+  String get categoryAutoSuggested => 'Icono y color sugeridos según el nombre';
+
+  @override
   String get enterCategoryName => 'Por favor ingresa un nombre';
 
   @override
@@ -1144,4 +1156,175 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get notificationPermissionDenied =>
       'Activa las notificaciones en ajustes para recibir recordatorios de pago';
+
+  @override
+  String get coupleFinanceTitle => 'Finanzas compartidas';
+
+  @override
+  String get couplePairingIntro =>
+      'Vincula tu celular con familiares o amigos escaneando un QR. Luego podrán compartir aportes y ver los gastos sincronizando con QR.';
+
+  @override
+  String get couplePartnerName => 'Nombre de quien compartes';
+
+  @override
+  String get couplePartnerNameHint => 'Ej. María, papá, hermano';
+
+  @override
+  String get couplePartnerNameRequired => 'Escribe un nombre';
+
+  @override
+  String get coupleShowPairingQr => 'Mostrar QR de vinculación';
+
+  @override
+  String get coupleScanPairingQr => 'Escanear QR';
+
+  @override
+  String get couplePairingQrTitle => 'Vincular';
+
+  @override
+  String couplePairingQrSubtitle(String name) {
+    return 'Pide a $name que escanee este código';
+  }
+
+  @override
+  String get coupleQrHint =>
+      'Mantén este código visible hasta que lo escaneen desde Billey.';
+
+  @override
+  String get coupleScanQr => 'Escanear QR';
+
+  @override
+  String get coupleScanHint => 'Apunta la cámara al código QR de Billey.';
+
+  @override
+  String get coupleScanFromCamera => 'Escaneando con la cámara de Billey';
+
+  @override
+  String get coupleScanFromGallery => 'Elegir de galería';
+
+  @override
+  String get coupleQrNotFound =>
+      'No se detectó un QR de Billey. Intenta de nuevo con mejor luz.';
+
+  @override
+  String get couplePasteHint =>
+      'Si la cámara no funciona, pega aquí el código que aparece bajo el QR.';
+
+  @override
+  String get couplePasteConfirm => 'Usar código';
+
+  @override
+  String coupleLinkedWith(String name) {
+    return 'Compartiendo con $name';
+  }
+
+  @override
+  String get coupleSyncReminder =>
+      'Después de cada gasto, compartan actualización por QR para verse los movimientos.';
+
+  @override
+  String get coupleShareUpdate => 'Compartir QR';
+
+  @override
+  String get coupleScanUpdate => 'Escanear';
+
+  @override
+  String get coupleSharedWallets => 'Aportes compartidos';
+
+  @override
+  String get coupleWalletsEmpty =>
+      'Crea un aporte (ej. 2M) y comparte el QR para que lo reciban en su celular.';
+
+  @override
+  String get coupleNewTransfer => 'Nuevo aporte';
+
+  @override
+  String get coupleTransferTitle => 'Concepto';
+
+  @override
+  String get coupleTransferTitleHint => 'Ej. Mes de marzo';
+
+  @override
+  String get coupleTransferAmount => 'Monto';
+
+  @override
+  String coupleHolderIsPartner(String name) {
+    return 'Lo usa $name';
+  }
+
+  @override
+  String get coupleWalletCreated =>
+      'Aporte creado. Muestra el QR para compartirlo.';
+
+  @override
+  String get coupleSyncQrTitle => 'Sincronizar';
+
+  @override
+  String coupleSyncQrSubtitle(String title) {
+    return 'Escanea para actualizar \"$title\"';
+  }
+
+  @override
+  String get coupleSyncQrSubtitleAll =>
+      'Escanea para actualizar todos los aportes y gastos';
+
+  @override
+  String get coupleSyncSuccess => 'Datos sincronizados correctamente';
+
+  @override
+  String get coupleSyncInvalid =>
+      'No se pudo leer el QR. Verifica que sea de Billey.';
+
+  @override
+  String get coupleLinkedSuccess => '¡Vinculación exitosa!';
+
+  @override
+  String get coupleUnlink => 'Desvincular';
+
+  @override
+  String get coupleUnlinkTitle => '¿Desvincular finanzas compartidas?';
+
+  @override
+  String get coupleUnlinkMessage =>
+      'Se borrarán los aportes compartidos en este dispositivo. La otra persona conservará su copia local.';
+
+  @override
+  String get coupleUnlinked => 'Desvinculado correctamente';
+
+  @override
+  String get coupleSharedWallet => 'Aporte compartido';
+
+  @override
+  String get coupleWalletNotFound => 'No se encontró este aporte';
+
+  @override
+  String get coupleAddExpense => 'Registrar gasto';
+
+  @override
+  String get coupleExpenseTitle => 'Concepto del gasto';
+
+  @override
+  String get coupleExpenseAmount => 'Monto';
+
+  @override
+  String get coupleBudget => 'Presupuesto';
+
+  @override
+  String get coupleSpent => 'Gastado';
+
+  @override
+  String get coupleRemaining => 'Disponible';
+
+  @override
+  String get coupleFrom => 'De';
+
+  @override
+  String get coupleFor => 'Para';
+
+  @override
+  String get coupleExpenses => 'Gastos';
+
+  @override
+  String get coupleNoExpensesYet => 'Aún no hay gastos en este aporte';
 }
