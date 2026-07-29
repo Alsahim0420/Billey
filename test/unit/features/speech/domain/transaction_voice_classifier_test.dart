@@ -35,6 +35,40 @@ void main() {
     );
   });
 
+  test('understands the direction of transfers and money movements', () {
+    expect(
+      classifier.classify('Le envié 100 mil a mi mamá'),
+      TransactionType.gasto,
+    );
+    expect(
+      classifier.classify('Transferí 80 mil a Juan'),
+      TransactionType.gasto,
+    );
+    expect(
+      classifier.classify('Me enviaron 100 mil'),
+      TransactionType.ingreso,
+    );
+    expect(
+      classifier.classify('Me abonaron el reembolso'),
+      TransactionType.ingreso,
+    );
+  });
+
+  test('recognizes broader expense and income vocabulary', () {
+    expect(
+      classifier.classify('Me descontaron la cuota del banco'),
+      TransactionType.gasto,
+    );
+    expect(
+      classifier.classify('Cobré una comisión del cliente'),
+      TransactionType.ingreso,
+    );
+    expect(
+      classifier.classify('Doné cincuenta mil'),
+      TransactionType.gasto,
+    );
+  });
+
   test('leaves an ambiguous phrase unclassified', () {
     expect(classifier.classify('Helados para el equipo'), isNull);
   });
