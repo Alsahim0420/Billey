@@ -39,9 +39,6 @@ class SpeechVoiceSelector extends StatelessWidget {
         LayoutBuilder(
           builder: (context, constraints) {
             const spacing = 10.0;
-            final cardWidth = constraints.maxWidth >= 520
-                ? (constraints.maxWidth - spacing * 2) / 3
-                : (constraints.maxWidth - spacing) / 2;
             return Wrap(
               spacing: spacing,
               runSpacing: spacing,
@@ -50,7 +47,8 @@ class SpeechVoiceSelector extends StatelessWidget {
                 final isActivePreview =
                     speechController.previewVoiceId == voice.id;
                 return SizedBox(
-                  width: cardWidth,
+                  width: constraints.maxWidth,
+                  height: 230,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(14),
                     onTap: () => provider.selectVoice(voice),
@@ -69,6 +67,7 @@ class SpeechVoiceSelector extends StatelessWidget {
                         ),
                       ),
                       child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             switch (voice.gender) {
