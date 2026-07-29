@@ -52,6 +52,25 @@ void main() {
     expect(repository.transcribeCalls, 0);
   });
 
+  test('TranscribeAudioUseCase rejects a recording that is too short',
+      () async {
+    final directory = await Directory.systemTemp.createTemp('speech-test');
+    addTearDown(() => directory.delete(recursive: true));
+    final file = File('${directory.path}/short.m4a');
+    await file.writeAsBytes([1, 2, 3]);
+
+    final result = await TranscribeAudioUseCase(repository)(
+      RecordedAudio(
+        path: file.path,
+        mimeType: 'audio/mp4',
+        duration: const Duration(milliseconds: 300),
+      ),
+    );
+
+    expect(result, isA<ErrorResult<Transcript>>());
+    expect(repository.transcribeCalls, 0);
+  });
+
   test('TranscribeAudioUseCase delegates a valid recording', () async {
     final directory = await Directory.systemTemp.createTemp('speech-test');
     addTearDown(() => directory.delete(recursive: true));

@@ -94,10 +94,36 @@ void main() {
     final request = client.request as http.MultipartRequest;
     expect(request.headers['xi-api-key'], 'test-api-key');
     expect(request.fields['model_id'], 'scribe_v2');
+    expect(request.fields['language_code'], 'spa');
+    expect(request.fields['tag_audio_events'], 'false');
     expect(request.files.single.field, 'file');
     expect(request.files.single.contentType.toString(), 'audio/mp4');
     expect(result.text, 'Hoy me gasté cien mil pesos');
     expect(result.languageCode, 'es');
+  });
+
+  test('maps an empty transcript to invalid audio', () async {
+    final directory = await Directory.systemTemp.createTemp('stt-test');
+    addTearDown(() => directory.delete(recursive: true));
+    final file = File('${directory.path}/voice.m4a');
+    await file.writeAsBytes([1]);
+    final source = HttpElevenLabsRemoteDataSource(
+      config: config,
+      client: _CapturingClient(responseBody: '{"text": ""}'),
+    );
+
+    await expectLater(
+      source.transcribe(
+        RecordedAudio(path: file.path, mimeType: 'audio/mp4'),
+      ),
+      throwsA(
+        isA<ElevenLabsException>().having(
+          (error) => error.kind,
+          'kind',
+          ElevenLabsErrorKind.invalidAudio,
+        ),
+      ),
+    );
   });
 
   for (final entry in <int, ElevenLabsErrorKind>{

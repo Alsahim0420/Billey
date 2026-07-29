@@ -21,6 +21,14 @@ class TranscribeAudioUseCase {
         InvalidAudioFailure('La grabación de audio está vacía.'),
       );
     }
+    if (audio.duration != null &&
+        audio.duration! < const Duration(milliseconds: 700)) {
+      return const ErrorResult(
+        InvalidAudioFailure(
+          'La grabación fue demasiado corta. Habla durante al menos un segundo.',
+        ),
+      );
+    }
     return _repository.transcribe(audio: audio);
   }
 }

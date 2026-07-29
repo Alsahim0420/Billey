@@ -114,6 +114,8 @@ class HttpElevenLabsRemoteDataSource implements ElevenLabsRemoteDataSource {
     )
       ..headers.addAll(_authenticationHeader)
       ..fields['model_id'] = _config.speechToTextModelId
+      ..fields['language_code'] = 'spa'
+      ..fields['tag_audio_events'] = 'false'
       ..files.add(
         await http.MultipartFile.fromPath(
           'file',
@@ -131,6 +133,13 @@ class HttpElevenLabsRemoteDataSource implements ElevenLabsRemoteDataSource {
       final decoded = jsonDecode(utf8.decode(response.bodyBytes));
       if (decoded is! Map<String, dynamic>) {
         throw const FormatException('Respuesta STT inválida.');
+      }
+      final transcriptText = decoded['text'];
+      if (transcriptText is! String || transcriptText.trim().isEmpty) {
+        throw const ElevenLabsException(
+          ElevenLabsErrorKind.invalidAudio,
+          'No se detectó voz en la grabación. Habla cerca del micrófono e inténtalo de nuevo.',
+        );
       }
       return SpeechToTextResponseDto.fromJson(decoded);
     } on TimeoutException {
