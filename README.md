@@ -1,5 +1,8 @@
 # 💸 Billey
 
+La configuración y arquitectura de voz con ElevenLabs está documentada en
+[docs/ELEVENLABS.md](docs/ELEVENLABS.md).
+
 ![Billey](https://res.cloudinary.com/panmecar/image/upload/v1752550787/ChatGPT_Image_14_jul_2025_10_30_44_p.m._hpoaxj.png)
 
 ---
