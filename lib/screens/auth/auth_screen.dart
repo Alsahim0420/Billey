@@ -205,7 +205,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                         .withValues(alpha: 0.16),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.wallet_rounded,
                                     color: AppColors.primaryColor,
                                     size: 28,
@@ -307,7 +307,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                   ),
                                   child: Row(
                                     children: [
-                                      Icon(Icons.cake_outlined,
+                                      const Icon(Icons.cake_outlined,
                                           color: AppColors.primaryColor),
                                       const SizedBox(width: 12),
                                       Expanded(
@@ -342,7 +342,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                   ),
                                 ),
                                 child: _isSubmitting
-                                    ? SizedBox(
+                                    ? const SizedBox(
                                         height: 20,
                                         width: 20,
                                         child: CircularProgressIndicator(
@@ -385,7 +385,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                   _isLogin
                                       ? '¿No tienes cuenta? Crear una'
                                       : '¿Ya tienes cuenta? Iniciar sesión',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: AppColors.primaryColor,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -423,7 +423,7 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: AppColors.primaryColor),
+        borderSide: const BorderSide(color: AppColors.primaryColor),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
