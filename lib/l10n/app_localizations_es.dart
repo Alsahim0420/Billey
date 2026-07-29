@@ -447,7 +447,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tapToSpeak => 'TOCA PARA HABLAR';
 
   @override
-  String get listening => 'ESCUCHANDO...';
+  String get listening => 'ESCUCHANDO... TERMINARÉ CUANDO DEJES DE HABLAR';
+
+  @override
+  String get voiceTranscribing => 'TRANSCRIBIENDO...';
+
+  @override
+  String get voicePlaying => 'REPRODUCIENDO...';
+
+  @override
+  String get voiceListenConfirmation => 'ESCUCHAR CONFIRMACIÓN';
+
+  @override
+  String get voiceConfirmationPrefix => 'Entendí:';
 
   @override
   String get confirmExpense => 'Confirmar gasto';
@@ -1327,4 +1339,25 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get coupleNoExpensesYet => 'Aún no hay gastos en este aporte';
+
+  @override
+  String get assistantVoice => 'Voz del asistente';
+
+  @override
+  String get assistantVoiceDescription =>
+      'Elige la voz para las confirmaciones habladas';
+
+  @override
+  String get assistantFemaleVoice => 'Femenina cálida';
+
+  @override
+  String get assistantMaleVoice => 'Masculina cálida';
+
+  @override
+  String get assistantVoicePreview => 'Escuchar';
+
+  @override
+  String assistantVoicePreviewMessage(String name) {
+    return 'Hola, $name. Te acompañaré a registrar tus gastos y confirmar que todo esté correcto en Billey.';
+  }
 }

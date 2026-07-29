@@ -446,7 +446,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tapToSpeak => 'TAP TO SPEAK';
 
   @override
-  String get listening => 'LISTENING...';
+  String get listening => 'LISTENING... I\'LL STOP WHEN YOU FINISH SPEAKING';
+
+  @override
+  String get voiceTranscribing => 'TRANSCRIBING...';
+
+  @override
+  String get voicePlaying => 'PLAYING...';
+
+  @override
+  String get voiceListenConfirmation => 'LISTEN TO CONFIRMATION';
+
+  @override
+  String get voiceConfirmationPrefix => 'I understood:';
 
   @override
   String get confirmExpense => 'Confirm Expense';
@@ -1321,4 +1333,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coupleNoExpensesYet => 'No expenses in this transfer yet';
+
+  @override
+  String get assistantVoice => 'Assistant voice';
+
+  @override
+  String get assistantVoiceDescription =>
+      'Choose the voice for spoken confirmations';
+
+  @override
+  String get assistantFemaleVoice => 'Warm female';
+
+  @override
+  String get assistantMaleVoice => 'Warm male';
+
+  @override
+  String get assistantVoicePreview => 'Listen';
+
+  @override
+  String assistantVoicePreviewMessage(String name) {
+    return 'Hi, $name. I\'ll help you record your expenses and confirm that everything is correct in Billey.';
+  }
 }

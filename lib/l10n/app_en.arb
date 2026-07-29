@@ -182,7 +182,11 @@
   "chooseCategory": "Choose category",
   "expenseHint": "Dinner at Nobu",
   "tapToSpeak": "TAP TO SPEAK",
-  "listening": "LISTENING...",
+  "listening": "LISTENING... I'LL STOP WHEN YOU FINISH SPEAKING",
+  "voiceTranscribing": "TRANSCRIBING...",
+  "voicePlaying": "PLAYING...",
+  "voiceListenConfirmation": "LISTEN TO CONFIRMATION",
+  "voiceConfirmationPrefix": "I understood:",
   "confirmExpense": "Confirm Expense",
   "updateExpense": "Update Expense",
   "confirmIncome": "Confirm Income",
@@ -556,5 +560,18 @@
   "coupleFrom": "From",
   "coupleFor": "For",
   "coupleExpenses": "Expenses",
-  "coupleNoExpensesYet": "No expenses in this transfer yet"
+  "coupleNoExpensesYet": "No expenses in this transfer yet",
+  "assistantVoice": "Assistant voice",
+  "assistantVoiceDescription": "Choose the voice for spoken confirmations",
+  "assistantFemaleVoice": "Warm female",
+  "assistantMaleVoice": "Warm male",
+  "assistantVoicePreview": "Listen",
+  "assistantVoicePreviewMessage": "Hi, {name}. I'll help you record your expenses and confirm that everything is correct in Billey.",
+  "@assistantVoicePreviewMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

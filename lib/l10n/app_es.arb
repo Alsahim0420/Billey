@@ -145,7 +145,11 @@
   "chooseCategory": "Elegir categoría",
   "expenseHint": "Cena en restaurante",
   "tapToSpeak": "TOCA PARA HABLAR",
-  "listening": "ESCUCHANDO...",
+  "listening": "ESCUCHANDO... TERMINARÉ CUANDO DEJES DE HABLAR",
+  "voiceTranscribing": "TRANSCRIBIENDO...",
+  "voicePlaying": "REPRODUCIENDO...",
+  "voiceListenConfirmation": "ESCUCHAR CONFIRMACIÓN",
+  "voiceConfirmationPrefix": "Entendí:",
   "confirmExpense": "Confirmar gasto",
   "updateExpense": "Actualizar gasto",
   "confirmIncome": "Confirmar ingreso",
@@ -446,5 +450,18 @@
   "coupleFrom": "De",
   "coupleFor": "Para",
   "coupleExpenses": "Gastos",
-  "coupleNoExpensesYet": "Aún no hay gastos en este aporte"
+  "coupleNoExpensesYet": "Aún no hay gastos en este aporte",
+  "assistantVoice": "Voz del asistente",
+  "assistantVoiceDescription": "Elige la voz para las confirmaciones habladas",
+  "assistantFemaleVoice": "Femenina cálida",
+  "assistantMaleVoice": "Masculina cálida",
+  "assistantVoicePreview": "Escuchar",
+  "assistantVoicePreviewMessage": "Hola, {name}. Te acompañaré a registrar tus gastos y confirmar que todo esté correcto en Billey.",
+  "@assistantVoicePreviewMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

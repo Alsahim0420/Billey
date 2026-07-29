@@ -46,3 +46,9 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+
+# Local secrets and encryption keys
+.env
+.env.*
+!.env.example
+*.key

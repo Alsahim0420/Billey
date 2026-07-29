@@ -923,8 +923,32 @@ abstract class AppLocalizations {
   /// No description provided for @listening.
   ///
   /// In en, this message translates to:
-  /// **'LISTENING...'**
+  /// **'LISTENING... I\'LL STOP WHEN YOU FINISH SPEAKING'**
   String get listening;
+
+  /// No description provided for @voiceTranscribing.
+  ///
+  /// In en, this message translates to:
+  /// **'TRANSCRIBING...'**
+  String get voiceTranscribing;
+
+  /// No description provided for @voicePlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'PLAYING...'**
+  String get voicePlaying;
+
+  /// No description provided for @voiceListenConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'LISTEN TO CONFIRMATION'**
+  String get voiceListenConfirmation;
+
+  /// No description provided for @voiceConfirmationPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'I understood:'**
+  String get voiceConfirmationPrefix;
 
   /// No description provided for @confirmExpense.
   ///
@@ -2533,6 +2557,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No expenses in this transfer yet'**
   String get coupleNoExpensesYet;
+
+  /// No description provided for @assistantVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistant voice'**
+  String get assistantVoice;
+
+  /// No description provided for @assistantVoiceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the voice for spoken confirmations'**
+  String get assistantVoiceDescription;
+
+  /// No description provided for @assistantFemaleVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm female'**
+  String get assistantFemaleVoice;
+
+  /// No description provided for @assistantMaleVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm male'**
+  String get assistantMaleVoice;
+
+  /// No description provided for @assistantVoicePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get assistantVoicePreview;
+
+  /// No description provided for @assistantVoicePreviewMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi, {name}. I\'ll help you record your expenses and confirm that everything is correct in Billey.'**
+  String assistantVoicePreviewMessage(String name);
 }
 
 class _AppLocalizationsDelegate
