@@ -9,15 +9,15 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../features/speech/application/speech_assistant_controller.dart';
+import '../features/speech/application/speech_assistant_state.dart';
 import '../models/category.dart';
 import '../models/transaction.dart';
 import '../providers/category_provider.dart';
 import '../providers/currency_provider.dart';
 import '../providers/income_distribution_provider.dart';
 import '../providers/transaction_provider.dart';
-import '../services/voice_expense_parser.dart';
 import '../theme/colors/app_colors.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../theme/billey_theme_scope.dart';
 
 class AddTransactionScreen extends StatefulWidget {
@@ -52,11 +52,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   double _savingsPercent = 20;
   String _distributionTemplateId = 'balanced_50_30_20';
   bool _distributionLoaded = false;
-
-  final stt.SpeechToText _speech = stt.SpeechToText();
-  bool _isListening = false;
-  bool _speechReady = false;
-  String _voicePreview = '';
 
   bool get _isIncome => _type == TransactionType.ingreso;
 
@@ -110,35 +105,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     _distributionLoaded = true;
   }
 
-  Future<bool> _initSpeech() async {
-    if (_speechReady) return true;
-
-    try {
-      _speechReady = await _speech.initialize(
-        onStatus: (status) {
-          if (!mounted) return;
-          if (status == 'done' || status == 'notListening') {
-            setState(() => _isListening = false);
-          }
-        },
-        onError: (_) {
-          if (!mounted) return;
-          setState(() => _isListening = false);
-        },
-      );
-      return _speechReady;
-    } on MissingPluginException {
-      _speechReady = false;
-      return false;
-    } catch (_) {
-      _speechReady = false;
-      return false;
-    }
-  }
-
   @override
   void dispose() {
-    _speech.stop();
     _animationController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();
@@ -159,6 +127,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   Widget build(BuildContext context) {
     BilleyThemeScope.isDarkOf(context);
     final l10n = context.l10n;
+    final speechState = context.watch<SpeechAssistantController>().state;
     return Scaffold(
       backgroundColor: AppColors.charcoal,
       body: SafeArea(
@@ -205,9 +174,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                           ),
                           const SizedBox(height: 30),
                           _VoiceButton(
-                            isListening: _isListening,
-                            preview: _voicePreview,
-                            onTap: () => _toggleVoiceListening(categories),
+                            state: speechState,
+                            onTap: _toggleVoiceListening,
+                            onPlay: _playVoiceConfirmation,
                           ),
                         ],
                       ),
@@ -368,92 +337,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     return amount.toStringAsFixed(2);
   }
 
-  Future<void> _toggleVoiceListening(List<CategoryModel> categories) async {
-    if (_isListening) {
-      await _speech.stop();
-      if (mounted) setState(() => _isListening = false);
-      return;
+  Future<void> _toggleVoiceListening() async {
+    final controller = context.read<SpeechAssistantController>();
+    if (controller.state.status == SpeechAssistantStatus.recording) {
+      await controller.stopRecordingAndTranscribe();
+    } else {
+      await controller.startRecording();
     }
-
-    final ready = await _initSpeech();
-    if (!ready) {
-      _showErrorMessage(context.l10n.voiceNotAvailable);
-      return;
-    }
-
-    if (!await _speech.hasPermission) {
-      _showErrorMessage(context.l10n.micPermissionRequired);
-      return;
-    }
-
-    final localeId = await _resolveSpeechLocale();
-
-    setState(() {
-      _isListening = true;
-      _voicePreview = '';
-    });
-
-    await _speech.listen(
-      onResult: (result) {
-        if (!mounted) return;
-        setState(() => _voicePreview = result.recognizedWords);
-        if (result.finalResult) {
-          _applyVoiceTranscript(result.recognizedWords, categories);
-          setState(() => _isListening = false);
-        }
-      },
-      listenOptions: stt.SpeechListenOptions(
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 3),
-        localeId: localeId,
-        cancelOnError: true,
-        partialResults: true,
-      ),
-    );
   }
 
-  Future<String> _resolveSpeechLocale() async {
-    const preferred = ['es_CO', 'es_MX', 'es_ES', 'es_US'];
-    final locales = await _speech.locales();
-    for (final id in preferred) {
-      if (locales.any((locale) => locale.localeId == id)) return id;
-    }
-    final spanish = locales.where((locale) => locale.localeId.startsWith('es'));
-    if (spanish.isNotEmpty) return spanish.first.localeId;
-    return locales.isNotEmpty ? locales.first.localeId : 'es_ES';
+  Future<void> _playVoiceConfirmation() async {
+    final controller = context.read<SpeechAssistantController>();
+    final transcript = controller.state.transcript?.text;
+    if (transcript == null || transcript.isEmpty) return;
+    await controller.generateAndPlaySpeech('Entendí: $transcript');
   }
-
-  void _applyVoiceTranscript(String text, List<CategoryModel> categories) {
-    final parsed = VoiceExpenseParser.parse(text);
-
-    if (parsed.amount == null || parsed.amount! <= 0) {
-      _showErrorMessage(context.l10n.voiceAmountNotUnderstood);
-      return;
-    }
-
-    setState(() {
-      _type = TransactionType.gasto;
-      _amountController.text = _amountTextFromValue(parsed.amount!);
-      if (parsed.title != null && parsed.title!.trim().isNotEmpty) {
-        _titleController.text = parsed.title!.trim();
-      }
-      if (parsed.category != null) {
-        _selectedCategory = categories.firstWhere(
-          (category) => category.transactionCategory == parsed.category,
-          orElse: () => _selectedCategory ?? categories.first,
-        );
-      }
-    });
-
-    if (parsed.canSaveExpense) {
-      _saveTransaction();
-      return;
-    }
-
-    _showErrorMessage(context.l10n.voiceAmountDetected);
-  }
-
-  String _amountTextFromValue(double amount) => _initialAmountText(amount);
 
   Future<void> _showDistributionRulesEditor() async {
     final result = await Navigator.of(context).push<_DistributionRules>(
@@ -1732,27 +1630,42 @@ class _AmountInputFieldState extends State<_AmountInputField> {
 }
 
 class _VoiceButton extends StatelessWidget {
-  final bool isListening;
-  final String preview;
+  final SpeechAssistantState state;
   final VoidCallback onTap;
+  final VoidCallback onPlay;
 
   const _VoiceButton({
-    required this.isListening,
-    required this.preview,
+    required this.state,
     required this.onTap,
+    required this.onPlay,
   });
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final statusText = isListening
-        ? (preview.isEmpty ? l10n.listening : preview)
-        : l10n.tapToSpeak;
+    final isListening = state.status == SpeechAssistantStatus.recording;
+    final transcript = state.transcript?.text ?? '';
+    final statusText = switch (state.status) {
+      SpeechAssistantStatus.recording => l10n.listening,
+      SpeechAssistantStatus.stoppingRecording ||
+      SpeechAssistantStatus.transcribing =>
+        'TRANSCRIBIENDO...',
+      SpeechAssistantStatus.generatingSpeech ||
+      SpeechAssistantStatus.playingSpeech =>
+        'REPRODUCIENDO...',
+      SpeechAssistantStatus.failure ||
+      SpeechAssistantStatus.unavailable =>
+        state.errorMessage ?? l10n.voiceNotAvailable,
+      _ => transcript.isEmpty ? l10n.tapToSpeak : transcript,
+    };
+    final canTap = !state.isBusy &&
+        state.status != SpeechAssistantStatus.unavailable &&
+        state.status != SpeechAssistantStatus.playingSpeech;
 
     return Column(
       children: [
         GestureDetector(
-          onTap: onTap,
+          onTap: canTap ? onTap : null,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             width: 82,
@@ -1811,6 +1724,14 @@ class _VoiceButton extends StatelessWidget {
             ),
           ),
         ),
+        if (transcript.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          TextButton.icon(
+            onPressed: state.isBusy ? null : onPlay,
+            icon: const Icon(TablerIcons.volume),
+            label: const Text('ESCUCHAR CONFIRMACIÓN'),
+          ),
+        ],
       ],
     );
   }
