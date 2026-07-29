@@ -379,10 +379,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) => const SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(24, 24, 24, 32),
-          child: SpeechVoiceSelector(),
+      builder: (context) => const FractionallySizedBox(
+        heightFactor: 0.92,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(24, 24, 24, 32),
+            child: SpeechVoiceSelector(),
+          ),
         ),
       ),
     );

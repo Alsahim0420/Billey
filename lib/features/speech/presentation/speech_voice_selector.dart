@@ -36,94 +36,105 @@ class SpeechVoiceSelector extends StatelessWidget {
           style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
         ),
         const SizedBox(height: 12),
-        Row(
-          children: SpeechVoiceProvider.options.map((voice) {
-            final selected = provider.selectedVoice.id == voice.id;
-            final isActivePreview = speechController.previewVoiceId == voice.id;
-            final description = voice.isFemale
-                ? l10n.assistantFemaleVoice
-                : l10n.assistantMaleVoice;
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right: voice == SpeechVoiceProvider.options.first ? 8 : 0,
-                ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(14),
-                  onTap: () => provider.selectVoice(voice),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? AppColors.primaryColor.withValues(alpha: 0.16)
-                          : AppColors.surfaceInput,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const spacing = 10.0;
+            final cardWidth = constraints.maxWidth >= 520
+                ? (constraints.maxWidth - spacing * 2) / 3
+                : (constraints.maxWidth - spacing) / 2;
+            return Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: SpeechVoiceProvider.options.map((voice) {
+                final selected = provider.selectedVoice.id == voice.id;
+                final isActivePreview =
+                    speechController.previewVoiceId == voice.id;
+                return SizedBox(
+                  width: cardWidth,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => provider.selectVoice(voice),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
                         color: selected
-                            ? AppColors.primaryColor
-                            : AppColors.borderSubtle,
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          voice.isFemale ? TablerIcons.woman : TablerIcons.man,
+                            ? AppColors.primaryColor.withValues(alpha: 0.16)
+                            : AppColors.surfaceInput,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
                           color: selected
                               ? AppColors.primaryColor
-                              : AppColors.textSecondary,
+                              : AppColors.borderSubtle,
                         ),
-                        const SizedBox(height: 7),
-                        Text(
-                          voice.name,
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w800,
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            switch (voice.gender) {
+                              SpeechVoiceGender.female => TablerIcons.woman,
+                              SpeechVoiceGender.male => TablerIcons.man,
+                              SpeechVoiceGender.neutral => TablerIcons.user,
+                            },
+                            color: selected
+                                ? AppColors.primaryColor
+                                : AppColors.textSecondary,
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          description,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 11,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        if (isActivePreview)
-                          _VoiceMiniPlayer(controller: speechController)
-                        else
-                          TextButton.icon(
-                            onPressed: isGenerating
-                                ? null
-                                : () => _startPreview(
-                                      context,
-                                      provider,
-                                      voice,
-                                    ),
-                            icon: isGenerating && selected
-                                ? const SizedBox.square(
-                                    dimension: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(TablerIcons.player_play, size: 17),
-                            label: Text(l10n.assistantVoicePreview),
-                            style: TextButton.styleFrom(
-                              foregroundColor: AppColors.primaryColor,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
+                          const SizedBox(height: 7),
+                          Text(
+                            voice.name,
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w800,
                             ),
                           ),
-                      ],
+                          const SizedBox(height: 2),
+                          Text(
+                            voice.description,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 11,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          if (isActivePreview)
+                            _VoiceMiniPlayer(controller: speechController)
+                          else
+                            TextButton.icon(
+                              onPressed: isGenerating
+                                  ? null
+                                  : () => _startPreview(
+                                        context,
+                                        provider,
+                                        voice,
+                                      ),
+                              icon: isGenerating && selected
+                                  ? const SizedBox.square(
+                                      dimension: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(TablerIcons.player_play,
+                                      size: 17),
+                              label: Text(l10n.assistantVoicePreview),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.primaryColor,
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ),
+                );
+              }).toList(),
             );
-          }).toList(),
+          },
         ),
         if (speechController.state.status == SpeechAssistantStatus.failure &&
             speechController.state.errorMessage != null) ...[
