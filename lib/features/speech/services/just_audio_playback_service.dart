@@ -14,7 +14,21 @@ class JustAudioPlaybackService implements AudioPlaybackService {
   File? _temporaryAudio;
 
   @override
-  Future<void> play(GeneratedAudio audio) async {
+  Stream<Duration> get positionStream => _player.positionStream;
+
+  @override
+  Stream<Duration?> get durationStream => _player.durationStream;
+
+  @override
+  Stream<bool> get playingStream => _player.playingStream;
+
+  @override
+  Stream<bool> get completedStream => _player.processingStateStream
+      .map((state) => state == ProcessingState.completed)
+      .distinct();
+
+  @override
+  Future<void> load(GeneratedAudio audio) async {
     await stop();
     final directory = await getTemporaryDirectory();
     final extension =
@@ -25,8 +39,22 @@ class JustAudioPlaybackService implements AudioPlaybackService {
     await file.writeAsBytes(audio.bytes, flush: true);
     _temporaryAudio = file;
     await _player.setFilePath(file.path);
-    await _player.play();
   }
+
+  @override
+  Future<void> play(GeneratedAudio audio) async {
+    await load(audio);
+    await resume();
+  }
+
+  @override
+  Future<void> resume() => _player.play();
+
+  @override
+  Future<void> pause() => _player.pause();
+
+  @override
+  Future<void> seek(Duration position) => _player.seek(position);
 
   @override
   Future<void> stop() async {

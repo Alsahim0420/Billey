@@ -16,9 +16,8 @@ class SpeechVoiceSelector extends StatelessWidget {
     final l10n = context.l10n;
     final provider = context.watch<SpeechVoiceProvider>();
     final speechController = context.watch<SpeechAssistantController>();
-    final isPreviewBusy = speechController.state.status ==
-            SpeechAssistantStatus.generatingSpeech ||
-        speechController.state.status == SpeechAssistantStatus.playingSpeech;
+    final isGenerating =
+        speechController.state.status == SpeechAssistantStatus.generatingSpeech;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,6 +39,7 @@ class SpeechVoiceSelector extends StatelessWidget {
         Row(
           children: SpeechVoiceProvider.options.map((voice) {
             final selected = provider.selectedVoice.id == voice.id;
+            final isActivePreview = speechController.previewVoiceId == voice.id;
             final description = voice.isFemale
                 ? l10n.assistantFemaleVoice
                 : l10n.assistantMaleVoice;
@@ -91,34 +91,32 @@ class SpeechVoiceSelector extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        TextButton.icon(
-                          onPressed: isPreviewBusy
-                              ? null
-                              : () async {
-                                  await provider.selectVoice(voice);
-                                  if (!context.mounted) return;
-                                  await context
-                                      .read<SpeechAssistantController>()
-                                      .generateAndPlaySpeech(
-                                        l10n.assistantVoicePreviewMessage(
-                                          voice.name,
-                                        ),
-                                      );
-                                },
-                          icon: isPreviewBusy && selected
-                              ? const SizedBox.square(
-                                  dimension: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(TablerIcons.volume, size: 17),
-                          label: Text(l10n.assistantVoicePreview),
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primaryColor,
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                        if (isActivePreview)
+                          _VoiceMiniPlayer(controller: speechController)
+                        else
+                          TextButton.icon(
+                            onPressed: isGenerating
+                                ? null
+                                : () => _startPreview(
+                                      context,
+                                      provider,
+                                      voice,
+                                    ),
+                            icon: isGenerating && selected
+                                ? const SizedBox.square(
+                                    dimension: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(TablerIcons.player_play, size: 17),
+                            label: Text(l10n.assistantVoicePreview),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.primaryColor,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -129,5 +127,83 @@ class SpeechVoiceSelector extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Future<void> _startPreview(
+    BuildContext context,
+    SpeechVoiceProvider provider,
+    SpeechVoiceOption voice,
+  ) async {
+    await provider.selectVoice(voice);
+    if (!context.mounted) return;
+    await context.read<SpeechAssistantController>().playVoicePreview(
+          voiceId: voice.id,
+          text: context.l10n.assistantVoicePreviewMessage,
+        );
+  }
+}
+
+class _VoiceMiniPlayer extends StatelessWidget {
+  const _VoiceMiniPlayer({required this.controller});
+
+  final SpeechAssistantController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final durationMs = controller.previewDuration.inMilliseconds;
+    final positionMs = controller.previewPosition.inMilliseconds
+        .clamp(0, durationMs > 0 ? durationMs : 1);
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              tooltip: controller.previewPlaying ? 'Pausar' : 'Reproducir',
+              onPressed: controller.previewPlaying
+                  ? controller.pauseVoicePreview
+                  : () => controller.playVoicePreview(
+                        voiceId: controller.previewVoiceId!,
+                        text: context.l10n.assistantVoicePreviewMessage,
+                      ),
+              icon: Icon(
+                controller.previewPlaying
+                    ? TablerIcons.player_pause
+                    : TablerIcons.player_play,
+                size: 20,
+              ),
+            ),
+            Expanded(
+              child: Slider(
+                value: positionMs.toDouble(),
+                max: (durationMs > 0 ? durationMs : 1).toDouble(),
+                onChanged: durationMs == 0
+                    ? null
+                    : (value) => controller.seekVoicePreview(
+                          Duration(milliseconds: value.round()),
+                        ),
+              ),
+            ),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              tooltip: 'Detener',
+              onPressed: controller.stopVoicePreview,
+              icon: const Icon(TablerIcons.player_stop, size: 20),
+            ),
+          ],
+        ),
+        Text(
+          '${_format(controller.previewPosition)} / '
+          '${_format(controller.previewDuration)}',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
+        ),
+      ],
+    );
+  }
+
+  static String _format(Duration duration) {
+    final seconds = duration.inSeconds;
+    return '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}';
   }
 }

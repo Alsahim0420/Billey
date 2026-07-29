@@ -103,6 +103,21 @@ void main() {
     expect(controller.state.transcript, isNull);
     expect(controller.state.errorMessage, isNull);
   });
+
+  test('voice preview reuses generated audio and exposes player controls',
+      () async {
+    await controller.playVoicePreview(voiceId: 'bella', text: 'La misma frase');
+    await controller.pauseVoicePreview();
+    await controller.seekVoicePreview(const Duration(seconds: 1));
+    await controller.playVoicePreview(voiceId: 'bella', text: 'La misma frase');
+    await controller.stopVoicePreview();
+
+    expect(repository.synthesizeCalls, 1);
+    expect(playback.loadCalls, 1);
+    expect(playback.resumeCalls, 2);
+    expect(playback.pauseCalls, 2);
+    expect(playback.seekCalls, 2);
+  });
 }
 
 class _FakeRecorder implements AudioRecorderService {
@@ -138,11 +153,40 @@ class _FakeRecorder implements AudioRecorderService {
 }
 
 class _FakePlayback implements AudioPlaybackService {
+  int loadCalls = 0;
+  int pauseCalls = 0;
+  int resumeCalls = 0;
+  int seekCalls = 0;
+
+  @override
+  Stream<bool> get completedStream => const Stream.empty();
+
+  @override
+  Stream<Duration?> get durationStream => const Stream.empty();
+
+  @override
+  Stream<bool> get playingStream => const Stream.empty();
+
+  @override
+  Stream<Duration> get positionStream => const Stream.empty();
+
   @override
   Future<void> dispose() async {}
 
   @override
+  Future<void> load(GeneratedAudio audio) async => loadCalls++;
+
+  @override
+  Future<void> pause() async => pauseCalls++;
+
+  @override
   Future<void> play(GeneratedAudio audio) async {}
+
+  @override
+  Future<void> resume() async => resumeCalls++;
+
+  @override
+  Future<void> seek(Duration position) async => seekCalls++;
 
   @override
   Future<void> stop() async {}
@@ -150,9 +194,11 @@ class _FakePlayback implements AudioPlaybackService {
 
 class _FakeRepository implements SpeechRepository {
   SpeechFailure? synthesisFailure;
+  int synthesizeCalls = 0;
 
   @override
   Future<Result<GeneratedAudio>> synthesize({required String text}) async {
+    synthesizeCalls++;
     final failure = synthesisFailure;
     if (failure != null) return ErrorResult(failure);
     return Success(

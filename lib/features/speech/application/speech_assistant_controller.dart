@@ -41,9 +41,41 @@ class SpeechAssistantController extends ChangeNotifier {
   DateTime? _lastSpeechAt;
   bool _speechDetected = false;
   bool _checkingAmplitude = false;
+  final Map<String, GeneratedAudio> _voicePreviewCache = {};
+  final List<StreamSubscription<dynamic>> _playbackSubscriptions = [];
+  String? _previewVoiceId;
+  Duration _previewPosition = Duration.zero;
+  Duration _previewDuration = Duration.zero;
+  bool _previewPlaying = false;
 
   SpeechAssistantState _state = const SpeechAssistantState();
   SpeechAssistantState get state => _state;
+  String? get previewVoiceId => _previewVoiceId;
+  Duration get previewPosition => _previewPosition;
+  Duration get previewDuration => _previewDuration;
+  bool get previewPlaying => _previewPlaying;
+
+  void initializePlaybackTracking() {
+    if (_playback == null || _playbackSubscriptions.isNotEmpty) return;
+    _playbackSubscriptions
+      ..add(_playback.positionStream.listen((position) {
+        _previewPosition = position;
+        notifyListeners();
+      }))
+      ..add(_playback.durationStream.listen((duration) {
+        _previewDuration = duration ?? Duration.zero;
+        notifyListeners();
+      }))
+      ..add(_playback.playingStream.listen((playing) {
+        _previewPlaying = playing;
+        notifyListeners();
+      }))
+      ..add(_playback.completedStream.listen((completed) {
+        if (!completed) return;
+        _previewPlaying = false;
+        notifyListeners();
+      }));
+  }
 
   Future<void> startRecording() async {
     if (_recorder == null) {
@@ -183,6 +215,53 @@ class SpeechAssistantController extends ChangeNotifier {
     }
   }
 
+  Future<void> playVoicePreview({
+    required String voiceId,
+    required String text,
+  }) async {
+    if (_generateSpeech == null || _playback == null) return;
+    initializePlaybackTracking();
+    var audio = _voicePreviewCache[voiceId];
+    if (audio == null) {
+      _emit(_state.copyWith(
+        status: SpeechAssistantStatus.generatingSpeech,
+        clearError: true,
+      ));
+      final result = await _generateSpeech(text);
+      switch (result) {
+        case Success<GeneratedAudio>():
+          audio = result.value;
+          _voicePreviewCache[voiceId] = audio;
+        case ErrorResult<GeneratedAudio>():
+          _fail(result.failure.message);
+          return;
+      }
+    }
+    if (_previewVoiceId != voiceId) {
+      await _playback.load(audio);
+      _previewVoiceId = voiceId;
+      _previewPosition = Duration.zero;
+    } else if (_previewDuration > Duration.zero &&
+        _previewPosition >= _previewDuration) {
+      await _playback.seek(Duration.zero);
+    }
+    _emit(_state.copyWith(status: SpeechAssistantStatus.stopped));
+    _playback.resume();
+  }
+
+  Future<void> pauseVoicePreview() async {
+    await _playback?.pause();
+  }
+
+  Future<void> stopVoicePreview() async {
+    await _playback?.pause();
+    await _playback?.seek(Duration.zero);
+  }
+
+  Future<void> seekVoicePreview(Duration position) async {
+    await _playback?.seek(position);
+  }
+
   Future<void> stopPlayback() async {
     if (_playback == null) return;
     await _playback.stop();
@@ -200,6 +279,10 @@ class SpeechAssistantController extends ChangeNotifier {
     _stopSilenceDetection();
     _recorder?.cancel();
     _playback?.stop();
+    _previewVoiceId = null;
+    _previewPosition = Duration.zero;
+    _previewDuration = Duration.zero;
+    _previewPlaying = false;
     _state = const SpeechAssistantState();
     if (notify) notifyListeners();
   }
@@ -230,6 +313,9 @@ class SpeechAssistantController extends ChangeNotifier {
     _stopSilenceDetection();
     _recorder?.cancel();
     _playback?.dispose();
+    for (final subscription in _playbackSubscriptions) {
+      subscription.cancel();
+    }
     super.dispose();
   }
 }

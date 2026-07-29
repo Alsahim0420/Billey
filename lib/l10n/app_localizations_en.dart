@@ -1351,7 +1351,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get assistantVoicePreview => 'Listen';
 
   @override
-  String assistantVoicePreviewMessage(String name) {
-    return 'Hi, I\'m $name. This is the voice you\'ll hear in your Billey confirmations.';
-  }
+  String get assistantVoicePreviewMessage =>
+      'Hi. I\'ll help you record your expenses and confirm that everything is correct in Billey.';
 }

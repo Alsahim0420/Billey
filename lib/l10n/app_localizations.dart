@@ -2591,8 +2591,8 @@ abstract class AppLocalizations {
   /// No description provided for @assistantVoicePreviewMessage.
   ///
   /// In en, this message translates to:
-  /// **'Hi, I\'m {name}. This is the voice you\'ll hear in your Billey confirmations.'**
-  String assistantVoicePreviewMessage(String name);
+  /// **'Hi. I\'ll help you record your expenses and confirm that everything is correct in Billey.'**
+  String get assistantVoicePreviewMessage;
 }
 
 class _AppLocalizationsDelegate
