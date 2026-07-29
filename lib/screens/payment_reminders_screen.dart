@@ -297,12 +297,13 @@ class _ReminderFormSheetState extends State<_ReminderFormSheet> {
     super.initState();
     final existing = widget.existing;
     final provider = context.read<PaymentReminderProvider>();
+    final currency = context.read<CurrencyProvider>();
     final draft = provider.createDraft(existing: existing);
 
     _titleController = TextEditingController(text: draft.title);
     _amountController = TextEditingController(
       text: draft.amount != null && draft.amount! > 0
-          ? draft.amount!.toStringAsFixed(0)
+          ? currency.formatValue(draft.amount!)
           : '',
     );
     _repeatMonthly = draft.repeatMonthly;
@@ -347,7 +348,8 @@ class _ReminderFormSheetState extends State<_ReminderFormSheet> {
       return;
     }
 
-    final amount = double.tryParse(_amountController.text.trim());
+    final amount =
+        context.read<CurrencyProvider>().parseValue(_amountController.text);
     final existing = widget.existing;
     final provider = context.read<PaymentReminderProvider>();
     final id = existing?.id ?? provider.createDraft().id;
@@ -423,6 +425,10 @@ class _ReminderFormSheetState extends State<_ReminderFormSheet> {
                 TextFormField(
                   controller: _amountController,
                   keyboardType: TextInputType.number,
+                  inputFormatters:
+                      context.watch<CurrencyProvider>().usesDecimals
+                          ? null
+                          : [context.read<CurrencyProvider>().inputFormatter],
                   decoration: InputDecoration(
                     labelText: l10n.paymentReminderAmount,
                     hintText: l10n.paymentReminderAmountHint,

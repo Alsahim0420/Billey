@@ -46,11 +46,9 @@ class _SpendingInsightsScreenState extends State<SpendingInsightsScreen> {
               DateTime(_selectedMonth.year, _selectedMonth.month - 1),
             );
             final categoryData = _categoryBreakdown(expenses);
-            final chartData = categoryData.isEmpty
-                ? _demoBreakdown(l10n)
-                : categoryData;
-            final totalSpend =
-                expenses.fold(0.0, (sum, tx) => sum + tx.amount);
+            final chartData =
+                categoryData.isEmpty ? _demoBreakdown(l10n) : categoryData;
+            final totalSpend = expenses.fold(0.0, (sum, tx) => sum + tx.amount);
             final demoTotal =
                 chartData.fold(0.0, (sum, item) => sum + item.amount);
             final displayedTotal = totalSpend == 0 ? demoTotal : totalSpend;
@@ -605,6 +603,7 @@ class _MonthlyComparisonChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final currency = context.watch<CurrencyProvider>();
     final maxValue = [
       ...thisMonth,
       ...lastMonth,
@@ -639,10 +638,9 @@ class _MonthlyComparisonChart extends StatelessWidget {
                       reservedSize: 42,
                       getTitlesWidget: (value, meta) {
                         if (value == 0) return const _AxisLabel('0');
-                        if (value >= 2000) return const _AxisLabel('\$2k');
-                        if (value >= 1500) return const _AxisLabel('\$1.5k');
-                        if (value >= 1000) return const _AxisLabel('\$1k');
-                        if (value >= 500) return const _AxisLabel('\$500');
+                        if (value >= maxValue / 4) {
+                          return _AxisLabel(currency.formatCompact(value));
+                        }
                         return const SizedBox.shrink();
                       },
                     ),

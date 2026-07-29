@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:provider/provider.dart';
 
-import '../models/transaction.dart';
 import '../services/local_profile_storage.dart';
 import '../providers/theme_settings_provider.dart';
 import '../theme/colors/app_colors.dart';
@@ -210,99 +209,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _navigateToAddTransaction() {
-    final l10n = context.l10n;
-    showModalBottomSheet<TransactionType>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.fromLTRB(20, 14, 20, 26),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 48,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 18),
-                decoration: BoxDecoration(
-                  color: AppColors.textLight.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-              _buildTransactionTypeOption(
-                icon: TablerIcons.arrow_up,
-                title: l10n.addIncome,
-                subtitle: l10n.addIncomeSubtitle,
-                color: AppColors.incomeColor,
-                type: TransactionType.ingreso,
-              ),
-              const SizedBox(height: 10),
-              _buildTransactionTypeOption(
-                icon: TablerIcons.arrow_down,
-                title: l10n.addExpense,
-                subtitle: l10n.addExpenseSubtitle,
-                color: AppColors.expenseColor,
-                type: TransactionType.gasto,
-              ),
-            ],
-          ),
-        ),
-      ),
-    ).then((type) {
-      if (type == null || !mounted) return;
-      _openAddTransaction(type);
-    });
+    _openAddTransaction();
   }
 
-  Widget _buildTransactionTypeOption({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required TransactionType type,
-  }) {
-    return ListTile(
-      onTap: () => Navigator.pop(context, type),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      leading: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.14),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(icon, color: color),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 16,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  void _openAddTransaction(TransactionType type) {
+  void _openAddTransaction() {
     Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            AddTransactionScreen(initialType: type),
+            const AddTransactionScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
             position: animation.drive(

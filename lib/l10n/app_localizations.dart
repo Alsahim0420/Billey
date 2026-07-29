@@ -950,6 +950,66 @@ abstract class AppLocalizations {
   /// **'I understood this:'**
   String get voiceConfirmationPrefix;
 
+  /// No description provided for @newTransactionByVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'New transaction'**
+  String get newTransactionByVoice;
+
+  /// No description provided for @voiceTransactionPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me what happened. I will identify whether it is an expense or income and complete the details for you.'**
+  String get voiceTransactionPrompt;
+
+  /// No description provided for @voiceTransactionTypeNotUnderstood.
+  ///
+  /// In en, this message translates to:
+  /// **'I could not identify whether it was an expense or income. Try saying “I spent”, “I bought”, “I was paid”, or “I received”.'**
+  String get voiceTransactionTypeNotUnderstood;
+
+  /// No description provided for @salaryQuestionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What is your usual salary?'**
+  String get salaryQuestionTitle;
+
+  /// No description provided for @salaryQuestionMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'I will securely save it in your profile to understand future income, deductions, or additional payments.'**
+  String get salaryQuestionMessage;
+
+  /// No description provided for @salaryAmountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g. 3,000,000'**
+  String get salaryAmountHint;
+
+  /// No description provided for @salarySaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'I could not load or save your salary. Check your connection and try again.'**
+  String get salarySaveError;
+
+  /// No description provided for @salaryVoiceQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'I do not know your usual salary yet. How much do you normally receive?'**
+  String get salaryVoiceQuestion;
+
+  /// No description provided for @salaryVoiceListeningPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me how much you normally receive'**
+  String get salaryVoiceListeningPrompt;
+
+  /// No description provided for @salaryVoiceNotUnderstood.
+  ///
+  /// In en, this message translates to:
+  /// **'I did not understand your salary amount. Try saying, for example, three million pesos.'**
+  String get salaryVoiceNotUnderstood;
+
   /// No description provided for @confirmExpense.
   ///
   /// In en, this message translates to:

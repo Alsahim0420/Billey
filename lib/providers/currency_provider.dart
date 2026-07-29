@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 class CurrencyProvider extends ChangeNotifier {
@@ -42,6 +43,50 @@ class CurrencyProvider extends ChangeNotifier {
     if (amount == 0) return format(0);
     final sign = isIncome ? '+' : '-';
     return '$sign${format(amount.abs())}';
+  }
+
+  String formatCompact(double amount) {
+    return NumberFormat.compactCurrency(
+      locale: _selectedCurrency.locale,
+      symbol: _selectedCurrency.symbol,
+      decimalDigits: amount.abs() >= 1000 ? 1 : 0,
+    ).format(amount);
+  }
+
+  double? parseValue(String input) {
+    final value = input.trim();
+    if (value.isEmpty) return null;
+    try {
+      return NumberFormat.decimalPattern(_selectedCurrency.locale)
+          .parse(value)
+          .toDouble();
+    } on FormatException {
+      return null;
+    }
+  }
+
+  TextInputFormatter get inputFormatter => CurrencyTextInputFormatter(this);
+}
+
+class CurrencyTextInputFormatter extends TextInputFormatter {
+  CurrencyTextInputFormatter(this.currency);
+
+  final CurrencyProvider currency;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) return const TextEditingValue();
+    final value = double.tryParse(digits);
+    if (value == null) return oldValue;
+    final formatted = currency.formatValue(value);
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
   }
 }
 

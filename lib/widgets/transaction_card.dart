@@ -209,7 +209,10 @@ class _TransactionCardState extends State<TransactionCard>
 
                               // Monto
                               Text(
-                                '${isIncome ? '+' : '-'}${currencyProvider.format(amount)}',
+                                currencyProvider.formatWithSign(
+                                  amount,
+                                  isIncome: isIncome,
+                                ),
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w800,

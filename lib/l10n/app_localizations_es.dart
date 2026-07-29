@@ -462,6 +462,43 @@ class AppLocalizationsEs extends AppLocalizations {
   String get voiceConfirmationPrefix => 'Entendí esto:';
 
   @override
+  String get newTransactionByVoice => 'Nueva transacción';
+
+  @override
+  String get voiceTransactionPrompt =>
+      'Cuéntame qué pasó. Identificaré si es un gasto o un ingreso y completaré los datos por ti.';
+
+  @override
+  String get voiceTransactionTypeNotUnderstood =>
+      'No pude identificar si fue un gasto o un ingreso. Prueba diciendo “gasté”, “compré”, “me pagaron” o “me consignaron”.';
+
+  @override
+  String get salaryQuestionTitle => '¿Cuál es tu sueldo habitual?';
+
+  @override
+  String get salaryQuestionMessage =>
+      'Lo guardaré de forma segura en tu perfil para entender futuros ingresos, descuentos o pagos adicionales.';
+
+  @override
+  String get salaryAmountHint => 'Ej. 3.000.000';
+
+  @override
+  String get salarySaveError =>
+      'No pude consultar o guardar tu sueldo. Revisa tu conexión e inténtalo nuevamente.';
+
+  @override
+  String get salaryVoiceQuestion =>
+      'Todavía no conozco tu sueldo habitual. ¿Cuánto recibes normalmente?';
+
+  @override
+  String get salaryVoiceListeningPrompt =>
+      'Dime por voz cuánto recibes normalmente';
+
+  @override
+  String get salaryVoiceNotUnderstood =>
+      'No entendí el valor de tu sueldo. Intenta decir, por ejemplo, tres millones de pesos.';
+
+  @override
   String get confirmExpense => 'Confirmar gasto';
 
   @override

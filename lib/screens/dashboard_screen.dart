@@ -994,7 +994,6 @@ class _RecentTransactionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isIncome = transaction.type == TransactionType.ingreso;
-    final amountPrefix = isIncome ? '+' : '-';
     final amountColor =
         isIncome ? AppColors.incomeColor : AppColors.textPrimary;
 
@@ -1046,7 +1045,10 @@ class _RecentTransactionRow extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Text(
-          '$amountPrefix ${currencyProvider.format(transaction.amount)}',
+          currencyProvider.formatWithSign(
+            transaction.amount,
+            isIncome: isIncome,
+          ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.right,

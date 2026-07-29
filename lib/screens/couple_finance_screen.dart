@@ -374,6 +374,7 @@ class _CoupleFinanceScreenState extends State<CoupleFinanceScreen> {
   ) async {
     final l10n = context.l10n;
     final link = couple.link!;
+    final currency = context.read<CurrencyProvider>();
     final titleController = TextEditingController();
     final amountController = TextEditingController();
     var holderIsPartner = true;
@@ -419,6 +420,8 @@ class _CoupleFinanceScreenState extends State<CoupleFinanceScreen> {
                   TextField(
                     controller: amountController,
                     keyboardType: TextInputType.number,
+                    inputFormatters:
+                        currency.usesDecimals ? null : [currency.inputFormatter],
                     decoration: InputDecoration(
                       labelText: l10n.coupleTransferAmount,
                     ),
@@ -436,7 +439,7 @@ class _CoupleFinanceScreenState extends State<CoupleFinanceScreen> {
                   FilledButton(
                     onPressed: () {
                       final amount =
-                          double.tryParse(amountController.text.trim()) ?? 0;
+                          currency.parseValue(amountController.text) ?? 0;
                       if (titleController.text.trim().length < 2 ||
                           amount <= 0) {
                         return;
@@ -459,7 +462,7 @@ class _CoupleFinanceScreenState extends State<CoupleFinanceScreen> {
       return;
     }
 
-    final amount = double.tryParse(amountController.text.trim()) ?? 0;
+    final amount = currency.parseValue(amountController.text) ?? 0;
     final holderName = holderIsPartner ? link.partnerName : link.myName;
 
     final wallet = await couple.createWallet(

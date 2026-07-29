@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/l10n/localization_helpers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -91,14 +92,15 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
   }
 
   Future<void> _showGoalSheet({_SavingsGoal? goal}) async {
+    final currency = context.read<CurrencyProvider>();
     final titleController = TextEditingController(text: goal?.title ?? '');
     final subtitleController =
         TextEditingController(text: goal?.subtitle ?? '');
     final currentController = TextEditingController(
-      text: goal?.currentAmount.toStringAsFixed(0) ?? '',
+      text: goal == null ? '' : currency.formatValue(goal.currentAmount),
     );
     final targetController = TextEditingController(
-      text: goal?.targetAmount.toStringAsFixed(0) ?? '',
+      text: goal == null ? '' : currency.formatValue(goal.targetAmount),
     );
     final monthsController = TextEditingController(
       text: goal?.monthsLeft.toString() ?? '',
@@ -172,6 +174,9 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                                 label: context.l10n.saved,
                                 hint: '800000',
                                 keyboardType: TextInputType.number,
+                                inputFormatter: currency.usesDecimals
+                                    ? null
+                                    : currency.inputFormatter,
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -181,6 +186,9 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                                 label: context.l10n.target,
                                 hint: '3000000',
                                 keyboardType: TextInputType.number,
+                                inputFormatter: currency.usesDecimals
+                                    ? null
+                                    : currency.inputFormatter,
                               ),
                             ),
                           ],
@@ -228,12 +236,10 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
                           child: ElevatedButton(
                             onPressed: () {
                               final title = titleController.text.trim();
-                              final current = double.tryParse(
-                                currentController.text.trim(),
-                              );
-                              final target = double.tryParse(
-                                targetController.text.trim(),
-                              );
+                              final current =
+                                  currency.parseValue(currentController.text);
+                              final target =
+                                  currency.parseValue(targetController.text);
                               final months = int.tryParse(
                                 monthsController.text.trim(),
                               );
@@ -690,12 +696,14 @@ class _GoalInput extends StatelessWidget {
   final String label;
   final String hint;
   final TextInputType? keyboardType;
+  final TextInputFormatter? inputFormatter;
 
   const _GoalInput({
     required this.controller,
     required this.label,
     required this.hint,
     this.keyboardType,
+    this.inputFormatter,
   });
 
   @override
@@ -703,6 +711,7 @@ class _GoalInput extends StatelessWidget {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatter == null ? null : [inputFormatter!],
       style: TextStyle(color: AppColors.textPrimary),
       decoration: InputDecoration(
         labelText: label,

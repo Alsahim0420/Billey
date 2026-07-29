@@ -56,8 +56,12 @@ class ExpenseVoiceParser {
   }
 
   double? _extractAmount(String text) {
+    if (RegExp(r'\bmedio millon\b').hasMatch(text)) {
+      return 500000;
+    }
+
     final numeric = RegExp(
-      r'(?:\$|cop\s*)?(\d{1,3}(?:[.,]\d{3})+|\d+)(?:\s*(mil|millones?))?',
+      r'(?:\$|cop\s*)?(\d{1,3}(?:[.,]\d{3})+|\d+)(?:\s*(millon(?:es)?|mil)\b)?',
     ).firstMatch(text);
     if (numeric != null) {
       var value =
@@ -66,6 +70,9 @@ class ExpenseVoiceParser {
       if (value != null && scale == 'mil' && value < 1000) value *= 1000;
       if (value != null && (scale?.startsWith('millon') ?? false)) {
         value *= 1000000;
+        if (RegExp(r'\bmillon(?:es)? y medio\b').hasMatch(text)) {
+          value += 500000;
+        }
       }
       return value;
     }
@@ -98,7 +105,12 @@ class ExpenseVoiceParser {
         if (total + current > best) best = total + current;
       }
     }
-    return best > 0 ? best.toDouble() : null;
+    if (best == 0) return null;
+    if (best >= 1000000 &&
+        RegExp(r'\bmillon(?:es)? y medio\b').hasMatch(text)) {
+      best += 500000;
+    }
+    return best.toDouble();
   }
 
   DateTime _extractDate(String text, DateTime now) {

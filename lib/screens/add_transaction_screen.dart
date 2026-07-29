@@ -1,5 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 
+import 'dart:async';
+
 import 'package:billey/l10n/app_localizations.dart';
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/l10n/localization_helpers.dart';
@@ -12,23 +14,26 @@ import 'package:provider/provider.dart';
 import '../features/speech/application/speech_assistant_controller.dart';
 import '../features/speech/application/speech_assistant_state.dart';
 import '../features/speech/domain/expense_voice_parser.dart';
+import '../features/speech/domain/income_voice_parser.dart';
+import '../features/speech/domain/transaction_voice_classifier.dart';
 import '../models/category.dart';
 import '../models/transaction.dart';
 import '../providers/category_provider.dart';
 import '../providers/currency_provider.dart';
 import '../providers/income_distribution_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../services/firestore_salary_service.dart';
 import '../theme/colors/app_colors.dart';
 import '../theme/billey_theme_scope.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   final TransactionModel? transaction;
-  final TransactionType initialType;
+  final TransactionType? initialType;
 
   const AddTransactionScreen({
     super.key,
     this.transaction,
-    this.initialType = TransactionType.gasto,
+    this.initialType,
   });
 
   @override
@@ -58,6 +63,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   String? _lastAppliedTranscript;
   String? _voiceSummary;
   String? _voiceConfirmationText;
+  final _salaryService = FirestoreSalaryService();
+  double? _rememberedSalary;
+  bool _salaryLoaded = false;
+  late bool _awaitingVoiceClassification;
+  bool _awaitingSalaryVoiceAnswer = false;
+  String? _pendingSalaryTransactionTranscript;
+  bool _amountDisplayInitialized = false;
 
   bool get _isIncome => _type == TransactionType.ingreso;
 
@@ -75,6 +87,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     );
 
     final transaction = widget.transaction;
+    _awaitingVoiceClassification =
+        transaction == null && widget.initialType == null;
     _amountController = TextEditingController(
       text: transaction != null ? _initialAmountText(transaction.amount) : '',
     );
@@ -88,7 +102,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     } else {
       _id = DateTime.now().millisecondsSinceEpoch.toString();
       _date = DateTime.now();
-      _type = widget.initialType;
+      _type = widget.initialType ?? TransactionType.gasto;
     }
 
     _animationController.forward();
@@ -97,6 +111,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (!_amountDisplayInitialized) {
+      _amountDisplayInitialized = true;
+      final transaction = widget.transaction;
+      if (transaction != null) {
+        _amountController.text =
+            context.read<CurrencyProvider>().formatValue(transaction.amount);
+      }
+    }
     final speechController = context.read<SpeechAssistantController>();
     if (!identical(_speechController, speechController)) {
       _speechController?.removeListener(_handleSpeechResult);
@@ -158,6 +180,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                   : CategoryModel.getDefaultCategories();
               _selectedCategory ??= _findInitialCategory(categories);
 
+              if (_awaitingVoiceClassification) {
+                return _buildVoiceFirstScreen(speechState);
+              }
+
               if (_isIncome) {
                 return _buildIncomeScreen(categories);
               }
@@ -209,6 +235,48 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     );
   }
 
+  Widget _buildVoiceFirstScreen(SpeechAssistantState speechState) {
+    final l10n = context.l10n;
+    return Column(
+      children: [
+        _ModalHeader(
+          title: l10n.newTransactionByVoice,
+          onClose: () => Navigator.pop(context),
+          onSave: null,
+        ),
+        Expanded(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.voiceTransactionPrompt,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      height: 1.35,
+                    ),
+                  ),
+                  const SizedBox(height: 34),
+                  _VoiceButton(
+                    state: speechState,
+                    resultSummary: _voiceSummary,
+                    onTap: _toggleVoiceListening,
+                    onPlay: _playVoiceConfirmation,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildIncomeScreen(List<CategoryModel> categories) {
     final amount = _parsedAmount;
     final l10n = context.l10n;
@@ -253,6 +321,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                       _IncomeDateTile(
                         date: _date,
                         onTap: _presentDatePicker,
+                      ),
+                      const SizedBox(height: 28),
+                      Center(
+                        child: _VoiceButton(
+                          state:
+                              context.watch<SpeechAssistantController>().state,
+                          resultSummary: _voiceSummary,
+                          onTap: _toggleVoiceListening,
+                          onPlay: _playVoiceConfirmation,
+                        ),
                       ),
                       const SizedBox(height: 40),
                       _DistributionCard(
@@ -337,7 +415,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
 
   CategoryModel _findInitialCategory(List<CategoryModel> categories) {
     final transaction = widget.transaction;
-    if (transaction == null) return categories.first;
+    if (transaction == null) {
+      if (_isIncome) {
+        return categories.firstWhere(
+          (category) => category.id == 'other',
+          orElse: () => categories.first,
+        );
+      }
+      return categories.first;
+    }
 
     return categories.firstWhere(
       (category) => category.transactionCategory == transaction.category,
@@ -346,7 +432,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   }
 
   double get _parsedAmount =>
-      double.tryParse(_amountController.text.trim()) ?? 0;
+      context.read<CurrencyProvider>().parseValue(_amountController.text) ?? 0;
 
   static String _initialAmountText(double amount) {
     if (amount == amount.roundToDouble()) {
@@ -366,6 +452,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     if (controller.state.status == SpeechAssistantStatus.recording) {
       await controller.stopRecordingAndTranscribe();
     } else {
+      _lastAppliedTranscript = null;
       await controller.startRecording();
     }
   }
@@ -381,6 +468,30 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       return;
     }
     _lastAppliedTranscript = transcript;
+
+    if (_awaitingSalaryVoiceAnswer) {
+      unawaited(_applySalaryVoiceAnswer(transcript));
+      return;
+    }
+
+    if (_awaitingVoiceClassification) {
+      final detectedType =
+          const TransactionVoiceClassifier().classify(transcript);
+      if (detectedType == null) {
+        _showErrorMessage(context.l10n.voiceTransactionTypeNotUnderstood);
+        return;
+      }
+      setState(() {
+        _type = detectedType;
+        _awaitingVoiceClassification = false;
+        _selectedCategory = null;
+      });
+    }
+
+    if (_isIncome) {
+      unawaited(_applyIncomeSpeechResult(transcript));
+      return;
+    }
 
     final provider = context.read<CategoryProvider>();
     final categories = provider.categories.isNotEmpty
@@ -407,14 +518,124 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     setState(() {
       _titleController.text = title;
       if (draft.amount != null) {
-        _amountController.text = _initialAmountText(draft.amount!);
+        _amountController.text =
+            context.read<CurrencyProvider>().formatValue(draft.amount!);
       }
       _selectedCategory = category;
       _date = draft.date;
       _voiceConfirmationText = transcript;
       _voiceSummary = draft.amount == null
           ? '$title · ${category.name}'
-          : '$title · \$${NumberFormat('#,##0', 'es').format(draft.amount)} · ${category.name}';
+          : '$title · ${context.read<CurrencyProvider>().format(draft.amount!)} · ${category.name}';
+    });
+  }
+
+  Future<void> _applyIncomeSpeechResult(String transcript) async {
+    try {
+      if (!_salaryLoaded) {
+        _rememberedSalary = await _salaryService.load();
+        _salaryLoaded = true;
+      }
+      if (!mounted) return;
+
+      final draft = const IncomeVoiceParser().parse(
+        transcript,
+        now: DateTime.now(),
+        rememberedSalary: _rememberedSalary,
+      );
+
+      if (draft.requiresRememberedSalary) {
+        await _requestSalaryByVoice(transcript, draft);
+        return;
+      } else if (draft.isSalary &&
+          !draft.hasSalaryAdjustment &&
+          draft.amount != null &&
+          _rememberedSalary == null) {
+        await _salaryService.save(draft.amount!);
+        _rememberedSalary = draft.amount;
+      }
+      if (!mounted) return;
+
+      _applyIncomeDraft(draft, transcript);
+    } catch (error) {
+      if (mounted) {
+        _showErrorMessage(context.l10n.salarySaveError);
+      }
+    }
+  }
+
+  Future<void> _requestSalaryByVoice(
+    String transactionTranscript,
+    IncomeVoiceDraft draft,
+  ) async {
+    if (!mounted) return;
+    setState(() {
+      _titleController.text = draft.source;
+      _awaitingSalaryVoiceAnswer = true;
+      _pendingSalaryTransactionTranscript = transactionTranscript;
+      _voiceSummary = context.l10n.salaryVoiceListeningPrompt;
+      _voiceConfirmationText = null;
+    });
+
+    final controller = context.read<SpeechAssistantController>();
+    await controller.generateAndPlaySpeech(context.l10n.salaryVoiceQuestion);
+    if (!mounted || !_awaitingSalaryVoiceAnswer) return;
+    _lastAppliedTranscript = null;
+    await controller.startRecording();
+  }
+
+  Future<void> _applySalaryVoiceAnswer(String answer) async {
+    final salary =
+        const ExpenseVoiceParser().parse(answer, now: DateTime.now()).amount;
+    if (salary == null || salary <= 0) {
+      if (!mounted) return;
+      _showErrorMessage(context.l10n.salaryVoiceNotUnderstood);
+      final controller = context.read<SpeechAssistantController>();
+      await controller.generateAndPlaySpeech(
+        context.l10n.salaryVoiceNotUnderstood,
+      );
+      if (!mounted || !_awaitingSalaryVoiceAnswer) return;
+      _lastAppliedTranscript = null;
+      await controller.startRecording();
+      return;
+    }
+
+    try {
+      await _salaryService.save(salary);
+      _rememberedSalary = salary;
+      final transactionTranscript = _pendingSalaryTransactionTranscript;
+      if (transactionTranscript == null || !mounted) return;
+      final draft = const IncomeVoiceParser().parse(
+        transactionTranscript,
+        now: DateTime.now(),
+        rememberedSalary: salary,
+      );
+      setState(() {
+        _awaitingSalaryVoiceAnswer = false;
+        _pendingSalaryTransactionTranscript = null;
+      });
+      _applyIncomeDraft(draft, transactionTranscript);
+    } catch (_) {
+      if (mounted) _showErrorMessage(context.l10n.salarySaveError);
+    }
+  }
+
+  void _applyIncomeDraft(
+    IncomeVoiceDraft draft,
+    String transactionTranscript,
+  ) {
+    if (!mounted) return;
+    setState(() {
+      _titleController.text = draft.source;
+      if (draft.amount != null) {
+        _amountController.text =
+            context.read<CurrencyProvider>().formatValue(draft.amount!);
+      }
+      _date = draft.date;
+      _voiceConfirmationText = transactionTranscript;
+      _voiceSummary = draft.amount == null
+          ? draft.source
+          : '${draft.source} · ${context.read<CurrencyProvider>().format(draft.amount!)}';
     });
   }
 
@@ -556,7 +777,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   Future<void> _saveTransaction() async {
     final l10n = context.l10n;
     final title = _titleController.text.trim();
-    final amount = double.tryParse(_amountController.text.trim());
+    final amount =
+        context.read<CurrencyProvider>().parseValue(_amountController.text);
 
     if (title.length < 3) {
       _showErrorMessage(l10n.conceptMinLength);
@@ -1003,7 +1225,8 @@ class _DistributionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formatted = context.watch<CurrencyProvider>().format(amount);
+    final currency = context.watch<CurrencyProvider>();
+    final formatted = currency.formatWithSign(amount, isIncome: true);
 
     return Row(
       children: [
@@ -1046,7 +1269,7 @@ class _DistributionRow extends StatelessWidget {
           ),
         ),
         Text(
-          '+\$$formatted',
+          formatted,
           style: TextStyle(
             color: enabled ? AppColors.primaryColor : AppColors.textSecondary,
             fontSize: 14,
@@ -1348,7 +1571,7 @@ class _AutomatedRuleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final amount = monthlyAmount * value / 100;
-    final formatted = NumberFormat('#,##0').format(amount);
+    final formatted = context.watch<CurrencyProvider>().format(amount);
 
     return Container(
       width: double.infinity,
@@ -1411,7 +1634,7 @@ class _AutomatedRuleCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            l10n.monthlyAllocation('\$$formatted'),
+            l10n.monthlyAllocation(formatted),
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 14,
@@ -1446,7 +1669,7 @@ class _AutomatedRuleCard extends StatelessWidget {
 class _ModalHeader extends StatelessWidget {
   final String title;
   final VoidCallback onClose;
-  final VoidCallback onSave;
+  final VoidCallback? onSave;
 
   const _ModalHeader({
     required this.title,
@@ -1482,17 +1705,20 @@ class _ModalHeader extends StatelessWidget {
               ),
             ),
           ),
-          TextButton(
-            onPressed: onSave,
-            child: Text(
-              l10n.save,
-              style: const TextStyle(
-                color: AppColors.primaryColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
+          if (onSave != null)
+            TextButton(
+              onPressed: onSave,
+              child: Text(
+                l10n.save,
+                style: const TextStyle(
+                  color: AppColors.primaryColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-          ),
+            )
+          else
+            const SizedBox(width: 48),
         ],
       ),
     );
@@ -1621,7 +1847,9 @@ class _AmountInputFieldState extends State<_AmountInputField> {
     final allowDecimals = currency.usesDecimals;
     final color =
         widget.isIncome ? AppColors.textPrimary : AppColors.expenseColor;
-    final fontSize = widget.isIncome ? 50.0 : 48.0;
+    final fontSize = widget.isIncome ? 44.0 : 40.0;
+    final availableTextWidth =
+        (MediaQuery.sizeOf(context).width - 112).clamp(170.0, 280.0);
     final textStyle = TextStyle(
       color: color,
       fontSize: fontSize,
@@ -1667,7 +1895,7 @@ class _AmountInputFieldState extends State<_AmountInputField> {
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   minWidth: widget.controller.text.isEmpty ? 28 : 48,
-                  maxWidth: 240,
+                  maxWidth: availableTextWidth,
                 ),
                 child: TextField(
                   focusNode: _focusNode,
@@ -1681,7 +1909,7 @@ class _AmountInputFieldState extends State<_AmountInputField> {
                         RegExp(r'^\d*\.?\d{0,2}'),
                       )
                     else
-                      FilteringTextInputFormatter.digitsOnly,
+                      currency.inputFormatter,
                   ],
                   textAlign: TextAlign.left,
                   style: textStyle,

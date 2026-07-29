@@ -5,6 +5,7 @@ import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/l10n/localization_helpers.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -911,16 +912,17 @@ class _SetupGoalSheetState extends State<_SetupGoalSheet> {
   void initState() {
     super.initState();
     final existing = widget.existing;
+    final currency = context.read<CurrencyProvider>();
     _titleController = TextEditingController(text: existing?.title ?? '');
     _subtitleController = TextEditingController(text: existing?.subtitle ?? '');
     _targetController = TextEditingController(
       text: existing != null && existing.targetAmount > 0
-          ? existing.targetAmount.toStringAsFixed(0)
+          ? currency.formatValue(existing.targetAmount)
           : '',
     );
     _currentController = TextEditingController(
       text: existing != null && existing.currentAmount > 0
-          ? existing.currentAmount.toStringAsFixed(0)
+          ? currency.formatValue(existing.currentAmount)
           : '',
     );
     _monthsController = TextEditingController(
@@ -942,7 +944,8 @@ class _SetupGoalSheetState extends State<_SetupGoalSheet> {
   void _save() {
     final l10n = context.l10n;
     final title = _titleController.text.trim();
-    final target = double.tryParse(_targetController.text.trim());
+    final currency = context.read<CurrencyProvider>();
+    final target = currency.parseValue(_targetController.text);
     if (title.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.validGoalName)),
@@ -965,7 +968,7 @@ class _SetupGoalSheetState extends State<_SetupGoalSheet> {
         subtitle: _subtitleController.text.trim().isEmpty
             ? l10n.goalPersonalDefault
             : _subtitleController.text.trim(),
-        currentAmount: double.tryParse(_currentController.text.trim()) ?? 0,
+        currentAmount: currency.parseValue(_currentController.text) ?? 0,
         targetAmount: target,
         monthsLeft: int.tryParse(_monthsController.text.trim()) ?? 6,
         style: _style,
@@ -1037,6 +1040,11 @@ class _SetupGoalSheetState extends State<_SetupGoalSheet> {
                         label: l10n.goalTargetAmount,
                         hint: '3000000',
                         keyboardType: TextInputType.number,
+                        inputFormatter: context
+                                .watch<CurrencyProvider>()
+                                .usesDecimals
+                            ? null
+                            : context.read<CurrencyProvider>().inputFormatter,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1046,6 +1054,11 @@ class _SetupGoalSheetState extends State<_SetupGoalSheet> {
                         label: l10n.goalSavedAmount,
                         hint: '0',
                         keyboardType: TextInputType.number,
+                        inputFormatter: context
+                                .watch<CurrencyProvider>()
+                                .usesDecimals
+                            ? null
+                            : context.read<CurrencyProvider>().inputFormatter,
                       ),
                     ),
                   ],
@@ -1113,18 +1126,21 @@ class _SetupField extends StatelessWidget {
     required this.label,
     required this.hint,
     this.keyboardType,
+    this.inputFormatter,
   });
 
   final TextEditingController controller;
   final String label;
   final String hint;
   final TextInputType? keyboardType;
+  final TextInputFormatter? inputFormatter;
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatter == null ? null : [inputFormatter!],
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
