@@ -24,6 +24,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:billey/core/responsive/responsive.dart';
 import 'firebase_options.dart';
 import 'features/speech/application/speech_assistant_controller.dart';
+import 'features/speech/application/speech_voice_provider.dart';
 import 'features/speech/speech_dependencies.dart';
 
 void main() async {
@@ -51,9 +52,14 @@ void main() async {
   final coupleFinance = CoupleFinanceProvider.instance;
   await coupleFinance.initialize();
 
+  final speechVoiceProvider = SpeechVoiceProvider();
+  await speechVoiceProvider.initialize();
+
   late final SpeechAssistantController speechAssistant;
   try {
-    speechAssistant = await SpeechDependencies.initialize();
+    speechAssistant = await SpeechDependencies.initialize(
+      voiceProvider: speechVoiceProvider,
+    );
   } catch (_) {
     speechAssistant = SpeechAssistantController.unavailable(
       'Configura y cifra las variables de ElevenLabs para usar la voz.',
@@ -73,6 +79,7 @@ void main() async {
         ChangeNotifierProvider.value(value: paymentReminders),
         ChangeNotifierProvider.value(value: coupleFinance),
         ChangeNotifierProvider.value(value: speechAssistant),
+        ChangeNotifierProvider.value(value: speechVoiceProvider),
       ],
       child: const MyApp(),
     ),

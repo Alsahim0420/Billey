@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 
 import 'application/speech_assistant_controller.dart';
+import 'application/speech_voice_provider.dart';
 import 'config/eleven_labs_config.dart';
 import 'config/encrypted_environment_secret_provider.dart';
 import 'data/eleven_labs_remote_data_source.dart';
@@ -13,13 +14,16 @@ import 'services/record_audio_recorder_service.dart';
 class SpeechDependencies {
   const SpeechDependencies._();
 
-  static Future<SpeechAssistantController> initialize() async {
+  static Future<SpeechAssistantController> initialize({
+    required SpeechVoiceProvider voiceProvider,
+  }) async {
     final secrets = EncryptedEnvironmentSecretProvider();
     await secrets.initialize();
     final config = ElevenLabsConfig.fromSecrets(secrets);
     final remoteDataSource = HttpElevenLabsRemoteDataSource(
       config: config,
       client: http.Client(),
+      voiceIdProvider: () => voiceProvider.selectedVoiceId,
     );
     final repository = ElevenLabsSpeechRepository(remoteDataSource);
     return SpeechAssistantController(

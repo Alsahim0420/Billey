@@ -9,6 +9,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../features/speech/presentation/speech_voice_selector.dart';
 import '../models/savings_goal_style.dart';
 import '../providers/currency_provider.dart';
 import '../providers/income_distribution_provider.dart';
@@ -448,6 +449,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             return null;
           },
         ),
+        const SizedBox(height: 24),
+        const SpeechVoiceSelector(),
       ],
     );
   }

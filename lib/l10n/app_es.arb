@@ -450,5 +450,9 @@
   "coupleFrom": "De",
   "coupleFor": "Para",
   "coupleExpenses": "Gastos",
-  "coupleNoExpensesYet": "Aún no hay gastos en este aporte"
+  "coupleNoExpensesYet": "Aún no hay gastos en este aporte",
+  "assistantVoice": "Voz del asistente",
+  "assistantVoiceDescription": "Elige la voz para las confirmaciones habladas",
+  "assistantFemaleVoice": "Femenina cálida",
+  "assistantMaleVoice": "Masculina cálida"
 }

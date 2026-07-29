@@ -51,6 +51,25 @@ void main() {
     expect(result.characterCost, 4);
   });
 
+  test('uses the currently selected voice for TTS', () async {
+    late http.Request captured;
+    final client = MockClient((request) async {
+      captured = request;
+      return http.Response.bytes([1], 200);
+    });
+    var selectedVoiceId = 'female-voice';
+    final source = HttpElevenLabsRemoteDataSource(
+      config: config,
+      client: client,
+      voiceIdProvider: () => selectedVoiceId,
+    );
+
+    selectedVoiceId = 'male-voice';
+    await source.synthesize('Hola');
+
+    expect(captured.url.path, '/v1/text-to-speech/male-voice');
+  });
+
   test('builds multipart STT request and parses transcript', () async {
     final directory = await Directory.systemTemp.createTemp('stt-test');
     addTearDown(() => directory.delete(recursive: true));

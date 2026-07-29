@@ -1339,4 +1339,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get coupleNoExpensesYet => 'Aún no hay gastos en este aporte';
+
+  @override
+  String get assistantVoice => 'Voz del asistente';
+
+  @override
+  String get assistantVoiceDescription =>
+      'Elige la voz para las confirmaciones habladas';
+
+  @override
+  String get assistantFemaleVoice => 'Femenina cálida';
+
+  @override
+  String get assistantMaleVoice => 'Masculina cálida';
 }

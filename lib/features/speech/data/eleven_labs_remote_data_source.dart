@@ -22,11 +22,14 @@ class HttpElevenLabsRemoteDataSource implements ElevenLabsRemoteDataSource {
   HttpElevenLabsRemoteDataSource({
     required ElevenLabsConfig config,
     required http.Client client,
+    String Function()? voiceIdProvider,
   })  : _config = config,
-        _client = client;
+        _client = client,
+        _voiceIdProvider = voiceIdProvider;
 
   final ElevenLabsConfig _config;
   final http.Client _client;
+  final String Function()? _voiceIdProvider;
 
   Map<String, String> get _authenticationHeader => {
         'xi-api-key': _config.apiKey,
@@ -34,13 +37,14 @@ class HttpElevenLabsRemoteDataSource implements ElevenLabsRemoteDataSource {
 
   @override
   Future<GeneratedAudioDto> synthesize(String text) async {
-    if (_config.voiceId.isEmpty) {
+    final voiceId = _voiceIdProvider?.call() ?? _config.voiceId;
+    if (voiceId.isEmpty) {
       throw const ConfigurationException(
         'Configura ELEVENLABS_VOICE_ID para generar audio.',
       );
     }
     final uri = _config.baseUrl.replace(
-      path: '/v1/text-to-speech/${_config.voiceId}',
+      path: '/v1/text-to-speech/$voiceId',
       queryParameters: {'output_format': _config.outputFormat},
     );
 

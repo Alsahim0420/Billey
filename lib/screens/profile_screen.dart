@@ -5,6 +5,8 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../features/speech/application/speech_voice_provider.dart';
+import '../features/speech/presentation/speech_voice_selector.dart';
 import '../l10n/l10n_extensions.dart';
 import '../l10n/localization_helpers.dart';
 import '../providers/currency_provider.dart';
@@ -85,6 +87,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   title: l10n.currencySetting,
                   trailingText: currencyProvider.selectedCurrency.symbol,
                   onTap: () => _showCurrencyPicker(currencyProvider),
+                );
+              },
+            ),
+            const SizedBox(height: 10),
+            Consumer<SpeechVoiceProvider>(
+              builder: (context, voiceProvider, _) {
+                return _ProfileSettingTile(
+                  icon: TablerIcons.microphone,
+                  title: l10n.assistantVoice,
+                  trailingText: voiceProvider.selectedVoice.name,
+                  onTap: _showVoicePicker,
                 );
               },
             ),
@@ -355,6 +368,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (selectedCurrency != null) {
       currencyProvider.setCurrency(selectedCurrency);
     }
+  }
+
+  void _showVoicePicker() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.backgroundAlt,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => const SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, 32),
+          child: SpeechVoiceSelector(),
+        ),
+      ),
+    );
   }
 
   Future<void> _exportData(BuildContext originContext) async {
@@ -1185,9 +1215,8 @@ class _ExportChoiceTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: selected
-                  ? AppColors.primaryColor
-                  : AppColors.surfacePressed,
+              color:
+                  selected ? AppColors.primaryColor : AppColors.surfacePressed,
               width: selected ? 1.5 : 1,
             ),
           ),
@@ -1196,9 +1225,8 @@ class _ExportChoiceTile extends StatelessWidget {
               Icon(
                 icon,
                 size: 20,
-                color: selected
-                    ? AppColors.primaryColor
-                    : AppColors.textSecondary,
+                color:
+                    selected ? AppColors.primaryColor : AppColors.textSecondary,
               ),
               const SizedBox(width: 10),
               Expanded(

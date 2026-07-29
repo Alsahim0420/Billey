@@ -560,5 +560,9 @@
   "coupleFrom": "From",
   "coupleFor": "For",
   "coupleExpenses": "Expenses",
-  "coupleNoExpensesYet": "No expenses in this transfer yet"
+  "coupleNoExpensesYet": "No expenses in this transfer yet",
+  "assistantVoice": "Assistant voice",
+  "assistantVoiceDescription": "Choose the voice for spoken confirmations",
+  "assistantFemaleVoice": "Warm female",
+  "assistantMaleVoice": "Warm male"
 }

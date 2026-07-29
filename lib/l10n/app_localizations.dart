@@ -2557,6 +2557,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No expenses in this transfer yet'**
   String get coupleNoExpensesYet;
+
+  /// No description provided for @assistantVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistant voice'**
+  String get assistantVoice;
+
+  /// No description provided for @assistantVoiceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the voice for spoken confirmations'**
+  String get assistantVoiceDescription;
+
+  /// No description provided for @assistantFemaleVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm female'**
+  String get assistantFemaleVoice;
+
+  /// No description provided for @assistantMaleVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm male'**
+  String get assistantMaleVoice;
 }
 
 class _AppLocalizationsDelegate
