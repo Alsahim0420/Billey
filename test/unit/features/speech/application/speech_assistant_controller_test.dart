@@ -91,6 +91,18 @@ void main() {
     expect(controller.state.transcript?.text, 'texto transcrito');
     expect(controller.state.errorMessage, 'falló');
   });
+
+  test('resetSession clears transcript and returns to initial state', () async {
+    await controller.startRecording();
+    await controller.stopRecordingAndTranscribe();
+    expect(controller.state.transcript?.text, 'texto transcrito');
+
+    controller.resetSession();
+
+    expect(controller.state.status, SpeechAssistantStatus.initial);
+    expect(controller.state.transcript, isNull);
+    expect(controller.state.errorMessage, isNull);
+  });
 }
 
 class _FakeRecorder implements AudioRecorderService {

@@ -54,6 +54,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   String _distributionTemplateId = 'balanced_50_30_20';
   bool _distributionLoaded = false;
   SpeechAssistantController? _speechController;
+  bool _speechSessionInitialized = false;
   String? _lastAppliedTranscript;
   String? _voiceSummary;
 
@@ -100,6 +101,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       _speechController?.removeListener(_handleSpeechResult);
       _speechController = speechController..addListener(_handleSpeechResult);
     }
+    if (!_speechSessionInitialized) {
+      _speechSessionInitialized = true;
+      speechController.resetSession(notify: false);
+    }
     if (_distributionLoaded) return;
 
     final distribution = context.watch<IncomeDistributionProvider>();
@@ -117,6 +122,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   @override
   void dispose() {
     _speechController?.removeListener(_handleSpeechResult);
+    _speechController?.resetSession(notify: false);
     _animationController.dispose();
     _titleController.dispose();
     _descriptionController.dispose();

@@ -196,6 +196,14 @@ class SpeechAssistantController extends ChangeNotifier {
     ));
   }
 
+  void resetSession({bool notify = true}) {
+    _stopSilenceDetection();
+    _recorder?.cancel();
+    _playback?.stop();
+    _state = const SpeechAssistantState();
+    if (notify) notifyListeners();
+  }
+
   void _fail(String message) {
     _emit(_state.copyWith(
       status: SpeechAssistantStatus.failure,
