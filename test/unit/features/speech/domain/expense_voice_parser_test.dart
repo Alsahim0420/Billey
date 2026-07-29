@@ -51,4 +51,28 @@ void main() {
     expect(draft.categoryId, 'food');
     expect(draft.date, DateTime(2026, 7, 28));
   });
+
+  test('understands fractions expressed after millions', () {
+    final twoAndAHalfMillion = parser.parse(
+      'Le envié dos millones y medio',
+      now: now,
+    );
+    final oneAndAHalfMillion = parser.parse(
+      'Pagué un millón y medio',
+      now: now,
+    );
+    final halfMillion = parser.parse(
+      'Gasté medio millón',
+      now: now,
+    );
+    final numericTwoAndAHalfMillion = parser.parse(
+      'Transferí 2 millones y medio',
+      now: now,
+    );
+
+    expect(twoAndAHalfMillion.amount, 2500000);
+    expect(oneAndAHalfMillion.amount, 1500000);
+    expect(halfMillion.amount, 500000);
+    expect(numericTwoAndAHalfMillion.amount, 2500000);
+  });
 }

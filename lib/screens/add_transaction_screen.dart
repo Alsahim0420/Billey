@@ -1847,7 +1847,9 @@ class _AmountInputFieldState extends State<_AmountInputField> {
     final allowDecimals = currency.usesDecimals;
     final color =
         widget.isIncome ? AppColors.textPrimary : AppColors.expenseColor;
-    final fontSize = widget.isIncome ? 50.0 : 48.0;
+    final fontSize = widget.isIncome ? 44.0 : 40.0;
+    final availableTextWidth =
+        (MediaQuery.sizeOf(context).width - 112).clamp(170.0, 280.0);
     final textStyle = TextStyle(
       color: color,
       fontSize: fontSize,
@@ -1893,7 +1895,7 @@ class _AmountInputFieldState extends State<_AmountInputField> {
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   minWidth: widget.controller.text.isEmpty ? 28 : 48,
-                  maxWidth: 240,
+                  maxWidth: availableTextWidth,
                 ),
                 child: TextField(
                   focusNode: _focusNode,
