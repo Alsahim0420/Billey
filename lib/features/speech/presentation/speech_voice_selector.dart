@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../../../l10n/l10n_extensions.dart';
 import '../../../theme/colors/app_colors.dart';
+import '../application/speech_assistant_controller.dart';
+import '../application/speech_assistant_state.dart';
 import '../application/speech_voice_provider.dart';
 
 class SpeechVoiceSelector extends StatelessWidget {
@@ -13,6 +15,10 @@ class SpeechVoiceSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final provider = context.watch<SpeechVoiceProvider>();
+    final speechController = context.watch<SpeechAssistantController>();
+    final isPreviewBusy = speechController.state.status ==
+            SpeechAssistantStatus.generatingSpeech ||
+        speechController.state.status == SpeechAssistantStatus.playingSpeech;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,6 +88,35 @@ class SpeechVoiceSelector extends StatelessWidget {
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 11,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextButton.icon(
+                          onPressed: isPreviewBusy
+                              ? null
+                              : () async {
+                                  await provider.selectVoice(voice);
+                                  if (!context.mounted) return;
+                                  await context
+                                      .read<SpeechAssistantController>()
+                                      .generateAndPlaySpeech(
+                                        l10n.assistantVoicePreviewMessage(
+                                          voice.name,
+                                        ),
+                                      );
+                                },
+                          icon: isPreviewBusy && selected
+                              ? const SizedBox.square(
+                                  dimension: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(TablerIcons.volume, size: 17),
+                          label: Text(l10n.assistantVoicePreview),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primaryColor,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
                           ),
                         ),
                       ],

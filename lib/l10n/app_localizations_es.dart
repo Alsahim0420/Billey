@@ -1352,4 +1352,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get assistantMaleVoice => 'Masculina cálida';
+
+  @override
+  String get assistantVoicePreview => 'Escuchar';
+
+  @override
+  String assistantVoicePreviewMessage(String name) {
+    return 'Hola, soy $name. Esta es la voz que escucharás en tus confirmaciones de Billey.';
+  }
 }

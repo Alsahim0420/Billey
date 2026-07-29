@@ -454,5 +454,14 @@
   "assistantVoice": "Voz del asistente",
   "assistantVoiceDescription": "Elige la voz para las confirmaciones habladas",
   "assistantFemaleVoice": "Femenina cálida",
-  "assistantMaleVoice": "Masculina cálida"
+  "assistantMaleVoice": "Masculina cálida",
+  "assistantVoicePreview": "Escuchar",
+  "assistantVoicePreviewMessage": "Hola, soy {name}. Esta es la voz que escucharás en tus confirmaciones de Billey.",
+  "@assistantVoicePreviewMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

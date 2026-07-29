@@ -2581,6 +2581,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Warm male'**
   String get assistantMaleVoice;
+
+  /// No description provided for @assistantVoicePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get assistantVoicePreview;
+
+  /// No description provided for @assistantVoicePreviewMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi, I\'m {name}. This is the voice you\'ll hear in your Billey confirmations.'**
+  String assistantVoicePreviewMessage(String name);
 }
 
 class _AppLocalizationsDelegate

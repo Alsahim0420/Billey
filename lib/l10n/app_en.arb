@@ -564,5 +564,14 @@
   "assistantVoice": "Assistant voice",
   "assistantVoiceDescription": "Choose the voice for spoken confirmations",
   "assistantFemaleVoice": "Warm female",
-  "assistantMaleVoice": "Warm male"
+  "assistantMaleVoice": "Warm male",
+  "assistantVoicePreview": "Listen",
+  "assistantVoicePreviewMessage": "Hi, I'm {name}. This is the voice you'll hear in your Billey confirmations.",
+  "@assistantVoicePreviewMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }
