@@ -428,8 +428,10 @@ class _TransactionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isIncome = transaction.type == TransactionType.ingreso;
-    final amount = currencyProvider.format(transaction.amount);
-    final displayAmount = '${isIncome ? '+' : '-'}$amount';
+    final displayAmount = currencyProvider.formatWithSign(
+      transaction.amount,
+      isIncome: isIncome,
+    );
     final color = isIncome ? AppColors.primaryColor : AppColors.expenseColor;
 
     return Dismissible(

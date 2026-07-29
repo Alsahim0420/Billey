@@ -46,7 +46,10 @@ void main() async {
   final localeSettings = LocaleSettingsProvider();
   await localeSettings.initialize();
 
-  final paymentReminders = PaymentReminderProvider();
+  final currencyProvider = CurrencyProvider();
+  final paymentReminders = PaymentReminderProvider(
+    amountFormatter: currencyProvider.format,
+  );
   await paymentReminders.initialize();
 
   final coupleFinance = CoupleFinanceProvider.instance;
@@ -71,7 +74,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => TransactionProvider.cloud()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
-        ChangeNotifierProvider(create: (_) => CurrencyProvider()),
+        ChangeNotifierProvider.value(value: currencyProvider),
         ChangeNotifierProvider(create: (_) => IncomeDistributionProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider.value(value: themeSettings),

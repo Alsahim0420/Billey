@@ -69,6 +69,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   late bool _awaitingVoiceClassification;
   bool _awaitingSalaryVoiceAnswer = false;
   String? _pendingSalaryTransactionTranscript;
+  bool _amountDisplayInitialized = false;
 
   bool get _isIncome => _type == TransactionType.ingreso;
 
@@ -110,6 +111,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (!_amountDisplayInitialized) {
+      _amountDisplayInitialized = true;
+      final transaction = widget.transaction;
+      if (transaction != null) {
+        _amountController.text =
+            context.read<CurrencyProvider>().formatValue(transaction.amount);
+      }
+    }
     final speechController = context.read<SpeechAssistantController>();
     if (!identical(_speechController, speechController)) {
       _speechController?.removeListener(_handleSpeechResult);
@@ -423,7 +432,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   }
 
   double get _parsedAmount =>
-      double.tryParse(_amountController.text.trim()) ?? 0;
+      context.read<CurrencyProvider>().parseValue(_amountController.text) ?? 0;
 
   static String _initialAmountText(double amount) {
     if (amount == amount.roundToDouble()) {
@@ -509,14 +518,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     setState(() {
       _titleController.text = title;
       if (draft.amount != null) {
-        _amountController.text = _initialAmountText(draft.amount!);
+        _amountController.text =
+            context.read<CurrencyProvider>().formatValue(draft.amount!);
       }
       _selectedCategory = category;
       _date = draft.date;
       _voiceConfirmationText = transcript;
       _voiceSummary = draft.amount == null
           ? '$title · ${category.name}'
-          : '$title · \$${NumberFormat('#,##0', 'es').format(draft.amount)} · ${category.name}';
+          : '$title · ${context.read<CurrencyProvider>().format(draft.amount!)} · ${category.name}';
     });
   }
 
@@ -618,13 +628,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     setState(() {
       _titleController.text = draft.source;
       if (draft.amount != null) {
-        _amountController.text = _initialAmountText(draft.amount!);
+        _amountController.text =
+            context.read<CurrencyProvider>().formatValue(draft.amount!);
       }
       _date = draft.date;
       _voiceConfirmationText = transactionTranscript;
       _voiceSummary = draft.amount == null
           ? draft.source
-          : '${draft.source} · \$${NumberFormat('#,##0', 'es').format(draft.amount)}';
+          : '${draft.source} · ${context.read<CurrencyProvider>().format(draft.amount!)}';
     });
   }
 
@@ -766,7 +777,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   Future<void> _saveTransaction() async {
     final l10n = context.l10n;
     final title = _titleController.text.trim();
-    final amount = double.tryParse(_amountController.text.trim());
+    final amount =
+        context.read<CurrencyProvider>().parseValue(_amountController.text);
 
     if (title.length < 3) {
       _showErrorMessage(l10n.conceptMinLength);
@@ -1213,7 +1225,8 @@ class _DistributionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formatted = context.watch<CurrencyProvider>().format(amount);
+    final currency = context.watch<CurrencyProvider>();
+    final formatted = currency.formatWithSign(amount, isIncome: true);
 
     return Row(
       children: [
@@ -1256,7 +1269,7 @@ class _DistributionRow extends StatelessWidget {
           ),
         ),
         Text(
-          '+\$$formatted',
+          formatted,
           style: TextStyle(
             color: enabled ? AppColors.primaryColor : AppColors.textSecondary,
             fontSize: 14,
@@ -1558,7 +1571,7 @@ class _AutomatedRuleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final amount = monthlyAmount * value / 100;
-    final formatted = NumberFormat('#,##0').format(amount);
+    final formatted = context.watch<CurrencyProvider>().format(amount);
 
     return Container(
       width: double.infinity,
@@ -1621,7 +1634,7 @@ class _AutomatedRuleCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            l10n.monthlyAllocation('\$$formatted'),
+            l10n.monthlyAllocation(formatted),
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 14,
@@ -1894,7 +1907,7 @@ class _AmountInputFieldState extends State<_AmountInputField> {
                         RegExp(r'^\d*\.?\d{0,2}'),
                       )
                     else
-                      FilteringTextInputFormatter.digitsOnly,
+                      currency.inputFormatter,
                   ],
                   textAlign: TextAlign.left,
                   style: textStyle,

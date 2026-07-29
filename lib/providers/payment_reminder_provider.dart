@@ -9,11 +9,15 @@ class PaymentReminderProvider extends ChangeNotifier {
   PaymentReminderProvider({
     PaymentReminderStorage? storage,
     LocalNotificationService? notificationService,
+    String Function(double amount)? amountFormatter,
   })  : _storage = storage ?? PaymentReminderStorage(),
-        _notifications = notificationService ?? LocalNotificationService.instance;
+        _notifications =
+            notificationService ?? LocalNotificationService.instance,
+        _amountFormatter = amountFormatter ?? ((amount) => '$amount');
 
   final PaymentReminderStorage _storage;
   final LocalNotificationService _notifications;
+  final String Function(double amount) _amountFormatter;
   final _uuid = const Uuid();
 
   List<PaymentReminder> _reminders = [];
@@ -120,7 +124,7 @@ class PaymentReminderProvider extends ChangeNotifier {
 
   String _defaultNotificationBody(PaymentReminder reminder) {
     if (reminder.amount != null) {
-      return '${reminder.title}: ${reminder.amount!.toStringAsFixed(0)}';
+      return '${reminder.title}: ${_amountFormatter(reminder.amount!)}';
     }
     return reminder.title;
   }
