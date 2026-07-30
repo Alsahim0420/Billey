@@ -525,6 +525,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transactionUpdated => 'Transaction updated successfully';
 
   @override
+  String get transactionDeleteError =>
+      'The transaction could not be deleted. It was restored to the list.';
+
+  @override
   String get voiceNotAvailable =>
       'Voice not available. Stop the app, run \"flutter pub get\", then \"cd ios && pod install\" and reopen with flutter run (don\'t use hot reload).';
 

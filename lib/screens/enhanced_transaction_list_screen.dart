@@ -58,9 +58,8 @@ class _EnhancedTransactionListScreenState
                     grouped: grouped,
                     currencyProvider: currencyProvider,
                     onEdit: _editTransaction,
-                    onDelete: (transaction) {
-                      _confirmDelete(provider, transaction);
-                    },
+                    onDelete: (transaction) =>
+                        _confirmDelete(provider, transaction),
                   ),
                 ),
               ],
@@ -173,7 +172,14 @@ class _EnhancedTransactionListScreenState
     );
 
     if (confirmed == true && transaction.id != null) {
-      await provider.deleteTransaction(transaction.id!);
+      try {
+        await provider.deleteTransaction(transaction.id!);
+      } catch (_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.transactionDeleteError)),
+        );
+      }
     }
   }
 }
@@ -367,7 +373,7 @@ class _ActivityList extends StatelessWidget {
   final Map<String, List<TransactionModel>> grouped;
   final CurrencyProvider currencyProvider;
   final ValueChanged<TransactionModel> onEdit;
-  final ValueChanged<TransactionModel> onDelete;
+  final Future<void> Function(TransactionModel) onDelete;
 
   const _ActivityList({
     required this.grouped,
@@ -416,7 +422,7 @@ class _TransactionRow extends StatelessWidget {
   final TransactionModel transaction;
   final CurrencyProvider currencyProvider;
   final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final Future<void> Function() onDelete;
 
   const _TransactionRow({
     required this.transaction,
@@ -438,7 +444,7 @@ class _TransactionRow extends StatelessWidget {
       key: ValueKey(transaction.id ?? transaction.hashCode),
       direction: DismissDirection.endToStart,
       confirmDismiss: (_) async {
-        onDelete();
+        await onDelete();
         return false;
       },
       background: Container(
