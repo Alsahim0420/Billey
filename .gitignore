@@ -52,3 +52,6 @@ app.*.map.json
 .env.*
 !.env.example
 *.key
+*.jks
+Billey_Play_Upload_Key_2026/
+Billey_Play_Upload_Key_2026_BACKUP.zip
