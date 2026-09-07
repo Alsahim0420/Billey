@@ -242,6 +242,7 @@
   "featureComingSoon": "{feature} estará disponible pronto",
   "logOut": "Cerrar sesión",
   "logOutMessage": "Tu sesión local se mantendrá segura en este dispositivo.",
+  "logOutError": "No se pudo cerrar la sesión. Intenta de nuevo.",
 
   "spendingInsights": "Análisis de gastos",
   "monthlyComparison": "Comparación mensual",

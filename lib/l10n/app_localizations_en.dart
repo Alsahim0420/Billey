@@ -743,6 +743,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your local session will remain secure on this device.';
 
   @override
+  String get logOutError => 'Couldn\'t log out. Please try again.';
+
+  @override
   String get spendingInsights => 'Spending Insights';
 
   @override

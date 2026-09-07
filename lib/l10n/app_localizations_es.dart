@@ -748,6 +748,9 @@ class AppLocalizationsEs extends AppLocalizations {
       'Tu sesión local se mantendrá segura en este dispositivo.';
 
   @override
+  String get logOutError => 'No se pudo cerrar la sesión. Intenta de nuevo.';
+
+  @override
   String get spendingInsights => 'Análisis de gastos';
 
   @override

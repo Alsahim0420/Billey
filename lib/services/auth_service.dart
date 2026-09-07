@@ -3,6 +3,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+// Web OAuth client ID from google-services.json / GoogleService-Info.plist
+// (client_type 3). Required so GoogleSignIn can issue a Firebase-compatible
+// ID token on Android via Credential Manager; without it, authenticate()
+// can fail with GoogleSignInExceptionCode.canceled ("Account reauth failed").
+const _googleSignInServerClientId =
+    '233183310004-d1t8a2efo220q10rhr7u377rlspr2vah.apps.googleusercontent.com';
+
+// GoogleSignIn.instance is a process-wide singleton that must be
+// initialize()d exactly once, so this guard lives at module level rather
+// than on AuthService (which is re-created every time the login screen
+// is opened).
+Future<void>? _googleSignInInitialization;
+
 class AuthService {
   AuthService({FirebaseAuth? firebaseAuth, FirebaseFirestore? firestore})
       : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
@@ -65,7 +78,10 @@ class AuthService {
     }
 
     final googleSignIn = GoogleSignIn.instance;
-    await googleSignIn.initialize();
+    _googleSignInInitialization ??= googleSignIn.initialize(
+      serverClientId: _googleSignInServerClientId,
+    );
+    await _googleSignInInitialization;
     final googleUser = await googleSignIn.authenticate();
 
     final googleAuth = googleUser.authentication;

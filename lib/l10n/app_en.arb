@@ -295,6 +295,7 @@
   },
   "logOut": "Log Out",
   "logOutMessage": "Your local session will remain secure on this device.",
+  "logOutError": "Couldn't log out. Please try again.",
 
   "spendingInsights": "Spending Insights",
   "monthlyComparison": "Monthly Comparison",

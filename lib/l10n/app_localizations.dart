@@ -1472,6 +1472,12 @@ abstract class AppLocalizations {
   /// **'Your local session will remain secure on this device.'**
   String get logOutMessage;
 
+  /// No description provided for @logOutError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t log out. Please try again.'**
+  String get logOutError;
+
   /// No description provided for @spendingInsights.
   ///
   /// In en, this message translates to:

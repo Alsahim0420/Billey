@@ -15,10 +15,12 @@ import '../providers/locale_settings_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/theme_settings_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../services/auth_service.dart';
 import '../services/transaction_export_service.dart';
 import '../theme/billey_theme_scope.dart';
 import '../theme/colors/app_colors.dart';
 import '../utils/share_origin.dart';
+import 'auth/auth_screen.dart';
 import 'couple_finance_screen.dart';
 import 'categories_management_screen.dart';
 import 'income_distribution_screen.dart';
@@ -699,7 +701,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                _showComingSoon(l10n.logOut);
+                _logOut();
               },
               child: Text(
                 l10n.logOut,
@@ -709,6 +711,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         );
       },
+    );
+  }
+
+  Future<void> _logOut() async {
+    final navigator = Navigator.of(context);
+    try {
+      await AuthService().signOut();
+    } catch (_) {
+      if (mounted) _showSnackBar(context.l10n.logOutError);
+      return;
+    }
+    if (!mounted) return;
+    navigator.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const AuthScreen()),
+      (route) => false,
     );
   }
 }
