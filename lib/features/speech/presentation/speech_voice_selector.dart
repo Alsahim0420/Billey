@@ -144,7 +144,9 @@ class SpeechVoiceSelector extends StatelessWidget {
             );
           },
         ),
-        if (speechController.state.status == SpeechAssistantStatus.failure &&
+        if ((speechController.state.status == SpeechAssistantStatus.failure ||
+                speechController.state.status ==
+                    SpeechAssistantStatus.unavailable) &&
             speechController.state.errorMessage != null) ...[
           const SizedBox(height: 10),
           Text(
