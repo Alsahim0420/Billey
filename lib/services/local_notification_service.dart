@@ -114,7 +114,7 @@ class LocalNotificationService {
       body: body,
       scheduledDate: scheduled,
       notificationDetails: details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents:
           reminder.repeatMonthly ? DateTimeComponents.dayOfMonthAndTime : null,
     );

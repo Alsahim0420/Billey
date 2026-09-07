@@ -80,7 +80,7 @@ class SpeechAssistantController extends ChangeNotifier {
 
   Future<void> startRecording() async {
     if (_recorder == null) {
-      _emit(_state);
+      _fail(_state.errorMessage ?? 'La grabación de voz no está disponible.');
       return;
     }
     if (_state.isBusy || _state.status == SpeechAssistantStatus.recording) {
@@ -220,7 +220,10 @@ class SpeechAssistantController extends ChangeNotifier {
     required String voiceId,
     required String text,
   }) async {
-    if (_generateSpeech == null || _playback == null) return;
+    if (_generateSpeech == null || _playback == null) {
+      _fail(_state.errorMessage ?? 'El asistente de voz no está disponible.');
+      return;
+    }
     try {
       initializePlaybackTracking();
       final cacheKey = '$voiceId::$text';
@@ -291,7 +294,10 @@ class SpeechAssistantController extends ChangeNotifier {
     _previewPosition = Duration.zero;
     _previewDuration = Duration.zero;
     _previewPlaying = false;
-    _state = const SpeechAssistantState();
+    // A null recorder means the assistant is structurally unavailable
+    // (e.g. missing ElevenLabs configuration), not just mid-session state,
+    // so keep that status instead of resetting to "initial".
+    _state = _recorder == null ? _state : const SpeechAssistantState();
     if (notify) notifyListeners();
   }
 

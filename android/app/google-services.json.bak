@@ -14,14 +14,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "233183310004-reo2gksa9apg2damfscn50qo33noo8e7.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.billey.app",
-            "certificate_hash": "a84503f02d2b5896b996874c2cde391c601fb28b"
-          }
-        },
-        {
           "client_id": "233183310004-vuo03l3j0u19eo810huqdf56elu1h4n4.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

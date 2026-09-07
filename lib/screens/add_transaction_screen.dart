@@ -1964,6 +1964,8 @@ class _VoiceButton extends StatelessWidget {
     };
     final canTap =
         !state.isBusy && state.status != SpeechAssistantStatus.playingSpeech;
+    final hasError = state.status == SpeechAssistantStatus.failure ||
+        state.status == SpeechAssistantStatus.unavailable;
 
     return Column(
       children: [
@@ -2019,8 +2021,11 @@ class _VoiceButton extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color:
-                  isListening ? AppColors.expenseColor : AppColors.primaryColor,
+              color: hasError
+                  ? AppColors.errorColor
+                  : isListening
+                      ? AppColors.expenseColor
+                      : AppColors.primaryColor,
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.8,

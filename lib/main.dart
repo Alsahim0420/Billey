@@ -63,7 +63,8 @@ void main() async {
     speechAssistant = await SpeechDependencies.initialize(
       voiceProvider: speechVoiceProvider,
     );
-  } catch (_) {
+  } catch (error, stackTrace) {
+    debugPrint('SpeechDependencies.initialize failed: $error\n$stackTrace');
     speechAssistant = SpeechAssistantController.unavailable(
       'Configura y cifra las variables de ElevenLabs para usar la voz.',
     );

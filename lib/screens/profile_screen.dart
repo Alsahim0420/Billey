@@ -15,10 +15,12 @@ import '../providers/locale_settings_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/theme_settings_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../services/auth_service.dart';
 import '../services/transaction_export_service.dart';
 import '../theme/billey_theme_scope.dart';
 import '../theme/colors/app_colors.dart';
 import '../utils/share_origin.dart';
+import 'auth/auth_screen.dart';
 import 'couple_finance_screen.dart';
 import 'categories_management_screen.dart';
 import 'income_distribution_screen.dart';
@@ -187,6 +189,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 34),
             _LogOutButton(onTap: _showLogOutDialog),
+            const SizedBox(height: 12),
+            Center(
+              child: TextButton(
+                onPressed: _showDeleteAccountConfirmDialog,
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.expenseColor.withValues(alpha: 0.8),
+                ),
+                child: Text(
+                  l10n.deleteAccount,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 18),
             Text(
               l10n.versionInfo,
@@ -699,11 +717,102 @@ class _ProfileScreenState extends State<ProfileScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                _showComingSoon(l10n.logOut);
+                _logOut();
               },
               child: Text(
                 l10n.logOut,
                 style: const TextStyle(color: AppColors.expenseColor),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _logOut() async {
+    final navigator = Navigator.of(context);
+    try {
+      await AuthService().signOut();
+    } catch (_) {
+      if (mounted) _showSnackBar(context.l10n.logOutError);
+      return;
+    }
+    if (!mounted) return;
+    navigator.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const AuthScreen()),
+      (route) => false,
+    );
+  }
+
+  void _showDeleteAccountConfirmDialog() {
+    final l10n = context.l10n;
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceColor,
+          title: Text(
+            l10n.deleteAccountConfirmTitle,
+            style: TextStyle(color: AppColors.textPrimary),
+          ),
+          content: Text(
+            l10n.deleteAccountConfirmMessage,
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _showDeleteAccountRequestDialog();
+              },
+              child: Text(
+                l10n.deleteAccountConfirmButton,
+                style: const TextStyle(color: AppColors.expenseColor),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteAccountRequestDialog() {
+    final l10n = context.l10n;
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceColor,
+          icon: const Icon(
+            TablerIcons.clock_check,
+            color: AppColors.primaryColor,
+            size: 32,
+          ),
+          title: Text(
+            l10n.deleteAccountRequestTitle,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textPrimary),
+          ),
+          content: Text(
+            l10n.deleteAccountRequestMessage,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                l10n.deleteAccountRequestButton,
+                style: const TextStyle(
+                  color: AppColors.primaryColor,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ],
