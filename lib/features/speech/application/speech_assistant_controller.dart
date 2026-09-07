@@ -294,7 +294,10 @@ class SpeechAssistantController extends ChangeNotifier {
     _previewPosition = Duration.zero;
     _previewDuration = Duration.zero;
     _previewPlaying = false;
-    _state = const SpeechAssistantState();
+    // A null recorder means the assistant is structurally unavailable
+    // (e.g. missing ElevenLabs configuration), not just mid-session state,
+    // so keep that status instead of resetting to "initial".
+    _state = _recorder == null ? _state : const SpeechAssistantState();
     if (notify) notifyListeners();
   }
 

@@ -2,9 +2,12 @@ import 'package:flutter/services.dart';
 
 import 'configuration_exception.dart';
 import 'encrypted_environment_codec.dart';
+import 'env_encryption_key.dart';
 import 'secret_provider.dart';
 
 typedef EncryptedAssetLoader = Future<String> Function(String path);
+
+const _dartDefineEncryptionKey = String.fromEnvironment('ENV_ENCRYPTION_KEY');
 
 class EncryptedEnvironmentSecretProvider implements SecretProvider {
   EncryptedEnvironmentSecretProvider({
@@ -13,8 +16,10 @@ class EncryptedEnvironmentSecretProvider implements SecretProvider {
     EncryptedEnvironmentCodec? codec,
     this.assetPath = 'assets/config/environment.enc',
   })  : _assetLoader = assetLoader ?? rootBundle.loadString,
-        _encryptionKey =
-            encryptionKey ?? const String.fromEnvironment('ENV_ENCRYPTION_KEY'),
+        _encryptionKey = encryptionKey ??
+            (_dartDefineEncryptionKey.isNotEmpty
+                ? _dartDefineEncryptionKey
+                : defaultEnvEncryptionKey),
         _codec = codec ?? EncryptedEnvironmentCodec();
 
   final EncryptedAssetLoader _assetLoader;

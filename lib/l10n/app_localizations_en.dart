@@ -746,6 +746,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logOutError => 'Couldn\'t log out. Please try again.';
 
   @override
+  String get deleteAccount => 'Delete account';
+
+  @override
+  String get deleteAccountConfirmTitle => 'Delete your account?';
+
+  @override
+  String get deleteAccountConfirmMessage =>
+      'This will permanently delete your Billey profile and data. You won\'t be able to undo it once the request is sent.';
+
+  @override
+  String get deleteAccountConfirmButton => 'Delete account';
+
+  @override
+  String get deleteAccountRequestTitle => 'Request received';
+
+  @override
+  String get deleteAccountRequestMessage =>
+      'We received your account deletion request. Our team will review it and email you within a maximum of 15 days to confirm whether it was completed successfully.';
+
+  @override
+  String get deleteAccountRequestButton => 'Got it';
+
+  @override
   String get spendingInsights => 'Spending Insights';
 
   @override

@@ -296,6 +296,13 @@
   "logOut": "Log Out",
   "logOutMessage": "Your local session will remain secure on this device.",
   "logOutError": "Couldn't log out. Please try again.",
+  "deleteAccount": "Delete account",
+  "deleteAccountConfirmTitle": "Delete your account?",
+  "deleteAccountConfirmMessage": "This will permanently delete your Billey profile and data. You won't be able to undo it once the request is sent.",
+  "deleteAccountConfirmButton": "Delete account",
+  "deleteAccountRequestTitle": "Request received",
+  "deleteAccountRequestMessage": "We received your account deletion request. Our team will review it and email you within a maximum of 15 days to confirm whether it was completed successfully.",
+  "deleteAccountRequestButton": "Got it",
 
   "spendingInsights": "Spending Insights",
   "monthlyComparison": "Monthly Comparison",

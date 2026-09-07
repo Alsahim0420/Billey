@@ -1478,6 +1478,48 @@ abstract class AppLocalizations {
   /// **'Couldn\'t log out. Please try again.'**
   String get logOutError;
 
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get deleteAccountConfirmTitle;
+
+  /// No description provided for @deleteAccountConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently delete your Billey profile and data. You won\'t be able to undo it once the request is sent.'**
+  String get deleteAccountConfirmMessage;
+
+  /// No description provided for @deleteAccountConfirmButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccountConfirmButton;
+
+  /// No description provided for @deleteAccountRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Request received'**
+  String get deleteAccountRequestTitle;
+
+  /// No description provided for @deleteAccountRequestMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'We received your account deletion request. Our team will review it and email you within a maximum of 15 days to confirm whether it was completed successfully.'**
+  String get deleteAccountRequestMessage;
+
+  /// No description provided for @deleteAccountRequestButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get deleteAccountRequestButton;
+
   /// No description provided for @spendingInsights.
   ///
   /// In en, this message translates to:

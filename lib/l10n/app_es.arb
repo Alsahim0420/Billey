@@ -243,6 +243,13 @@
   "logOut": "Cerrar sesión",
   "logOutMessage": "Tu sesión local se mantendrá segura en este dispositivo.",
   "logOutError": "No se pudo cerrar la sesión. Intenta de nuevo.",
+  "deleteAccount": "Eliminar cuenta",
+  "deleteAccountConfirmTitle": "¿Eliminar tu cuenta?",
+  "deleteAccountConfirmMessage": "Esta acción eliminará tu perfil y tus datos de Billey de forma permanente. No podrás deshacerla una vez enviada la solicitud.",
+  "deleteAccountConfirmButton": "Eliminar cuenta",
+  "deleteAccountRequestTitle": "Solicitud enviada",
+  "deleteAccountRequestMessage": "Recibimos tu solicitud de eliminación de cuenta. Nuestro equipo la revisará y te informaremos por correo, en un plazo máximo de 15 días, si el proceso se completó con éxito.",
+  "deleteAccountRequestButton": "Entendido",
 
   "spendingInsights": "Análisis de gastos",
   "monthlyComparison": "Comparación mensual",

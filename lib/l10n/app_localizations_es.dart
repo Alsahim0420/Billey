@@ -751,6 +751,29 @@ class AppLocalizationsEs extends AppLocalizations {
   String get logOutError => 'No se pudo cerrar la sesión. Intenta de nuevo.';
 
   @override
+  String get deleteAccount => 'Eliminar cuenta';
+
+  @override
+  String get deleteAccountConfirmTitle => '¿Eliminar tu cuenta?';
+
+  @override
+  String get deleteAccountConfirmMessage =>
+      'Esta acción eliminará tu perfil y tus datos de Billey de forma permanente. No podrás deshacerla una vez enviada la solicitud.';
+
+  @override
+  String get deleteAccountConfirmButton => 'Eliminar cuenta';
+
+  @override
+  String get deleteAccountRequestTitle => 'Solicitud enviada';
+
+  @override
+  String get deleteAccountRequestMessage =>
+      'Recibimos tu solicitud de eliminación de cuenta. Nuestro equipo la revisará y te informaremos por correo, en un plazo máximo de 15 días, si el proceso se completó con éxito.';
+
+  @override
+  String get deleteAccountRequestButton => 'Entendido';
+
+  @override
   String get spendingInsights => 'Análisis de gastos';
 
   @override
