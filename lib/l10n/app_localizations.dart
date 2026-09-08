@@ -566,6 +566,24 @@ abstract class AppLocalizations {
   /// **'By category'**
   String get homeChartByCategory;
 
+  /// No description provided for @homeChartByPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'People'**
+  String get homeChartByPerson;
+
+  /// No description provided for @expensesByPerson.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses by person'**
+  String get expensesByPerson;
+
+  /// No description provided for @youLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get youLabel;
+
   /// No description provided for @noExpensesInPeriod.
   ///
   /// In en, this message translates to:

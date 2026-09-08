@@ -254,6 +254,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeChartByCategory => 'Por categoría';
 
   @override
+  String get homeChartByPerson => 'Personas';
+
+  @override
+  String get expensesByPerson => 'Gastos por persona';
+
+  @override
+  String get youLabel => 'Tú';
+
+  @override
   String get noExpensesInPeriod => 'No hay gastos en este período';
 
   @override

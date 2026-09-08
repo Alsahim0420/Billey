@@ -1,8 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/providers/currency_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -49,10 +52,7 @@ class DashboardScreen extends StatelessWidget {
                     avatarUrl: profile.hasAvatar ? profile.avatarUrl : null,
                   ),
                   const SizedBox(height: 44),
-                  _TotalBalance(
-                    amount: currencyProvider.format(balance),
-                    isNegative: balance < 0,
-                  ),
+                  _TotalBalance(balance: balance, currency: currencyProvider),
                   const SizedBox(height: 38),
                   Row(
                     children: [
@@ -92,9 +92,11 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
-enum _HomeChartMode { monthlyTrend, expensesByCategory }
+enum _HomeChartMode { monthlyTrend, expensesByCategory, expensesByPerson }
 
 enum _HomeChartPeriod { thisMonth, lastMonth }
+
+enum _ChartVisual { pie, bar }
 
 class _HomeAnalyticsChart extends StatefulWidget {
   const _HomeAnalyticsChart({required this.transactions});
@@ -110,75 +112,100 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
 
   _HomeChartMode _mode = _HomeChartMode.expensesByCategory;
   _HomeChartPeriod _period = _HomeChartPeriod.thisMonth;
+  _ChartVisual _visual = _ChartVisual.pie;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final currency = context.watch<CurrencyProvider>();
+    final couple = context.watch<CoupleLinkProvider>();
+    final profile = context.watch<ProfileProvider>();
+    final isBreakdown = _mode != _HomeChartMode.monthlyTrend;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _FilterChipRow(
+                children: [
+                  _FilterChip(
+                    label: l10n.homeChartByCategory,
+                    selected: _mode == _HomeChartMode.expensesByCategory,
+                    onTap: () => setState(
+                      () => _mode = _HomeChartMode.expensesByCategory,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _FilterChip(
+                    label: l10n.homeChartTrend,
+                    selected: _mode == _HomeChartMode.monthlyTrend,
+                    onTap: () => setState(
+                      () => _mode = _HomeChartMode.monthlyTrend,
+                    ),
+                  ),
+                  if (couple.isLinked) ...[
+                    const SizedBox(width: 8),
+                    _FilterChip(
+                      label: l10n.homeChartByPerson,
+                      selected: _mode == _HomeChartMode.expensesByPerson,
+                      onTap: () => setState(
+                        () => _mode = _HomeChartMode.expensesByPerson,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (isBreakdown) ...[
+              const SizedBox(width: 8),
+              _ChartVisualToggle(
+                value: _visual,
+                onChanged: (visual) => setState(() => _visual = visual),
+              ),
+            ],
+          ],
+        ),
+        if (isBreakdown) ...[
+          const SizedBox(height: 10),
           _FilterChipRow(
             children: [
               _FilterChip(
-                label: l10n.homeChartByCategory,
-                selected: _mode == _HomeChartMode.expensesByCategory,
+                label: l10n.thisMonth,
+                selected: _period == _HomeChartPeriod.thisMonth,
                 onTap: () => setState(
-                  () => _mode = _HomeChartMode.expensesByCategory,
+                  () => _period = _HomeChartPeriod.thisMonth,
                 ),
               ),
               const SizedBox(width: 8),
               _FilterChip(
-                label: l10n.homeChartTrend,
-                selected: _mode == _HomeChartMode.monthlyTrend,
+                label: l10n.lastMonth,
+                selected: _period == _HomeChartPeriod.lastMonth,
                 onTap: () => setState(
-                  () => _mode = _HomeChartMode.monthlyTrend,
+                  () => _period = _HomeChartPeriod.lastMonth,
                 ),
               ),
             ],
           ),
-          if (_mode == _HomeChartMode.expensesByCategory) ...[
-            const SizedBox(height: 10),
-            _FilterChipRow(
-              children: [
-                _FilterChip(
-                  label: l10n.thisMonth,
-                  selected: _period == _HomeChartPeriod.thisMonth,
-                  onTap: () => setState(
-                    () => _period = _HomeChartPeriod.thisMonth,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                _FilterChip(
-                  label: l10n.lastMonth,
-                  selected: _period == _HomeChartPeriod.lastMonth,
-                  onTap: () => setState(
-                    () => _period = _HomeChartPeriod.lastMonth,
-                  ),
-                ),
-              ],
-            ),
-          ],
-          const SizedBox(height: 16),
-          if (_mode == _HomeChartMode.monthlyTrend)
-            _MonthlyTrendContent(data: _monthlyChartData())
-          else
-            _CategoryBreakdownContent(
-              data: _categoryChartData(),
-              periodLabel: _periodLabel(l10n),
-              currency: currency,
-            ),
         ],
-      ),
+        const SizedBox(height: 16),
+        if (_mode == _HomeChartMode.monthlyTrend)
+          _MonthlyTrendContent(data: _monthlyChartData())
+        else
+          _BreakdownContent(
+            title: _mode == _HomeChartMode.expensesByCategory
+                ? l10n.expensesByCategory
+                : l10n.expensesByPerson,
+            data: _mode == _HomeChartMode.expensesByCategory
+                ? _categoryChartData(l10n)
+                : _personChartData(l10n, couple, profile),
+            periodLabel: _periodLabel(l10n),
+            currency: currency,
+            visual: _visual,
+          ),
+      ],
     );
   }
 
@@ -232,24 +259,27 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
     return income - expenses;
   }
 
-  _CategoryChartData _categoryChartData() {
+  List<TransactionModel> _expensesInSelectedMonth() {
     final month = _selectedMonth;
-    final expenses = widget.transactions.where((transaction) {
+    return widget.transactions.where((transaction) {
       return transaction.type == TransactionType.gasto &&
           transaction.date.year == month.year &&
           transaction.date.month == month.month;
     }).toList();
+  }
 
+  _BreakdownChartData _categoryChartData(AppLocalizations l10n) {
     final totals = <TransactionCategory, double>{};
-    for (final transaction in expenses) {
+    for (final transaction in _expensesInSelectedMonth()) {
       totals[transaction.category] =
           (totals[transaction.category] ?? 0) + transaction.amount;
     }
 
     final items = totals.entries
         .map(
-          (entry) => _CategorySpendItem(
-            category: entry.key,
+          (entry) => _SpendItem(
+            label: entry.key.localizedName(l10n),
+            icon: _categoryIcon(entry.key),
             amount: entry.value,
             color: _categoryColor(entry.key),
           ),
@@ -258,7 +288,54 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
       ..sort((a, b) => b.amount.compareTo(a.amount));
 
     final total = items.fold(0.0, (sum, item) => sum + item.amount);
-    return _CategoryChartData(items: items, total: total);
+    return _BreakdownChartData(items: items, total: total);
+  }
+
+  _BreakdownChartData _personChartData(
+    AppLocalizations l10n,
+    CoupleLinkProvider couple,
+    ProfileProvider profile,
+  ) {
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    double mine = 0;
+    double partner = 0;
+    for (final transaction in _expensesInSelectedMonth()) {
+      final isMine =
+          transaction.ownerId == null || transaction.ownerId == myUid;
+      if (isMine) {
+        mine += transaction.amount;
+      } else {
+        partner += transaction.amount;
+      }
+    }
+
+    final partnerName = couple.partnerDisplayName?.trim().isNotEmpty == true
+        ? couple.partnerDisplayName!.trim()
+        : l10n.defaultUser;
+
+    final items = <_SpendItem>[
+      if (mine > 0)
+        _SpendItem(
+          label: l10n.youLabel,
+          icon: TablerIcons.user,
+          amount: mine,
+          color: AppColors.primaryColor,
+          isMine: true,
+          avatarUrl: profile.hasAvatar ? profile.avatarUrl : null,
+        ),
+      if (partner > 0)
+        _SpendItem(
+          label: partnerName,
+          icon: TablerIcons.user,
+          amount: partner,
+          color: AppColors.infoColor,
+          isMine: false,
+          avatarUrl: couple.partnerPhotoUrl,
+        ),
+    ]..sort((a, b) => b.amount.compareTo(a.amount));
+
+    final total = items.fold(0.0, (sum, item) => sum + item.amount);
+    return _BreakdownChartData(items: items, total: total);
   }
 
   String _formatMonthLabel(DateTime date, String locale) {
@@ -294,6 +371,17 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
       TransactionCategory.health => AppColors.infoColor,
       TransactionCategory.education => AppColors.categoryEducation,
       TransactionCategory.other => AppColors.primaryColor,
+    };
+  }
+
+  IconData _categoryIcon(TransactionCategory category) {
+    return switch (category) {
+      TransactionCategory.food => TablerIcons.bowl_chopsticks,
+      TransactionCategory.transport => TablerIcons.car,
+      TransactionCategory.entertainment => TablerIcons.movie,
+      TransactionCategory.health => TablerIcons.heart,
+      TransactionCategory.education => TablerIcons.school,
+      TransactionCategory.other => TablerIcons.receipt,
     };
   }
 }
@@ -467,16 +555,86 @@ class _MonthlyTrendContent extends StatelessWidget {
   }
 }
 
-class _CategoryBreakdownContent extends StatelessWidget {
-  const _CategoryBreakdownContent({
+class _ChartVisualToggle extends StatelessWidget {
+  const _ChartVisualToggle({required this.value, required this.onChanged});
+
+  final _ChartVisual value;
+  final ValueChanged<_ChartVisual> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundAlt,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ChartVisualButton(
+            icon: Icons.pie_chart_rounded,
+            selected: value == _ChartVisual.pie,
+            onTap: () => onChanged(_ChartVisual.pie),
+          ),
+          _ChartVisualButton(
+            icon: Icons.bar_chart_rounded,
+            selected: value == _ChartVisual.bar,
+            onTap: () => onChanged(_ChartVisual.bar),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChartVisualButton extends StatelessWidget {
+  const _ChartVisualButton({
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? AppColors.primaryColor : Colors.transparent,
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Padding(
+          padding: const EdgeInsets.all(7),
+          child: Icon(
+            icon,
+            size: 18,
+            color: selected ? AppColors.white : AppColors.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BreakdownContent extends StatelessWidget {
+  const _BreakdownContent({
+    required this.title,
     required this.data,
     required this.periodLabel,
     required this.currency,
+    required this.visual,
   });
 
-  final _CategoryChartData data;
+  final String title;
+  final _BreakdownChartData data;
   final String periodLabel;
   final CurrencyProvider currency;
+  final _ChartVisual visual;
 
   @override
   Widget build(BuildContext context) {
@@ -492,7 +650,7 @@ class _CategoryBreakdownContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l10n.expensesByCategory,
+                    title,
                     style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 18,
@@ -528,51 +686,25 @@ class _CategoryBreakdownContent extends StatelessWidget {
           _ChartEmptyState(message: l10n.noExpensesInPeriod)
         else ...[
           SizedBox(
-            height: 210,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                PieChart(
-                  PieChartData(
-                    centerSpaceRadius: 58,
-                    sectionsSpace: 2,
-                    startDegreeOffset: -90,
-                    sections: data.items.map((item) {
-                      return PieChartSectionData(
-                        value: item.amount,
-                        color: item.color,
-                        title: '',
-                        radius: 34,
-                      );
-                    }).toList(),
-                  ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      l10n.totalSpend,
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      currency.format(data.total),
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            height: visual == _ChartVisual.pie ? 300 : 260,
+            child: _AnimatedChartReveal(
+              // A fresh key per title/visual/dataset so switching filters
+              // (category ↔ person, this month ↔ last month, pie ↔ bar)
+              // replays the fill-in animation instead of just snapping to
+              // the new values.
+              key: ValueKey(
+                '$title-$visual-${data.total}-${data.items.length}',
+              ),
+              builder: (context, progress) => visual == _ChartVisual.pie
+                  ? _BreakdownPieChart(
+                      data: data,
+                      currency: currency,
+                      progress: progress,
+                    )
+                  : _BreakdownBarChart(data: data, progress: progress),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
           Text(
             l10n.topCategories,
             style: TextStyle(
@@ -583,31 +715,292 @@ class _CategoryBreakdownContent extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           for (final item in data.items.take(4))
-            _CategorySpendRow(
-              item: item,
-              total: data.total,
-              currency: currency,
-            ),
+            _SpendRow(item: item, total: data.total, currency: currency),
         ],
       ],
     );
   }
 }
 
-class _CategorySpendRow extends StatelessWidget {
-  const _CategorySpendRow({
+/// Plays [builder] through a 0→1 progress once, on mount — used to make a
+/// chart "fill in" the first time it's shown instead of appearing at full
+/// height/size immediately. Give it a key that changes with the underlying
+/// dataset so switching filters replays the reveal.
+class _AnimatedChartReveal extends StatefulWidget {
+  const _AnimatedChartReveal({super.key, required this.builder});
+
+  final Widget Function(BuildContext context, double progress) builder;
+
+  @override
+  State<_AnimatedChartReveal> createState() => _AnimatedChartRevealState();
+}
+
+class _AnimatedChartRevealState extends State<_AnimatedChartReveal>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _progress;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 750),
+    );
+    _progress =
+        CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _progress,
+      builder: (context, _) => widget.builder(context, _progress.value),
+    );
+  }
+}
+
+/// Compacts an amount to at most 3 significant digits plus a K/M suffix
+/// (e.g. 250000 → "250K", 1250000 → "1.3M") for labels too small to fit a
+/// full currency-formatted number, like the value shown above each bar.
+String _compactAmount(double amount) {
+  final abs = amount.abs();
+  final sign = amount < 0 ? '-' : '';
+  if (abs >= 1000000) {
+    final value = abs / 1000000;
+    final formatted =
+        value >= 100 ? value.toStringAsFixed(0) : value.toStringAsFixed(1);
+    return '$sign${formatted}M';
+  }
+  if (abs >= 1000) {
+    return '$sign${(abs / 1000).round()}K';
+  }
+  return '$sign${abs.round()}';
+}
+
+/// Clips to a wedge that sweeps clockwise from the top (matching the pie's
+/// own `startDegreeOffset: -90`), growing from nothing to the full circle
+/// as [progress] goes 0→1 — used to reveal the pie chart with a circular
+/// "fill" motion instead of every section just scaling in place.
+class _PieSweepClipper extends CustomClipper<Path> {
+  const _PieSweepClipper(this.progress);
+
+  final double progress;
+
+  @override
+  Path getClip(Size size) {
+    if (progress >= 1) {
+      return Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+    }
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.longestSide;
+    const startAngle = -math.pi / 2;
+    final sweepAngle = 2 * math.pi * progress;
+    return Path()
+      ..moveTo(center.dx, center.dy)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        sweepAngle,
+        false,
+      )
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(covariant _PieSweepClipper oldClipper) =>
+      oldClipper.progress != progress;
+}
+
+class _BreakdownPieChart extends StatelessWidget {
+  const _BreakdownPieChart({
+    required this.data,
+    required this.currency,
+    required this.progress,
+  });
+
+  final _BreakdownChartData data;
+  final CurrencyProvider currency;
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Reveals the ring sweeping clockwise from the top instead of every
+        // wedge scaling in place at once — the clip grows from a sliver to
+        // the full circle as `progress` goes 0→1.
+        ClipPath(
+          clipper: _PieSweepClipper(progress),
+          child: PieChart(
+            PieChartData(
+              centerSpaceRadius: 80,
+              sectionsSpace: 2,
+              startDegreeOffset: -90,
+              sections: data.items.map((item) {
+                return PieChartSectionData(
+                  value: item.amount,
+                  color: item.color,
+                  title: '',
+                  radius: 50,
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.totalSpend,
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              // Counts up in step with the ring's own sweep-in animation
+              // (see `_PieSweepClipper`) rather than its own timer.
+              currency.format(data.total * progress),
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _BreakdownBarChart extends StatelessWidget {
+  const _BreakdownBarChart({required this.data, required this.progress});
+
+  final _BreakdownChartData data;
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final maxAmount = data.items
+        .map((item) => item.amount)
+        .fold(0.0, (max, value) => value > max ? value : max);
+
+    return BarChart(
+      BarChartData(
+        // Extra headroom above the tallest bar so its always-on value
+        // label (below) has room to sit above the bar instead of clipping.
+        maxY: maxAmount * 1.35,
+        gridData: const FlGridData(show: false),
+        borderData: FlBorderData(show: false),
+        barTouchData: BarTouchData(
+          enabled: false,
+          touchTooltipData: BarTouchTooltipData(
+            tooltipPadding: EdgeInsets.zero,
+            tooltipMargin: 10,
+            direction: TooltipDirection.top,
+            getTooltipColor: (_) => Colors.transparent,
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              final item = data.items[group.x];
+              return BarTooltipItem(
+                _compactAmount(item.amount),
+                TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                ),
+              );
+            },
+          ),
+        ),
+        titlesData: FlTitlesData(
+          leftTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 30,
+              getTitlesWidget: (value, meta) {
+                final index = value.toInt();
+                if (index < 0 || index >= data.items.length) {
+                  return const SizedBox.shrink();
+                }
+                final item = data.items[index];
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: item.isMine != null
+                      ? OwnerAvatar(
+                          name: item.label,
+                          isMine: item.isMine!,
+                          photoUrl: item.avatarUrl,
+                          size: 22,
+                        )
+                      : Icon(
+                          item.icon,
+                          color: item.color,
+                          size: 18,
+                        ),
+                );
+              },
+            ),
+          ),
+        ),
+        barGroups: [
+          for (var i = 0; i < data.items.length; i++)
+            BarChartGroupData(
+              x: i,
+              showingTooltipIndicators: const [0],
+              barRods: [
+                BarChartRodData(
+                  // A lopsided breakdown (one category dominating) can
+                  // otherwise shrink small bars into an almost-invisible
+                  // sliver, leaving their value label floating above
+                  // nothing with barely a gap — this keeps every bar
+                  // visibly present so its label reads as clearly "on
+                  // top of" something.
+                  toY: math.max(data.items[i].amount, maxAmount * 0.04) *
+                      progress,
+                  color: data.items[i].color,
+                  width: 48,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SpendRow extends StatelessWidget {
+  const _SpendRow({
     required this.item,
     required this.total,
     required this.currency,
   });
 
-  final _CategorySpendItem item;
+  final _SpendItem item;
   final double total;
   final CurrencyProvider currency;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final percentage = total == 0 ? 0 : (item.amount / total * 100);
 
     return Padding(
@@ -625,7 +1018,9 @@ class _CategorySpendRow extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              item.category.localizedName(l10n),
+              item.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 13,
@@ -683,25 +1078,34 @@ class _ChartEmptyState extends StatelessWidget {
   }
 }
 
-class _CategorySpendItem {
-  const _CategorySpendItem({
-    required this.category,
+class _SpendItem {
+  const _SpendItem({
+    required this.label,
+    required this.icon,
     required this.amount,
     required this.color,
+    this.isMine,
+    this.avatarUrl,
   });
 
-  final TransactionCategory category;
+  final String label;
+  final IconData icon;
   final double amount;
   final Color color;
+
+  /// Set only for "by person" items — null keeps category items on their
+  /// plain category icon in the bar chart's axis instead of an avatar.
+  final bool? isMine;
+  final String? avatarUrl;
 }
 
-class _CategoryChartData {
-  const _CategoryChartData({
+class _BreakdownChartData {
+  const _BreakdownChartData({
     required this.items,
     required this.total,
   });
 
-  final List<_CategorySpendItem> items;
+  final List<_SpendItem> items;
   final double total;
 }
 
@@ -791,16 +1195,17 @@ class _HomeHeader extends StatelessWidget {
 }
 
 class _TotalBalance extends StatelessWidget {
-  final String amount;
-  final bool isNegative;
+  final double balance;
+  final CurrencyProvider currency;
 
   const _TotalBalance({
-    required this.amount,
-    required this.isNegative,
+    required this.balance,
+    required this.currency,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isNegative = balance < 0;
     return Center(
       child: Column(
         children: [
@@ -813,8 +1218,9 @@ class _TotalBalance extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            amount,
+          _AnimatedCurrencyText(
+            value: balance,
+            formatter: currency.format,
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -828,6 +1234,43 @@ class _TotalBalance extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Counts up (or down) to [value] from whatever it last displayed —
+/// animates from 0 on first mount, and smoothly from the old to the new
+/// value on later rebuilds (e.g. after a transaction changes a total).
+class _AnimatedCurrencyText extends StatelessWidget {
+  const _AnimatedCurrencyText({
+    required this.value,
+    required this.formatter,
+    required this.style,
+    this.textAlign,
+    this.maxLines,
+    this.overflow,
+  });
+
+  final double value;
+  final String Function(double) formatter;
+  final TextStyle style;
+  final TextAlign? textAlign;
+  final int? maxLines;
+  final TextOverflow? overflow;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: value),
+      duration: const Duration(milliseconds: 900),
+      curve: Curves.easeOutCubic,
+      builder: (context, animatedValue, _) => Text(
+        formatter(animatedValue),
+        textAlign: textAlign,
+        maxLines: maxLines,
+        overflow: overflow,
+        style: style,
       ),
     );
   }
@@ -847,7 +1290,6 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currency = context.watch<CurrencyProvider>();
-    final valueText = currency.formatValue(amount);
     final symbol = currency.selectedCurrency.symbol;
 
     return Container(
@@ -885,8 +1327,9 @@ class _MetricCard extends StatelessWidget {
               ),
             ],
           ),
-          Text(
-            valueText,
+          _AnimatedCurrencyText(
+            value: amount,
+            formatter: currency.formatValue,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
