@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 import '../l10n/app_localizations.dart';
+import '../services/auth_service.dart';
 
 /// Everything here is sourced from Firebase — no local cache. Display name
 /// and email come from Firebase Auth; the avatar photo is uploaded to
@@ -19,6 +20,7 @@ import '../l10n/app_localizations.dart';
 /// the first time we notice there's no `photoUrl` of our own yet.
 class ProfileProvider extends ChangeNotifier {
   final ImagePicker _imagePicker = ImagePicker();
+  final AuthService _authService = AuthService();
 
   String _displayName = '';
   String _email = '';
@@ -34,6 +36,13 @@ class ProfileProvider extends ChangeNotifier {
   bool get hasAvatar => _avatarUrl != null && _avatarUrl!.isNotEmpty;
   bool get isUploadingAvatar => _isUploadingAvatar;
   String? get avatarError => _avatarError;
+
+  /// Whether this account is Google-linked — Firebase Auth's own `photoURL`
+  /// never refreshes on its own if the person changes their Google photo
+  /// later, so this gates offering an explicit "update from Google" option.
+  bool get isGoogleAccount => FirebaseAuth.instance.currentUser?.providerData
+          .any((info) => info.providerId == GoogleAuthProvider.PROVIDER_ID) ??
+      false;
 
   String get firstName {
     final name = _displayName.trim();
@@ -158,6 +167,41 @@ class ProfileProvider extends ChangeNotifier {
       // the error here previously left the UI stuck spinning forever with
       // no way to tell what went wrong.
       debugPrint('Avatar upload failed: $error\n$stackTrace');
+      _avatarError = error.toString();
+      return false;
+    } finally {
+      _isUploadingAvatar = false;
+      notifyListeners();
+    }
+  }
+
+  /// Re-pulls the account's current Google profile photo and replaces our
+  /// own avatar with it — unlike [_importGooglePhoto], this always fetches
+  /// (not just when we have none yet), since it's explicitly requested by
+  /// the user to catch up with a Google photo they changed after signup.
+  Future<bool> refreshFromGoogle() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+
+    _isUploadingAvatar = true;
+    _avatarError = null;
+    notifyListeners();
+    try {
+      final googlePhotoUrl = await _authService.fetchFreshGooglePhotoUrl();
+      if (googlePhotoUrl == null || googlePhotoUrl.isEmpty) {
+        _avatarError = 'No se encontró una foto de Google para esta cuenta.';
+        return false;
+      }
+      final response = await http.get(Uri.parse(googlePhotoUrl));
+      if (response.statusCode != 200) {
+        _avatarError = 'No se pudo descargar la foto de Google.';
+        return false;
+      }
+      final url = await _uploadAvatarBytes(user.uid, response.bodyBytes);
+      _avatarUrl = url;
+      return true;
+    } catch (error, stackTrace) {
+      debugPrint('Google avatar refresh failed: $error\n$stackTrace');
       _avatarError = error.toString();
       return false;
     } finally {

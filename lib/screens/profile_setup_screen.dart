@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:billey/l10n/app_localizations.dart';
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/l10n/localization_helpers.dart';
@@ -8,15 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../features/speech/presentation/speech_voice_selector.dart';
+import '../models/savings_goal.dart';
 import '../models/savings_goal_style.dart';
 import '../providers/currency_provider.dart';
+import '../providers/goals_provider.dart';
 import '../providers/income_distribution_provider.dart';
 import '../providers/profile_provider.dart';
 import '../services/onboarding_status.dart';
-import '../services/user_scope.dart';
 import '../theme/colors/app_colors.dart';
 import 'main_navigation_screen.dart';
 
@@ -28,7 +26,6 @@ class ProfileSetupScreen extends StatefulWidget {
 }
 
 class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
-  static const _goalsStorageKey = 'billey_savings_goals';
   static const _pageCount = 3;
 
   final _formKey = GlobalKey<FormState>();
@@ -207,25 +204,24 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   Future<void> _applyGoalsPreference() async {
     final l10n = context.l10n;
-    final prefs = await SharedPreferences.getInstance();
+    final goalsProvider = context.read<GoalsProvider>();
 
-    final storageKey = UserScope.key(_goalsStorageKey);
-    switch (_goalsMode) {
-      case _GoalsMode.empty:
-        await prefs.setString(
-          storageKey,
-          jsonEncode(<Map<String, dynamic>>[]),
-        );
-      case _GoalsMode.starter:
-        await prefs.setString(
-          storageKey,
-          jsonEncode(_suggestedGoals(l10n).map((g) => g.toJson()).toList()),
-        );
-      case _GoalsMode.custom:
-        await prefs.setString(
-          storageKey,
-          jsonEncode(_customGoals.map((g) => g.toJson()).toList()),
-        );
+    final setupGoals = switch (_goalsMode) {
+      _GoalsMode.empty => const <_SetupGoal>[],
+      _GoalsMode.starter => _suggestedGoals(l10n),
+      _GoalsMode.custom => _customGoals,
+    };
+
+    for (final goal in setupGoals) {
+      await goalsProvider.create(SavingsGoal(
+        id: goal.id,
+        title: goal.title,
+        subtitle: goal.subtitle,
+        currentAmount: goal.currentAmount,
+        targetAmount: goal.targetAmount,
+        monthsLeft: goal.monthsLeft,
+        style: goal.style,
+      ));
     }
   }
 

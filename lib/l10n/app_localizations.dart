@@ -968,6 +968,24 @@ abstract class AppLocalizations {
   /// **'I could not identify whether it was an expense or income. Try saying “I spent”, “I bought”, “I was paid”, or “I received”.'**
   String get voiceTransactionTypeNotUnderstood;
 
+  /// No description provided for @manualEntryDividerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'or type it in yourself'**
+  String get manualEntryDividerLabel;
+
+  /// No description provided for @manualEntryExpenseButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense'**
+  String get manualEntryExpenseButton;
+
+  /// No description provided for @manualEntryIncomeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Income'**
+  String get manualEntryIncomeButton;
+
   /// No description provided for @salaryQuestionTitle.
   ///
   /// In en, this message translates to:
@@ -1087,6 +1105,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t save the transaction. Please try again.'**
   String get transactionSaveError;
+
+  /// No description provided for @goalSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the goal. Please try again.'**
+  String get goalSaveError;
+
+  /// No description provided for @goalDeleteError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete the goal.'**
+  String get goalDeleteError;
 
   /// No description provided for @voiceNotAvailable.
   ///
@@ -1405,6 +1435,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose from gallery'**
   String get chooseFromGallery;
+
+  /// No description provided for @updateFromGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update with Google photo'**
+  String get updateFromGoogle;
 
   /// No description provided for @removePhoto.
   ///
@@ -2563,6 +2599,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your partner will be able to see this transaction'**
   String get shareWithPartnerHint;
+
+  /// No description provided for @shareGoalWithPartnerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your partner will be able to see this goal'**
+  String get shareGoalWithPartnerHint;
 
   /// No description provided for @coupleSharedCountZero.
   ///

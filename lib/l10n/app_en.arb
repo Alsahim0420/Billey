@@ -190,6 +190,9 @@
   "newTransactionByVoice": "New transaction",
   "voiceTransactionPrompt": "Tell me what happened. I will identify whether it is an expense or income and complete the details for you.",
   "voiceTransactionTypeNotUnderstood": "I could not identify whether it was an expense or income. Try saying “I spent”, “I bought”, “I was paid”, or “I received”.",
+  "manualEntryDividerLabel": "or type it in yourself",
+  "manualEntryExpenseButton": "Expense",
+  "manualEntryIncomeButton": "Income",
   "salaryQuestionTitle": "What is your usual salary?",
   "salaryQuestionMessage": "I will securely save it in your profile to understand future income, deductions, or additional payments.",
   "salaryAmountHint": "E.g. 3,000,000",
@@ -210,6 +213,8 @@
   "transactionDeletedUndo": "Transaction deleted",
   "undo": "Undo",
   "transactionSaveError": "Couldn't save the transaction. Please try again.",
+  "goalSaveError": "Couldn't save the goal. Please try again.",
+  "goalDeleteError": "Couldn't delete the goal.",
   "voiceNotAvailable": "Voice not available. Stop the app, run \"flutter pub get\", then \"cd ios && pod install\" and reopen with flutter run (don't use hot reload).",
   "micPermissionRequired": "Enable microphone permission to record expenses by voice.",
   "voiceAmountNotUnderstood": "Couldn't understand the amount. Try: \"Spent 50000 on food\" or \"Paid 25 thousand for taxi\".",
@@ -287,6 +292,7 @@
   "transactionTypeExpense": "Expense",
   "profilePhoto": "Profile photo",
   "chooseFromGallery": "Choose from gallery",
+  "updateFromGoogle": "Update with Google photo",
   "removePhoto": "Remove photo",
   "photoUpdated": "Profile photo updated",
   "photoRemoved": "Profile photo removed",
@@ -577,6 +583,7 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "shareWithPartnerHint": "Your partner will be able to see this transaction",
+  "shareGoalWithPartnerHint": "Your partner will be able to see this goal",
   "coupleSharedCountZero": "You aren't sharing any transactions with {name} yet",
   "@coupleSharedCountZero": {
     "placeholders": { "name": { "type": "String" } }
