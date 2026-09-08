@@ -28,6 +28,24 @@ class FirestoreTransactionService {
         .toList();
   }
 
+  /// Transactions a linked partner has explicitly shared with the current
+  /// user (i.e. `sharedWith` on the partner's own transaction contains our
+  /// uid). Requires [FirestoreTransactionService]'s own security rules to
+  /// permit the cross-account read.
+  Future<List<TransactionModel>> readSharedByPartner(String partnerUid) async {
+    final user = currentUser;
+    if (user == null) return [];
+    final snapshot = await _firestore
+        .collection('users')
+        .doc(partnerUid)
+        .collection('transactions')
+        .where('sharedWith', arrayContains: user.uid)
+        .get();
+    return snapshot.docs
+        .map((doc) => TransactionModel.fromFirestore(doc.id, doc.data()))
+        .toList();
+  }
+
   Future<void> create(TransactionModel transaction) async {
     final user = _requireUser();
     final id = _requireTransactionId(transaction);

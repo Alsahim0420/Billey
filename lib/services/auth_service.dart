@@ -116,7 +116,10 @@ class AuthService {
     await _firestore.collection('users').doc(user.uid).set(
       {
         'uid': user.uid,
-        'fullName': fullName.trim(),
+        // Same field a linked partner reads for the couple-sharing avatar
+        // pill (see ProfileProvider._syncDisplayNameToFirestore) — kept as
+        // a single canonical name instead of a separate 'fullName'.
+        'displayName': fullName.trim(),
         'email': email.trim(),
         'birthDate': birthDate?.toIso8601String(),
         'provider': provider,

@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -15,6 +14,7 @@ import '../providers/locale_settings_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/theme_settings_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../services/app_version_info.dart';
 import '../services/auth_service.dart';
 import '../services/transaction_export_service.dart';
 import '../theme/billey_theme_scope.dart';
@@ -35,6 +35,16 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  PackageInfo? _packageInfo;
+
+  @override
+  void initState() {
+    super.initState();
+    AppVersionInfo.load().then((info) {
+      if (mounted) setState(() => _packageInfo = info);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -57,7 +67,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 return _ProfileIdentity(
                   displayName: profile.displayName,
                   email: profile.email,
-                  imagePath: profile.hasLocalImage ? profile.imagePath : null,
+                  avatarUrl: profile.hasAvatar ? profile.avatarUrl : null,
+                  isUploadingAvatar: profile.isUploadingAvatar,
                   onEditAvatar: () => _showAvatarOptions(profile),
                   onEditProfile: () => _showEditProfileSheet(profile),
                 );
@@ -194,7 +205,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: TextButton(
                 onPressed: _showDeleteAccountConfirmDialog,
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.expenseColor.withValues(alpha: 0.8),
+                  foregroundColor:
+                      AppColors.expenseColor.withValues(alpha: 0.8),
                 ),
                 child: Text(
                   l10n.deleteAccount,
@@ -206,15 +218,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 18),
-            Text(
-              l10n.versionInfo,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textLight,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+            if (_packageInfo case final info?)
+              Text(
+                l10n.versionInfo(info.version, info.buildNumber),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textLight,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -516,7 +529,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   onTap: () => Navigator.pop(context, 'gallery'),
                 ),
-                if (profile.hasLocalImage)
+                if (profile.hasAvatar)
                   ListTile(
                     leading: const Icon(
                       TablerIcons.trash,
@@ -540,9 +553,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (action == 'gallery') {
       final saved = await profile.pickAndSaveAvatar();
       if (!mounted) return;
-      if (saved) {
-        _showSnackBar(l10n.photoUpdated);
-      }
+      _showSnackBar(saved ? l10n.photoUpdated : l10n.photoUpdateError);
       return;
     }
 
@@ -618,6 +629,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     label: l10n.email,
                     hint: l10n.emailHintShort,
                     keyboardType: TextInputType.emailAddress,
+                    enabled: false,
                   ),
                   const SizedBox(height: 18),
                   SizedBox(
@@ -653,19 +665,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final saved = await sheetFuture;
 
     final name = nameController.text;
-    final email = emailController.text;
 
-    sheetFuture.whenComplete(() {
+    // The bottom sheet's closing *transition* is still on screen (and its
+    // TextFields still bound to these controllers) for a bit after this
+    // future resolves — disposing immediately here races that animation
+    // and throws "used after being disposed". Give it a beat.
+    Future.delayed(const Duration(milliseconds: 350), () {
       nameController.dispose();
       emailController.dispose();
     });
 
     if (saved != true || !mounted) return;
 
-    final ok = await profile.updateProfile(
-      displayName: name,
-      email: email,
-    );
+    final ok = await profile.updateProfile(displayName: name);
 
     if (!mounted) return;
 
@@ -889,14 +901,16 @@ class _ProfileHeader extends StatelessWidget {
 class _ProfileIdentity extends StatelessWidget {
   final String displayName;
   final String email;
-  final String? imagePath;
+  final String? avatarUrl;
+  final bool isUploadingAvatar;
   final VoidCallback onEditAvatar;
   final VoidCallback onEditProfile;
 
   const _ProfileIdentity({
     required this.displayName,
     required this.email,
-    required this.imagePath,
+    required this.avatarUrl,
+    this.isUploadingAvatar = false,
     required this.onEditAvatar,
     required this.onEditProfile,
   });
@@ -931,12 +945,29 @@ class _ProfileIdentity extends StatelessWidget {
                     ),
                   ),
                   child: ClipOval(
-                    child: imagePath != null
-                        ? Image.file(
-                            File(imagePath!),
+                    child: avatarUrl != null
+                        ? Image.network(
+                            avatarUrl!,
                             fit: BoxFit.cover,
                             width: 98,
                             height: 98,
+                            loadingBuilder: (context, child, progress) =>
+                                progress == null
+                                    ? child
+                                    : const Center(
+                                        child: SizedBox.square(
+                                          dimension: 22,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      ),
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(
+                              TablerIcons.user,
+                              color: AppColors.primaryColor,
+                              size: 48,
+                            ),
                           )
                         : const Icon(
                             TablerIcons.user,
@@ -959,11 +990,20 @@ class _ProfileIdentity extends StatelessWidget {
                         width: 4,
                       ),
                     ),
-                    child: const Icon(
-                      TablerIcons.pencil,
-                      color: AppColors.white,
-                      size: 17,
-                    ),
+                    child: isUploadingAvatar
+                        ? const Padding(
+                            padding: EdgeInsets.all(8),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation(AppColors.white),
+                            ),
+                          )
+                        : const Icon(
+                            TablerIcons.camera,
+                            color: AppColors.white,
+                            size: 17,
+                          ),
                   ),
                 ),
               ],
@@ -1008,12 +1048,14 @@ class _ProfileTextField extends StatelessWidget {
   final String label;
   final String hint;
   final TextInputType? keyboardType;
+  final bool enabled;
 
   const _ProfileTextField({
     required this.controller,
     required this.label,
     required this.hint,
     this.keyboardType,
+    this.enabled = true,
   });
 
   @override
@@ -1021,7 +1063,10 @@ class _ProfileTextField extends StatelessWidget {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      style: TextStyle(color: AppColors.textPrimary),
+      enabled: enabled,
+      style: TextStyle(
+        color: enabled ? AppColors.textPrimary : AppColors.textSecondary,
+      ),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,

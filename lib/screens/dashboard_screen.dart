@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/providers/currency_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -10,9 +9,11 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/localization_helpers.dart';
 import '../models/transaction.dart';
+import '../providers/couple_link_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../theme/colors/app_colors.dart';
+import '../widgets/owner_avatar.dart';
 import 'enhanced_transaction_list_screen.dart';
 import '../theme/billey_theme_scope.dart';
 
@@ -45,7 +46,7 @@ class DashboardScreen extends StatelessWidget {
                       DateTime.now().hour,
                       context.l10n,
                     ),
-                    imagePath: profile.hasLocalImage ? profile.imagePath : null,
+                    avatarUrl: profile.hasAvatar ? profile.avatarUrl : null,
                   ),
                   const SizedBox(height: 44),
                   _TotalBalance(
@@ -718,11 +719,11 @@ class _MonthlyChartData {
 
 class _HomeHeader extends StatelessWidget {
   final String greeting;
-  final String? imagePath;
+  final String? avatarUrl;
 
   const _HomeHeader({
     required this.greeting,
-    this.imagePath,
+    this.avatarUrl,
   });
 
   @override
@@ -765,12 +766,17 @@ class _HomeHeader extends StatelessWidget {
             border: Border.all(color: AppColors.borderSubtle, width: 1.2),
           ),
           child: ClipOval(
-            child: imagePath != null
-                ? Image.file(
-                    File(imagePath!),
+            child: avatarUrl != null
+                ? Image.network(
+                    avatarUrl!,
                     fit: BoxFit.cover,
                     width: 52,
                     height: 52,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.person_rounded,
+                      color: AppColors.primaryColor,
+                      size: 30,
+                    ),
                   )
                 : const Icon(
                     Icons.person_rounded,
@@ -997,20 +1003,36 @@ class _RecentTransactionRow extends StatelessWidget {
     final amountColor =
         isIncome ? AppColors.incomeColor : AppColors.textPrimary;
 
+    final couple = context.watch<CoupleLinkProvider>();
+    final isMine = transaction.ownerId == null ||
+        transaction.ownerId == FirebaseAuth.instance.currentUser?.uid;
+    final profile = context.watch<ProfileProvider>();
+    final ownerName = couple.isLinked
+        ? (isMine ? profile.displayName : couple.partnerDisplayName)
+        : null;
+    final ownerPhotoUrl = couple.isLinked
+        ? (isMine ? profile.avatarUrl : couple.partnerPhotoUrl)
+        : null;
+
     return Row(
       children: [
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceColor,
-            shape: BoxShape.circle,
-            border: Border.all(color: AppColors.borderSubtle),
-          ),
-          child: Icon(
-            isIncome ? Icons.payments_outlined : transaction.category.icon,
-            color: isIncome ? AppColors.incomeColor : AppColors.textPrimary,
-            size: 23,
+        OwnerBadgedIcon(
+          ownerName: ownerName,
+          ownerPhotoUrl: ownerPhotoUrl,
+          isMine: isMine,
+          child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceColor,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.borderSubtle),
+            ),
+            child: Icon(
+              isIncome ? Icons.payments_outlined : transaction.category.icon,
+              color: isIncome ? AppColors.incomeColor : AppColors.textPrimary,
+              size: 23,
+            ),
           ),
         ),
         const SizedBox(width: 16),

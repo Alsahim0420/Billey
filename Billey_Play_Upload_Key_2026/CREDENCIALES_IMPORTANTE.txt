@@ -1,0 +1,13 @@
+BILLEY - NUEVA CLAVE DE SUBIDA DE GOOGLE PLAY
+
+Archivo de clave privada: upload-keystore.jks
+Alias: upload
+Contraseña del almacén: P51J4dGVZrlXZhcewEyjsO669hupZvcD
+Contraseña de la clave: P51J4dGVZrlXZhcewEyjsO669hupZvcD
+Certificado para Play Console: upload_certificate.pem
+
+IMPORTANTE:
+- Guarda toda esta carpeta en un lugar seguro de Google Drive.
+- No publiques ni compartas el archivo JKS o las contraseñas.
+- El archivo PEM es el que se sube a Google Play para solicitar el cambio.
+- Después de la aprobación, todos los bundles nuevos deben usar esta clave.

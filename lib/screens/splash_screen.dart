@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/category_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/transaction_provider.dart';
-import '../services/local_profile_storage.dart';
+import '../services/onboarding_status.dart';
 import '../theme/billey_theme_scope.dart';
 import '../theme/colors/app_colors.dart';
 import 'main_navigation_screen.dart';
@@ -118,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen>
     // Revisar si ya se mostró el onboarding y si el usuario tiene un perfil propio
     final prefs = await SharedPreferences.getInstance();
     final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
-    final hasCustomProfile = await LocalProfileStorage.hasCustomProfile();
+    final hasCustomProfile = await OnboardingStatus.hasCompleted();
 
     // Precalentar perfil local (para que ProfileSetup tenga datos actualizados)
     if (mounted) {

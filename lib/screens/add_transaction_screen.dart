@@ -19,12 +19,15 @@ import '../features/speech/domain/transaction_voice_classifier.dart';
 import '../models/category.dart';
 import '../models/transaction.dart';
 import '../providers/category_provider.dart';
+import '../providers/couple_link_provider.dart';
 import '../providers/currency_provider.dart';
 import '../providers/income_distribution_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../services/firestore_salary_service.dart';
 import '../theme/colors/app_colors.dart';
 import '../theme/billey_theme_scope.dart';
+
+enum _SaveState { idle, saving, success }
 
 class AddTransactionScreen extends StatefulWidget {
   final TransactionModel? transaction;
@@ -70,6 +73,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   bool _awaitingSalaryVoiceAnswer = false;
   String? _pendingSalaryTransactionTranscript;
   bool _amountDisplayInitialized = false;
+  bool _shareWithPartner = false;
+  _SaveState _saveState = _SaveState.idle;
 
   bool get _isIncome => _type == TransactionType.ingreso;
 
@@ -99,6 +104,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       _descriptionController.text = transaction.description ?? '';
       _date = transaction.date;
       _type = transaction.type;
+      _shareWithPartner = transaction.sharedWith.isNotEmpty;
     } else {
       _id = DateTime.now().millisecondsSinceEpoch.toString();
       _date = DateTime.now();
@@ -198,6 +204,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                           : l10n.editExpense,
                       onClose: () => Navigator.pop(context),
                       onSave: _saveTransaction,
+                      saveState: _saveState,
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(24, 30, 24, 32),
@@ -221,6 +228,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                             resultSummary: _voiceSummary,
                             onTap: _toggleVoiceListening,
                             onPlay: _playVoiceConfirmation,
+                          ),
+                          const SizedBox(height: 26),
+                          _ShareWithPartnerToggle(
+                            value: _shareWithPartner,
+                            onChanged: (value) =>
+                                setState(() => _shareWithPartner = value),
                           ),
                         ],
                       ),
@@ -332,7 +345,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                           onPlay: _playVoiceConfirmation,
                         ),
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 28),
+                      _ShareWithPartnerToggle(
+                        value: _shareWithPartner,
+                        onChanged: (value) =>
+                            setState(() => _shareWithPartner = value),
+                      ),
+                      const SizedBox(height: 12),
                       _DistributionCard(
                         amount: amount,
                         autoDistribute: _autoDistributeIncome,
@@ -378,29 +397,58 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                   child: SizedBox(
                     height: 58,
                     child: ElevatedButton(
-                      onPressed: _saveTransaction,
+                      onPressed:
+                          _saveState == _SaveState.idle ? _saveTransaction : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
                         foregroundColor: AppColors.white,
+                        disabledBackgroundColor: AppColors.primaryColor,
+                        disabledForegroundColor: AppColors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            l10n.depositFunds,
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Icon(TablerIcons.arrow_right, size: 20),
-                        ],
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        switchInCurve: Curves.easeOutBack,
+                        transitionBuilder: (child, animation) =>
+                            ScaleTransition(
+                          scale: animation,
+                          child: FadeTransition(
+                              opacity: animation, child: child),
+                        ),
+                        child: _saveState == _SaveState.saving
+                            ? const SizedBox.square(
+                                key: ValueKey('saving'),
+                                dimension: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                  valueColor:
+                                      AlwaysStoppedAnimation(AppColors.white),
+                                ),
+                              )
+                            : Row(
+                                key: const ValueKey('idle'),
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    l10n.depositFunds,
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: -0.2,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Icon(
+                                    _saveState == _SaveState.success
+                                        ? TablerIcons.check
+                                        : TablerIcons.arrow_right,
+                                    size: 20,
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                   ),
@@ -775,6 +823,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   }
 
   Future<void> _saveTransaction() async {
+    if (_saveState != _SaveState.idle) return;
+
     final l10n = context.l10n;
     final title = _titleController.text.trim();
     final amount =
@@ -805,6 +855,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
           )
         : '';
 
+    final coupleLink = context.read<CoupleLinkProvider>();
     final transaction = TransactionModel(
       id: _id,
       title: title,
@@ -812,6 +863,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       date: _date,
       type: _type,
       category: category.transactionCategory,
+      sharedWith: _shareWithPartner ? coupleLink.shareableUids : const [],
       description: [
         if (description.isNotEmpty) description,
         if (distributionDescription.isNotEmpty) distributionDescription,
@@ -823,47 +875,29 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
             ].join(' | '),
     );
 
-    final provider = Provider.of<TransactionProvider>(context, listen: false);
-    if (widget.transaction == null) {
-      await provider.addTransaction(transaction);
-      if (mounted) {
-        _showSuccessMessage(l10n.transactionAdded);
-        Navigator.of(context).pop();
-      }
-    } else {
-      await provider.editTransaction(transaction);
-      if (mounted) {
-        _showSuccessMessage(l10n.transactionUpdated);
-        Navigator.of(context).pop();
-      }
-    }
-  }
+    setState(() => _saveState = _SaveState.saving);
 
-  void _showSuccessMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.successColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        content: Row(
-          children: [
-            const Icon(TablerIcons.check, color: AppColors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    final provider = Provider.of<TransactionProvider>(context, listen: false);
+    try {
+      if (widget.transaction == null) {
+        await provider.addTransaction(transaction);
+      } else {
+        await provider.editTransaction(transaction);
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _saveState = _SaveState.idle);
+        _showErrorMessage(l10n.transactionSaveError);
+      }
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() => _saveState = _SaveState.success);
+    HapticFeedback.lightImpact();
+    await Future.delayed(const Duration(milliseconds: 550));
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 
   void _showErrorMessage(String message) {
@@ -1670,23 +1704,23 @@ class _ModalHeader extends StatelessWidget {
   final String title;
   final VoidCallback onClose;
   final VoidCallback? onSave;
+  final _SaveState saveState;
 
   const _ModalHeader({
     required this.title,
     required this.onClose,
     required this.onSave,
+    this.saveState = _SaveState.idle,
   });
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 0),
       child: Row(
         children: [
           IconButton(
-            onPressed: onClose,
+            onPressed: saveState == _SaveState.idle ? onClose : null,
             icon: Icon(
               TablerIcons.x,
               color: AppColors.textSecondary,
@@ -1706,20 +1740,64 @@ class _ModalHeader extends StatelessWidget {
             ),
           ),
           if (onSave != null)
-            TextButton(
-              onPressed: onSave,
-              child: Text(
-                l10n.save,
-                style: const TextStyle(
-                  color: AppColors.primaryColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            )
+            _SaveCheckButton(state: saveState, onTap: onSave!)
           else
             const SizedBox(width: 48),
         ],
+      ),
+    );
+  }
+}
+
+/// The expense/income "confirm" control: a plain check button that turns
+/// into a spinner while saving (also blocking a second tap) and pops into
+/// a satisfied checkmark right before the sheet slides away.
+class _SaveCheckButton extends StatelessWidget {
+  const _SaveCheckButton({required this.state, required this.onTap});
+
+  final _SaveState state;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isIdle = state == _SaveState.idle;
+
+    return GestureDetector(
+      onTap: isIdle ? onTap : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        width: 44,
+        height: 44,
+        decoration: const BoxDecoration(
+          color: AppColors.primaryColor,
+          shape: BoxShape.circle,
+        ),
+        alignment: Alignment.center,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          switchInCurve: Curves.easeOutBack,
+          transitionBuilder: (child, animation) => ScaleTransition(
+            scale: animation,
+            child: FadeTransition(opacity: animation, child: child),
+          ),
+          child: switch (state) {
+            _SaveState.saving => const SizedBox.square(
+                key: ValueKey('saving'),
+                dimension: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.2,
+                  valueColor: AlwaysStoppedAnimation(AppColors.white),
+                ),
+              ),
+            _SaveState.idle || _SaveState.success => const Icon(
+                TablerIcons.check,
+                key: ValueKey('check'),
+                color: AppColors.white,
+                size: 22,
+              ),
+          },
+        ),
       ),
     );
   }
@@ -1767,6 +1845,93 @@ class _ConceptField extends StatelessWidget {
           borderSide: BorderSide.none,
         ),
       ),
+    );
+  }
+}
+
+/// Lets the user opt this transaction in/out of being visible to their
+/// linked partner. Renders nothing if no partner is linked, so it's
+/// invisible for anyone who hasn't set up shared finances.
+class _ShareWithPartnerToggle extends StatelessWidget {
+  const _ShareWithPartnerToggle({
+    required this.value,
+    required this.onChanged,
+  });
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Consumer<CoupleLinkProvider>(
+      builder: (context, couple, _) {
+        if (!couple.isLinked) return const SizedBox.shrink();
+        final partnerName = couple.partnerDisplayName?.trim().isNotEmpty == true
+            ? couple.partnerDisplayName!.trim()
+            : l10n.defaultUser;
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceInput,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: value
+                  ? AppColors.infoColor.withValues(alpha: 0.45)
+                  : AppColors.borderSubtle,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.infoColor.withValues(alpha: 0.14),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  TablerIcons.users,
+                  color: AppColors.infoColor,
+                  size: 19,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.shareWithPartner(partnerName),
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.shareWithPartnerHint,
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch.adaptive(
+                value: value,
+                activeThumbColor: AppColors.white,
+                activeTrackColor: AppColors.infoColor,
+                onChanged: onChanged,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

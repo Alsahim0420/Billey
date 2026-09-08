@@ -1,27 +1,23 @@
+import 'dart:math' as math;
+
 import 'package:billey/l10n/l10n_extensions.dart';
-import 'package:billey/providers/couple_finance_provider.dart';
-import 'package:billey/providers/currency_provider.dart';
-import 'package:billey/providers/profile_provider.dart';
+import 'package:billey/providers/couple_link_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:provider/provider.dart';
 
-import '../models/couple_finance.dart';
+import '../providers/transaction_provider.dart';
 import '../theme/colors/app_colors.dart';
-import 'couple_qr_display_screen.dart';
-import 'couple_qr_scan_screen.dart';
-import 'couple_wallet_detail_screen.dart';
+
+const _otpLength = 6;
 
 class CoupleFinanceScreen extends StatefulWidget {
   const CoupleFinanceScreen({super.key});
 
   static Route<void> route() {
-    return MaterialPageRoute(
-      builder: (_) => ChangeNotifierProvider<CoupleFinanceProvider>.value(
-        value: CoupleFinanceProvider.instance,
-        child: const CoupleFinanceScreen(),
-      ),
-    );
+    return MaterialPageRoute(builder: (_) => const CoupleFinanceScreen());
   }
 
   @override
@@ -29,11 +25,39 @@ class CoupleFinanceScreen extends StatefulWidget {
 }
 
 class _CoupleFinanceScreenState extends State<CoupleFinanceScreen> {
-  final _sharedWithNameController = TextEditingController();
+  final _codeController = TextEditingController();
+  bool _redeeming = false;
+  bool _codeHasError = false;
+  CoupleLinkProvider? _coupleLinkProvider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Cached here (safe: ancestor lookups work in didChangeDependencies)
+    // so dispose() doesn't need context.read(), which is unsafe once the
+    // widget has been deactivated.
+    _coupleLinkProvider = context.read<CoupleLinkProvider>();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Deferred to after the first frame: calling startGeneratingCode()
+    // synchronously here would call notifyListeners() while this very
+    // widget tree is still being built, which Flutter disallows.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final couple = context.read<CoupleLinkProvider>();
+      if (!couple.isLinked) {
+        couple.startGeneratingCode();
+      }
+    });
+  }
 
   @override
   void dispose() {
-    _sharedWithNameController.dispose();
+    _coupleLinkProvider?.stopGeneratingCode();
+    _codeController.dispose();
     super.dispose();
   }
 
@@ -54,57 +78,23 @@ class _CoupleFinanceScreenState extends State<CoupleFinanceScreen> {
           ),
         ),
         iconTheme: IconThemeData(color: AppColors.textPrimary),
-        actions: [
-          Consumer<CoupleFinanceProvider>(
-            builder: (context, couple, _) {
-              if (!couple.isLinked) return const SizedBox.shrink();
-              return IconButton(
-                onPressed: () => _scanUpdate(context),
-                icon: const Icon(TablerIcons.scan),
-                color: AppColors.primaryColor,
-                tooltip: l10n.coupleScanQr,
-              );
-            },
-          ),
-        ],
       ),
-      body: Consumer3<CoupleFinanceProvider, ProfileProvider, CurrencyProvider>(
-        builder: (context, couple, profile, currency, _) {
+      body: Consumer<CoupleLinkProvider>(
+        builder: (context, couple, _) {
           if (!couple.isLoaded) {
             return const Center(child: CircularProgressIndicator());
           }
-
-          if (!couple.isLinked) {
-            return _buildPairingView(context, profile, couple);
-          }
-
-          return _buildLinkedView(context, couple, currency);
-        },
-      ),
-      floatingActionButton: Consumer<CoupleFinanceProvider>(
-        builder: (context, couple, _) {
-          if (!couple.isLinked) return const SizedBox.shrink();
-          return FloatingActionButton.extended(
-            onPressed: () => _createWallet(context, couple),
-            backgroundColor: AppColors.primaryColor,
-            foregroundColor: AppColors.white,
-            icon: const Icon(TablerIcons.cash),
-            label: Text(context.l10n.coupleNewTransfer),
-          );
+          return couple.isLinked
+              ? _buildLinkedView(context, couple)
+              : _buildPairingView(context, couple);
         },
       ),
     );
   }
 
-  Widget _buildPairingView(
-    BuildContext context,
-    ProfileProvider profile,
-    CoupleFinanceProvider couple,
-  ) {
+  Widget _buildPairingView(BuildContext context, CoupleLinkProvider couple) {
     final l10n = context.l10n;
-    final myName = profile.displayName.trim().isEmpty
-        ? l10n.defaultUser
-        : profile.displayName.trim();
+    final remaining = couple.codeRemaining.inSeconds.clamp(0, 300);
 
     return ListView(
       padding: const EdgeInsets.all(22),
@@ -116,7 +106,7 @@ class _CoupleFinanceScreenState extends State<CoupleFinanceScreen> {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
-            l10n.couplePairingIntro,
+            l10n.coupleIntro,
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 14,
@@ -125,196 +115,227 @@ class _CoupleFinanceScreenState extends State<CoupleFinanceScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 26),
         Text(
-          l10n.couplePartnerName,
+          l10n.coupleMyCodeLabel,
           style: TextStyle(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w800,
+            fontSize: 15,
           ),
         ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _sharedWithNameController,
-          textCapitalization: TextCapitalization.words,
-          decoration: InputDecoration(
-            hintText: l10n.couplePartnerNameHint,
-            filled: true,
-            fillColor: AppColors.surfaceColor,
-          ),
+        const SizedBox(height: 6),
+        Text(
+          l10n.coupleMyCodeHint,
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
         ),
-        const SizedBox(height: 20),
-        _ActionButton(
-          icon: TablerIcons.qrcode,
-          label: l10n.coupleShowPairingQr,
-          onTap: () async {
-            final sharedWithName = _sharedWithNameController.text.trim();
-            if (sharedWithName.length < 2) {
-              _snack(l10n.couplePartnerNameRequired);
-              return;
-            }
-            final payload = await couple.createPairingQr(
-              myName: myName,
-              partnerName: sharedWithName,
-            );
-            if (!context.mounted) return;
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => CoupleQrDisplayScreen(
-                  title: l10n.couplePairingQrTitle,
-                  subtitle: l10n.couplePairingQrSubtitle(sharedWithName),
-                  payload: payload,
+        const SizedBox(height: 16),
+        _CodeCard(
+          code: couple.myCode,
+          isLoading: couple.isGeneratingCode && couple.myCode == null,
+          remainingSeconds: remaining,
+          onCopy: couple.myCode == null
+              ? null
+              : () {
+                  Clipboard.setData(ClipboardData(text: couple.myCode!));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l10n.done)),
+                  );
+                },
+        ),
+        const SizedBox(height: 36),
+        Row(
+          children: [
+            Expanded(child: Divider(color: AppColors.borderSubtle)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                l10n.coupleEnterPartnerCode,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
                 ),
               ),
-            );
-          },
+            ),
+            Expanded(child: Divider(color: AppColors.borderSubtle)),
+          ],
         ),
-        const SizedBox(height: 12),
-        _ActionButton(
-          icon: TablerIcons.scan,
-          label: l10n.coupleScanPairingQr,
-          outlined: true,
-          onTap: () => _scanPairing(context, couple, myName),
+        const SizedBox(height: 20),
+        _OtpCodeInput(
+          controller: _codeController,
+          hasError: _codeHasError,
+          onChanged: () {
+            if (_codeHasError) setState(() => _codeHasError = false);
+          },
+          onCompleted: () => _redeem(couple),
+        ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          alignment: Alignment.topCenter,
+          child: !_codeHasError
+              ? const SizedBox(width: double.infinity)
+              : Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    l10n.coupleInvalidCode,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: AppColors.expenseColor,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+        ),
+        const SizedBox(height: 22),
+        SizedBox(
+          height: 52,
+          child: FilledButton(
+            onPressed: _redeeming ? null : () => _redeem(couple),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              foregroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: _redeeming
+                ? const SizedBox.square(
+                    dimension: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(AppColors.white),
+                    ),
+                  )
+                : Text(
+                    l10n.coupleLinkButton,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildLinkedView(
-    BuildContext context,
-    CoupleFinanceProvider couple,
-    CurrencyProvider currency,
-  ) {
+  Widget _buildLinkedView(BuildContext context, CoupleLinkProvider couple) {
     final l10n = context.l10n;
-    final link = couple.link!;
+    final partnerName = couple.partnerDisplayName?.trim().isNotEmpty == true
+        ? couple.partnerDisplayName!.trim()
+        : l10n.defaultUser;
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    final sharedCount = context
+        .watch<TransactionProvider>()
+        .allTransactions
+        .where((t) =>
+            t.ownerId == myUid && t.sharedWith.contains(couple.partnerUid))
+        .length;
+    final sharedSummary = sharedCount == 0
+        ? l10n.coupleSharedCountZero(partnerName)
+        : sharedCount == 1
+            ? l10n.coupleSharedCountOne(partnerName)
+            : l10n.coupleSharedCountMany(sharedCount, partnerName);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+      padding: const EdgeInsets.fromLTRB(22, 22, 22, 40),
       children: [
         Container(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: AppColors.surfaceColor,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(color: AppColors.borderSubtle),
           ),
-          child: Row(
+          child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryColor.withValues(alpha: 0.12),
+                  color: AppColors.infoColor.withValues(alpha: 0.14),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  TablerIcons.users,
-                  color: AppColors.primaryColor,
+                alignment: Alignment.center,
+                child: Text(
+                  partnerName.isNotEmpty ? partnerName[0].toUpperCase() : '?',
+                  style: const TextStyle(
+                    color: AppColors.infoColor,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.coupleLinkedWith(link.partnerName),
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.coupleSyncReminder,
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+              const SizedBox(height: 14),
+              Text(
+                l10n.coupleLinkedWith(partnerName),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 17,
                 ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                l10n.coupleLinkedSubtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
             ],
           ),
         ),
         const SizedBox(height: 14),
-        Row(
-          children: [
-            Expanded(
-              child: _ActionButton(
-                icon: TablerIcons.qrcode,
-                label: l10n.coupleShareUpdate,
-                compact: true,
-                onTap: () {
-                  final payload = couple.buildSyncQr();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => CoupleQrDisplayScreen(
-                        title: l10n.coupleSyncQrTitle,
-                        subtitle: l10n.coupleSyncQrSubtitleAll,
-                        payload: payload,
-                      ),
-                    ),
-                  );
-                },
-              ),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: sharedCount > 0
+                ? AppColors.primaryColor.withValues(alpha: 0.1)
+                : AppColors.surfaceColor,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: sharedCount > 0
+                  ? AppColors.primaryColor.withValues(alpha: 0.3)
+                  : AppColors.borderSubtle,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _ActionButton(
-                icon: TablerIcons.scan,
-                label: l10n.coupleScanUpdate,
-                compact: true,
-                outlined: true,
-                onTap: () => _scanUpdate(context),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        Text(
-          l10n.coupleSharedWallets,
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
           ),
-        ),
-        const SizedBox(height: 12),
-        if (couple.wallets.isEmpty)
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceColor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.borderSubtle),
-            ),
-            child: Text(
-              l10n.coupleWalletsEmpty,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: sharedCount > 0
+                      ? AppColors.primaryColor.withValues(alpha: 0.16)
+                      : AppColors.textSecondary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Icon(
+                  sharedCount > 0
+                      ? TablerIcons.rosette_discount_check
+                      : TablerIcons.eye_off,
+                  color: sharedCount > 0
+                      ? AppColors.primaryColor
+                      : AppColors.textSecondary,
+                  size: 18,
+                ),
               ),
-            ),
-          )
-        else
-          ...couple.wallets.map(
-            (wallet) => _WalletCard(
-              wallet: wallet,
-              currency: currency,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        CoupleWalletDetailScreen(walletId: wallet.id),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  sharedSummary,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    height: 1.35,
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-        const SizedBox(height: 20),
+        ),
+        const SizedBox(height: 28),
         TextButton(
           onPressed: () => _confirmUnlink(context, couple),
           child: Text(
@@ -329,169 +350,38 @@ class _CoupleFinanceScreenState extends State<CoupleFinanceScreen> {
     );
   }
 
-  Future<void> _scanPairing(
-    BuildContext context,
-    CoupleFinanceProvider couple,
-    String myName,
-  ) async {
+  Future<void> _redeem(CoupleLinkProvider couple) async {
     final l10n = context.l10n;
-    final payload = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (_) => const CoupleQrScanScreen()),
-    );
-    if (payload == null || !context.mounted) return;
+    final code = _codeController.text.trim();
+    if (code.length != _otpLength || _redeeming) return;
 
-    final error = await couple.acceptPairing(payload: payload, myName: myName);
-    if (!context.mounted) return;
+    setState(() {
+      _redeeming = true;
+      _codeHasError = false;
+    });
+    final error = await couple.redeemCode(code);
+    if (!mounted) return;
 
     if (error != null) {
-      _snack(l10n.coupleSyncInvalid);
-      return;
-    }
-    _snack(l10n.coupleLinkedSuccess);
-  }
-
-  Future<void> _scanUpdate(BuildContext context) async {
-    final l10n = context.l10n;
-    final couple = context.read<CoupleFinanceProvider>();
-    final payload = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (_) => const CoupleQrScanScreen()),
-    );
-    if (payload == null || !context.mounted) return;
-
-    final error = await couple.mergeSyncPayload(payload);
-    if (!context.mounted) return;
-
-    if (error != null) {
-      _snack(l10n.coupleSyncInvalid);
-      return;
-    }
-    _snack(l10n.coupleSyncSuccess);
-  }
-
-  Future<void> _createWallet(
-    BuildContext context,
-    CoupleFinanceProvider couple,
-  ) async {
-    final l10n = context.l10n;
-    final link = couple.link!;
-    final currency = context.read<CurrencyProvider>();
-    final titleController = TextEditingController();
-    final amountController = TextEditingController();
-    var holderIsPartner = true;
-
-    final created = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surfaceColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      builder: (sheetContext) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return Padding(
-              padding: EdgeInsets.fromLTRB(
-                20,
-                16,
-                20,
-                20 + MediaQuery.viewInsetsOf(sheetContext).bottom,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    l10n.coupleNewTransfer,
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: titleController,
-                    decoration: InputDecoration(
-                      labelText: l10n.coupleTransferTitle,
-                      hintText: l10n.coupleTransferTitleHint,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: amountController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters:
-                        currency.usesDecimals ? null : [currency.inputFormatter],
-                    decoration: InputDecoration(
-                      labelText: l10n.coupleTransferAmount,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(l10n.coupleHolderIsPartner(link.partnerName)),
-                    value: holderIsPartner,
-                    activeThumbColor: AppColors.primaryColor,
-                    onChanged: (value) =>
-                        setSheetState(() => holderIsPartner = value),
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton(
-                    onPressed: () {
-                      final amount =
-                          currency.parseValue(amountController.text) ?? 0;
-                      if (titleController.text.trim().length < 2 ||
-                          amount <= 0) {
-                        return;
-                      }
-                      Navigator.pop(sheetContext, true);
-                    },
-                    child: Text(l10n.createUpper),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-
-    if (created != true || !context.mounted) {
-      titleController.dispose();
-      amountController.dispose();
+      setState(() {
+        _redeeming = false;
+        _codeHasError = true;
+      });
+      _codeController.clear();
+      HapticFeedback.heavyImpact();
       return;
     }
 
-    final amount = currency.parseValue(amountController.text) ?? 0;
-    final holderName = holderIsPartner ? link.partnerName : link.myName;
-
-    final wallet = await couple.createWallet(
-      title: titleController.text.trim(),
-      budget: amount,
-      holderName: holderName,
-    );
-
-    titleController.dispose();
-    amountController.dispose();
-
-    if (!context.mounted) return;
-
-    _snack(l10n.coupleWalletCreated);
-    final payload = couple.buildSyncQr();
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => CoupleQrDisplayScreen(
-          title: l10n.coupleSyncQrTitle,
-          subtitle: l10n.coupleSyncQrSubtitle(wallet.title),
-          payload: payload,
-        ),
-      ),
+    setState(() => _redeeming = false);
+    couple.stopGeneratingCode();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(l10n.coupleLinkedSuccess)),
     );
   }
 
   Future<void> _confirmUnlink(
     BuildContext context,
-    CoupleFinanceProvider couple,
+    CoupleLinkProvider couple,
   ) async {
     final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
@@ -515,171 +405,296 @@ class _CoupleFinanceScreenState extends State<CoupleFinanceScreen> {
       ),
     );
 
-    if (confirmed == true) {
-      await couple.unlink();
-      if (context.mounted) _snack(l10n.coupleUnlinked);
-    }
-  }
-
-  void _snack(String message) {
+    if (confirmed != true || !context.mounted) return;
+    final error = await couple.unlink();
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.outlined = false,
-    this.compact = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final bool outlined;
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final child = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, size: compact ? 18 : 20),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Text(
-            label,
-            maxLines: 2,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              fontSize: compact ? 12 : 14,
-            ),
-          ),
-        ),
-      ],
-    );
-
-    if (outlined) {
-      return OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          padding: EdgeInsets.symmetric(
-            horizontal: compact ? 10 : 16,
-            vertical: compact ? 14 : 16,
-          ),
-          foregroundColor: AppColors.primaryColor,
-          side:
-              BorderSide(color: AppColors.primaryColor.withValues(alpha: 0.5)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: child,
-      );
-    }
-
-    return FilledButton(
-      onPressed: onTap,
-      style: FilledButton.styleFrom(
-        backgroundColor: AppColors.primaryColor,
-        foregroundColor: AppColors.white,
-        padding: EdgeInsets.symmetric(
-          horizontal: compact ? 10 : 16,
-          vertical: compact ? 14 : 16,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+      SnackBar(
+        content: Text(error ?? l10n.coupleUnlinked),
       ),
-      child: child,
     );
   }
 }
 
-class _WalletCard extends StatelessWidget {
-  const _WalletCard({
-    required this.wallet,
-    required this.currency,
-    required this.onTap,
+class _CodeCard extends StatelessWidget {
+  const _CodeCard({
+    required this.code,
+    required this.isLoading,
+    required this.remainingSeconds,
+    required this.onCopy,
   });
 
-  final SharedWallet wallet;
-  final CurrencyProvider currency;
-  final VoidCallback onTap;
+  final String? code;
+  final bool isLoading;
+  final int remainingSeconds;
+  final VoidCallback? onCopy;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final progress = wallet.budget == 0
-        ? 0.0
-        : (wallet.spent / wallet.budget).clamp(0.0, 1.0);
+    final progress = remainingSeconds / CoupleLinkProvider.codeTtl.inSeconds;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Material(
-        color: AppColors.surfaceColor,
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            AppColors.primaryColor,
+            AppColors.primaryColorDark,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryColor.withValues(alpha: 0.35),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          if (isLoading)
+            const SizedBox(
+              height: 44,
+              child: Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  valueColor: AlwaysStoppedAnimation(AppColors.white),
+                ),
+              ),
+            )
+          else
+            GestureDetector(
+              onTap: onCopy,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _spacedCode(code ?? '------'),
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 38,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 4,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Icon(TablerIcons.copy,
+                      color: AppColors.white, size: 20),
+                ],
+              ),
+            ),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              minHeight: 4,
+              backgroundColor: AppColors.white.withValues(alpha: 0.25),
+              color: AppColors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.coupleCodeExpiresIn(remainingSeconds),
+            style: const TextStyle(
+              color: AppColors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _spacedCode(String code) => code.split('').join(' ');
+}
+
+/// Digit-by-digit code entry, like an SMS verification prompt: a real
+/// (invisible) text field drives keyboard input while six animated boxes
+/// render the digits — each one "pops" in as it's typed, the active box
+/// glows, and a wrong code makes the whole row shake red.
+class _OtpCodeInput extends StatefulWidget {
+  const _OtpCodeInput({
+    required this.controller,
+    required this.hasError,
+    required this.onChanged,
+    required this.onCompleted,
+  });
+
+  final TextEditingController controller;
+  final bool hasError;
+  final VoidCallback onChanged;
+  final VoidCallback onCompleted;
+
+  @override
+  State<_OtpCodeInput> createState() => _OtpCodeInputState();
+}
+
+class _OtpCodeInputState extends State<_OtpCodeInput>
+    with SingleTickerProviderStateMixin {
+  final _focusNode = FocusNode();
+  late final AnimationController _shakeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 450),
+    );
+    widget.controller.addListener(_handleTextChange);
+  }
+
+  void _handleTextChange() {
+    setState(() {});
+    widget.onChanged();
+    if (widget.controller.text.length == _otpLength) {
+      _focusNode.unfocus();
+      widget.onCompleted();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _OtpCodeInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.hasError && !oldWidget.hasError) {
+      HapticFeedback.selectionClick();
+      _shakeController.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_handleTextChange);
+    _focusNode.dispose();
+    _shakeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = widget.controller.text;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _focusNode.requestFocus(),
+      child: AnimatedBuilder(
+        animation: _shakeController,
+        builder: (context, child) {
+          final t = _shakeController.value;
+          final offset = math.sin(t * math.pi * 6) * (1 - t) * 10;
+          return Transform.translate(offset: Offset(offset, 0), child: child);
+        },
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(_otpLength, (index) {
+                final filled = index < text.length;
+                final isActive = index == text.length && _focusNode.hasFocus;
+                return _OtpDigitBox(
+                  digit: filled ? text[index] : '',
+                  isActive: isActive,
+                  hasError: widget.hasError,
+                );
+              }),
+            ),
+            // Real input capturing the keyboard, invisible but present so
+            // taps/autofill/paste all work normally.
+            Opacity(
+              opacity: 0,
+              child: TextField(
+                controller: widget.controller,
+                focusNode: _focusNode,
+                autofocus: true,
+                keyboardType: TextInputType.number,
+                textInputAction: TextInputAction.done,
+                showCursor: false,
+                autofillHints: const [AutofillHints.oneTimeCode],
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(_otpLength),
+                ],
+                decoration: const InputDecoration(
+                  counterText: '',
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OtpDigitBox extends StatelessWidget {
+  const _OtpDigitBox({
+    required this.digit,
+    required this.isActive,
+    required this.hasError,
+  });
+
+  final String digit;
+  final bool isActive;
+  final bool hasError;
+
+  @override
+  Widget build(BuildContext context) {
+    final filled = digit.isNotEmpty;
+    final borderColor = hasError
+        ? AppColors.expenseColor
+        : isActive
+            ? AppColors.primaryColor
+            : filled
+                ? AppColors.primaryColor.withValues(alpha: 0.55)
+                : AppColors.borderSubtle;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+      width: 46,
+      height: 58,
+      decoration: BoxDecoration(
+        color: hasError
+            ? AppColors.expenseColor.withValues(alpha: 0.08)
+            : AppColors.surfaceColor,
         borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.borderSubtle),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        wallet.title,
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      currency.format(wallet.remaining),
-                      style: const TextStyle(
-                        color: AppColors.primaryColor,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
+        border: Border.all(
+          color: borderColor,
+          width: isActive || hasError ? 2 : 1.4,
+        ),
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: AppColors.primaryColor.withValues(alpha: 0.35),
+                  blurRadius: 14,
+                  spreadRadius: 1,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '${l10n.coupleFor} ${wallet.holderName} · ${currency.format(wallet.budget)}',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 6,
-                    backgroundColor: AppColors.backgroundAlt,
-                    color: progress > 0.85
-                        ? AppColors.expenseColor
-                        : AppColors.primaryColor,
-                  ),
-                ),
-              ],
-            ),
+              ]
+            : null,
+      ),
+      alignment: Alignment.center,
+      child: TweenAnimationBuilder<double>(
+        key: ValueKey(digit.isEmpty ? 'empty' : digit),
+        tween: Tween(begin: filled ? 0.4 : 1, end: 1),
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOutBack,
+        builder: (context, scale, child) {
+          return Transform.scale(scale: scale, child: child);
+        },
+        child: Text(
+          digit,
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
           ),
         ),
       ),

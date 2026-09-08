@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import '../models/transaction.dart';
+import '../services/user_scope.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -7,8 +8,11 @@ class DatabaseHelper {
 
   DatabaseHelper._init();
 
+  // Scoped by the signed-in user so this (currently unused in the live
+  // cloud-backed app) local fallback never mixes one account's
+  // transactions with another's if it's ever wired up again.
   Future<Box<TransactionModel>> get _box async {
-    return await Hive.openBox<TransactionModel>(_boxName);
+    return await Hive.openBox<TransactionModel>(UserScope.key(_boxName));
   }
 
   Future<void> create(TransactionModel transaction) async {

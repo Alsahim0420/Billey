@@ -72,4 +72,39 @@ void main() {
   test('leaves an ambiguous phrase unclassified', () {
     expect(classifier.classify('Helados para el equipo'), isNull);
   });
+
+  test('recognizes any conjugation of "ingresar", not just the noun', () {
+    expect(classifier.classify('Me ingresó 500 mil'), TransactionType.ingreso);
+    expect(
+      classifier.classify('Me ingresaron el pago de la factura'),
+      TransactionType.ingreso,
+    );
+    expect(classifier.classify('Ingresé 200 mil hoy'), TransactionType.ingreso);
+    expect(
+      classifier.classify('Tuve un ingreso de 300 mil'),
+      TransactionType.ingreso,
+    );
+  });
+
+  test('does not confuse the noun "recibo" with the verb "recibir"', () {
+    expect(
+      classifier.classify('Pagué el recibo del agua'),
+      TransactionType.gasto,
+    );
+  });
+
+  test('does not misfire on unrelated words sharing a verb stem', () {
+    expect(
+      classifier.classify('Le envié 50 mil a mi hermano'),
+      TransactionType.gasto,
+    );
+    expect(
+      classifier.classify('Transferí 80 mil a Juan'),
+      TransactionType.gasto,
+    );
+    expect(
+      classifier.classify('Me transfirieron 150 mil'),
+      TransactionType.ingreso,
+    );
+  });
 }

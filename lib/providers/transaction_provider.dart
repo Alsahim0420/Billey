@@ -13,6 +13,7 @@ class TransactionProvider with ChangeNotifier {
   String _searchQuery = '';
   TransactionType? _filterType;
   TransactionCategory? _filterCategory;
+  String? _partnerUid;
 
   // Constructor por defecto usa DatabaseHelper.instance
   TransactionProvider()
@@ -41,10 +42,27 @@ class TransactionProvider with ChangeNotifier {
   TransactionType? get filterType => _filterType;
   TransactionCategory? get filterCategory => _filterCategory;
 
+  /// Sets (or clears) the linked partner's uid so [loadTransactions] also
+  /// pulls in whatever they've shared with us. Reloads immediately if the
+  /// partner changed.
+  void setPartnerUid(String? partnerUid) {
+    if (_partnerUid == partnerUid) return;
+    _partnerUid = partnerUid;
+    loadTransactions();
+  }
+
   Future<void> loadTransactions() async {
-    final data = firestoreService != null
-        ? await firestoreService!.readAll()
-        : await dbHelper!.readAllTransactions();
+    List<TransactionModel> data;
+    if (firestoreService != null) {
+      data = await firestoreService!.readAll();
+      final partnerUid = _partnerUid;
+      if (partnerUid != null) {
+        final shared = await firestoreService!.readSharedByPartner(partnerUid);
+        data = [...data, ...shared];
+      }
+    } else {
+      data = await dbHelper!.readAllTransactions();
+    }
     _transactions = data;
     // Sort by date (most recent first)
     _transactions.sort((a, b) => b.date.compareTo(a.date));

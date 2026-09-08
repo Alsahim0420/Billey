@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:billey/l10n/app_localizations.dart';
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/l10n/localization_helpers.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,11 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/savings_goal_style.dart';
+import '../models/transaction.dart';
 import '../providers/currency_provider.dart';
+import '../providers/income_distribution_provider.dart';
+import '../providers/transaction_provider.dart';
+import '../services/user_scope.dart';
 import '../theme/colors/app_colors.dart';
 import '../theme/billey_theme_scope.dart';
 
@@ -42,7 +47,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
           children: [
-            _Header(onSettingsTap: _clearGoals),
+            _Header(onAiTap: _showAiGoalSuggestions),
             const SizedBox(height: 24),
             _TotalSavingsCard(amount: _totalSavings),
             const SizedBox(height: 28),
@@ -62,7 +67,8 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
 
   Future<void> _loadGoals() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_storageKey);
+    await UserScope.migrateString(prefs, _storageKey);
+    final raw = prefs.getString(UserScope.key(_storageKey));
 
     if (raw == null) return;
 
@@ -79,14 +85,261 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
   Future<void> _saveGoals() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-      _storageKey,
+      UserScope.key(_storageKey),
       jsonEncode(_goals.map((goal) => goal.toJson()).toList()),
     );
   }
 
-  Future<void> _clearGoals() async {
+  double _estimateMonthlyIncome(TransactionProvider provider) {
+    final incomeByMonth = <String, double>{};
+    for (final transaction in provider.allTransactions) {
+      if (transaction.type != TransactionType.ingreso) continue;
+      final key = '${transaction.date.year}-${transaction.date.month}';
+      incomeByMonth[key] = (incomeByMonth[key] ?? 0) + transaction.amount;
+    }
+    if (incomeByMonth.isEmpty) return 0;
+    final total = incomeByMonth.values.fold(0.0, (a, b) => a + b);
+    return total / incomeByMonth.length;
+  }
+
+  /// Turns the buckets of the user's active income-distribution plan into
+  /// concrete goal suggestions — e.g. a "savings" bucket becomes an
+  /// emergency-fund goal sized off their actual average monthly income
+  /// (falling back to a sensible default when there isn't enough
+  /// transaction history yet to estimate it).
+  List<_GoalSuggestion> _buildSuggestions(
+    IncomeDistributionTemplate template,
+    double monthlyIncome,
+  ) {
+    final l10n = context.l10n;
+    final suggestions = <_GoalSuggestion>[];
+
+    for (final bucket in template.buckets) {
+      final monthlyContribution = monthlyIncome * bucket.percent / 100;
+      switch (bucket.id) {
+        case 'savings':
+          suggestions.add(_GoalSuggestion(
+            bucketId: bucket.id,
+            title: l10n.aiSuggestedEmergencyFund,
+            subtitle: bucket.localizedLabel(l10n),
+            style: SavingsGoalStyle.emergency,
+            targetAmount: monthlyIncome > 0 ? monthlyIncome * 3 : 3000000,
+            monthsLeft: 6,
+            monthlyContribution: monthlyContribution,
+          ));
+          break;
+        case 'debt':
+          suggestions.add(_GoalSuggestion(
+            bucketId: bucket.id,
+            title: l10n.aiSuggestedDebtPayoff,
+            subtitle: bucket.localizedLabel(l10n),
+            style: SavingsGoalStyle.business,
+            targetAmount: monthlyIncome > 0 ? monthlyContribution * 6 : 2000000,
+            monthsLeft: 6,
+            monthlyContribution: monthlyContribution,
+          ));
+          break;
+        case 'investing':
+          suggestions.add(_GoalSuggestion(
+            bucketId: bucket.id,
+            title: l10n.aiSuggestedInvestmentFund,
+            subtitle: bucket.localizedLabel(l10n),
+            style: SavingsGoalStyle.business,
+            targetAmount:
+                monthlyIncome > 0 ? monthlyContribution * 12 : 2000000,
+            monthsLeft: 12,
+            monthlyContribution: monthlyContribution,
+          ));
+          break;
+        case 'buffer':
+          suggestions.add(_GoalSuggestion(
+            bucketId: bucket.id,
+            title: l10n.aiSuggestedIncomeBuffer,
+            subtitle: bucket.localizedLabel(l10n),
+            style: SavingsGoalStyle.emergency,
+            targetAmount: monthlyIncome > 0 ? monthlyIncome * 2 : 1500000,
+            monthsLeft: 4,
+            monthlyContribution: monthlyContribution,
+          ));
+          break;
+        default:
+          // "essentials"/"wants" aren't savings-worthy goals on their own.
+          break;
+      }
+    }
+
+    return suggestions;
+  }
+
+  Future<void> _showAiGoalSuggestions() async {
+    final l10n = context.l10n;
+    final template = context.read<IncomeDistributionProvider>().activeTemplate;
+    final monthlyIncome =
+        _estimateMonthlyIncome(context.read<TransactionProvider>());
+    final currency = context.read<CurrencyProvider>();
+
+    final existingTitles =
+        _goals.map((goal) => goal.title.trim().toLowerCase()).toSet();
+    final suggestions = _buildSuggestions(template, monthlyIncome)
+        .where((s) => !existingTitles.contains(s.title.trim().toLowerCase()))
+        .toList();
+
+    if (suggestions.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.aiNoNewSuggestions)),
+      );
+      return;
+    }
+
+    final selected = {for (final s in suggestions) s.bucketId: true};
+
+    final chosen = await showModalBottomSheet<List<_GoalSuggestion>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+              ),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceColor,
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(26)),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 48,
+                            height: 4,
+                            margin: const EdgeInsets.only(bottom: 18),
+                            decoration: BoxDecoration(
+                              color:
+                                  AppColors.textLight.withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor
+                                    .withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.auto_awesome_rounded,
+                                color: AppColors.primaryColor,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                l10n.aiGoalSuggestionsTitle,
+                                style: TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.aiGoalSuggestionsSubtitle(
+                            template.localizedName(l10n),
+                            template.ratioLabel,
+                          ),
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        for (final suggestion in suggestions) ...[
+                          _SuggestionTile(
+                            suggestion: suggestion,
+                            currency: currency,
+                            l10n: l10n,
+                            selected: selected[suggestion.bucketId] ?? true,
+                            onChanged: (value) => setSheetState(
+                              () => selected[suggestion.bucketId] = value,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 54,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              final picks = suggestions
+                                  .where((s) =>
+                                      selected[s.bucketId] ?? false)
+                                  .toList();
+                              Navigator.pop(sheetContext, picks);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryColor,
+                              foregroundColor: AppColors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: Text(
+                              l10n.aiAddSelectedGoals,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (chosen == null || chosen.isEmpty) return;
+
     setState(() {
-      _goals.clear();
+      for (final suggestion in chosen) {
+        _goals.add(_SavingsGoal(
+          id: '${DateTime.now().millisecondsSinceEpoch}_${suggestion.bucketId}',
+          title: suggestion.title,
+          subtitle: suggestion.subtitle,
+          currentAmount: 0,
+          targetAmount: suggestion.targetAmount,
+          monthsLeft: suggestion.monthsLeft,
+          style: suggestion.style,
+        ));
+      }
     });
     await _saveGoals();
   }
@@ -347,10 +600,120 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
   }
 }
 
-class _Header extends StatelessWidget {
-  final VoidCallback onSettingsTap;
+/// One suggested goal derived from a bucket of the user's active income
+/// distribution plan (see [IncomeDistributionProvider.activeTemplate]).
+class _GoalSuggestion {
+  final String bucketId;
+  final String title;
+  final String subtitle;
+  final SavingsGoalStyle style;
+  final double targetAmount;
+  final int monthsLeft;
+  final double monthlyContribution;
 
-  const _Header({required this.onSettingsTap});
+  const _GoalSuggestion({
+    required this.bucketId,
+    required this.title,
+    required this.subtitle,
+    required this.style,
+    required this.targetAmount,
+    required this.monthsLeft,
+    required this.monthlyContribution,
+  });
+}
+
+class _SuggestionTile extends StatelessWidget {
+  final _GoalSuggestion suggestion;
+  final CurrencyProvider currency;
+  final AppLocalizations l10n;
+  final bool selected;
+  final ValueChanged<bool> onChanged;
+
+  const _SuggestionTile({
+    required this.suggestion,
+    required this.currency,
+    required this.l10n,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = suggestion.style.color;
+    final subtitle = suggestion.monthlyContribution > 0
+        ? '${currency.format(suggestion.targetAmount)} · ${l10n.aiSuggestionMonthlyHint(currency.format(suggestion.monthlyContribution))}'
+        : currency.format(suggestion.targetAmount);
+
+    return InkWell(
+      onTap: () => onChanged(!selected),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: selected
+              ? color.withValues(alpha: 0.1)
+              : AppColors.surfaceInput,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? color : AppColors.borderSubtle,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(suggestion.style.icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    suggestion.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Checkbox(
+              value: selected,
+              activeColor: color,
+              onChanged: (value) => onChanged(value ?? false),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  final VoidCallback onAiTap;
+
+  const _Header({required this.onAiTap});
 
   @override
   Widget build(BuildContext context) {
@@ -388,15 +751,18 @@ class _Header extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: AppColors.textPrimary.withValues(alpha: 0.08),
+            color: AppColors.primaryColor.withValues(alpha: 0.14),
             shape: BoxShape.circle,
-            border: Border.all(color: AppColors.borderSubtle),
+            border: Border.all(
+              color: AppColors.primaryColor.withValues(alpha: 0.4),
+            ),
           ),
           child: IconButton(
-            onPressed: onSettingsTap,
-            icon: Icon(
-              Icons.settings_outlined,
-              color: AppColors.textPrimary,
+            onPressed: onAiTap,
+            tooltip: context.l10n.aiSuggestGoalsTooltip,
+            icon: const Icon(
+              Icons.auto_awesome_rounded,
+              color: AppColors.primaryColor,
               size: 22,
             ),
           ),

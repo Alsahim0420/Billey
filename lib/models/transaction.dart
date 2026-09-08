@@ -28,6 +28,17 @@ class TransactionModel extends HiveObject {
   @HiveField(6)
   final String? description;
 
+  /// UIDs of linked partners this transaction has been explicitly shared
+  /// with. Empty by default (private). Not persisted locally (Hive) since
+  /// sharing only applies to cloud-synced accounts; only read/written via
+  /// Firestore.
+  final List<String> sharedWith;
+
+  /// The Firebase UID of whoever created this transaction. Populated when
+  /// loaded from Firestore (including a linked partner's shared
+  /// transactions); null for purely local data.
+  final String? ownerId;
+
   TransactionModel({
     required this.id,
     required this.title,
@@ -36,7 +47,23 @@ class TransactionModel extends HiveObject {
     required this.type,
     required this.category,
     this.description,
+    this.sharedWith = const [],
+    this.ownerId,
   });
+
+  TransactionModel copyWith({List<String>? sharedWith}) {
+    return TransactionModel(
+      id: id,
+      title: title,
+      amount: amount,
+      date: date,
+      type: type,
+      category: category,
+      description: description,
+      sharedWith: sharedWith ?? this.sharedWith,
+      ownerId: ownerId,
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return {
@@ -76,6 +103,7 @@ class TransactionModel extends HiveObject {
       'type': type.name,
       'category': category.name,
       'description': description,
+      'sharedWith': sharedWith,
     };
   }
 
@@ -100,6 +128,11 @@ class TransactionModel extends HiveObject {
         (data['category'] as String?) ?? TransactionCategory.other.name,
       ),
       description: data['description'] as String?,
+      sharedWith: (data['sharedWith'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      ownerId: data['userId'] as String?,
     );
   }
 }

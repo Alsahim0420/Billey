@@ -207,6 +207,9 @@
   "transactionAdded": "Transaction added successfully",
   "transactionUpdated": "Transaction updated successfully",
   "transactionDeleteError": "The transaction could not be deleted. It was restored to the list.",
+  "transactionDeletedUndo": "Transaction deleted",
+  "undo": "Undo",
+  "transactionSaveError": "Couldn't save the transaction. Please try again.",
   "voiceNotAvailable": "Voice not available. Stop the app, run \"flutter pub get\", then \"cd ios && pod install\" and reopen with flutter run (don't use hot reload).",
   "micPermissionRequired": "Enable microphone permission to record expenses by voice.",
   "voiceAmountNotUnderstood": "Couldn't understand the amount. Try: \"Spent 50000 on food\" or \"Paid 25 thousand for taxi\".",
@@ -244,7 +247,13 @@
   "languageEnglish": "English",
   "languageSpanish": "Spanish",
   "selectLanguage": "Select Language",
-  "versionInfo": "Version 1.0.0 (Build 1)",
+  "versionInfo": "Version {version} ({build})",
+  "@versionInfo": {
+    "placeholders": {
+      "version": { "type": "String" },
+      "build": { "type": "String" }
+    }
+  },
   "selectCurrency": "Select Currency",
   "currencyItem": "{name} ({code})",
   "@currencyItem": {
@@ -281,8 +290,9 @@
   "removePhoto": "Remove photo",
   "photoUpdated": "Profile photo updated",
   "photoRemoved": "Profile photo removed",
+  "photoUpdateError": "Couldn't upload the photo. Check your connection and try again.",
   "editProfile": "Edit profile",
-  "dataStoredLocally": "Data is stored only on this device.",
+  "dataStoredLocally": "Your name syncs with your account. The email is your sign-in email and can't be edited here.",
   "yourName": "Your name",
   "emailHintShort": "you@email.com",
   "profileUpdated": "Profile updated",
@@ -456,6 +466,28 @@
   "templateCustomName": "Custom",
   "templateCustomSubtitle": "Your own distribution rule",
 
+  "aiSuggestGoalsTooltip": "Suggest goals with AI",
+  "aiGoalSuggestionsTitle": "Suggested for you",
+  "aiGoalSuggestionsSubtitle": "Based on your {plan} plan ({ratio}), here's what we'd suggest saving for",
+  "@aiGoalSuggestionsSubtitle": {
+    "placeholders": {
+      "plan": { "type": "String" },
+      "ratio": { "type": "String" }
+    }
+  },
+  "aiSuggestedEmergencyFund": "Emergency fund",
+  "aiSuggestedDebtPayoff": "Pay off debt",
+  "aiSuggestedInvestmentFund": "Investment fund",
+  "aiSuggestedIncomeBuffer": "Income buffer",
+  "aiSuggestionMonthlyHint": "~{amount}/month following your plan",
+  "@aiSuggestionMonthlyHint": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "aiAddSelectedGoals": "Add selected",
+  "aiNoNewSuggestions": "You already have a goal for everything your current plan suggests.",
+
   "txnCategoryFood": "Food",
   "txnCategoryTransport": "Transport",
   "txnCategoryEntertainment": "Entertainment",
@@ -518,68 +550,48 @@
   "notificationPermissionDenied": "Enable notifications in settings to receive payment reminders",
 
   "coupleFinanceTitle": "Shared finances",
-  "couplePairingIntro": "Link your phone with family or friends by scanning a QR code. Then share transfers and track spending by syncing with QR.",
-  "couplePartnerName": "Name of person you share with",
-  "couplePartnerNameHint": "E.g. Maria, dad, sibling",
-  "couplePartnerNameRequired": "Enter a name",
-  "coupleShowPairingQr": "Show pairing QR",
-  "coupleScanPairingQr": "Scan QR",
-  "couplePairingQrTitle": "Link",
-  "couplePairingQrSubtitle": "Ask {name} to scan this code",
-  "@couplePairingQrSubtitle": {
-    "placeholders": { "name": { "type": "String" } }
+  "coupleIntro": "Link your account with your partner to decide, transaction by transaction, which expenses and income you want to see from each other.",
+  "coupleMyCodeLabel": "Your code",
+  "coupleMyCodeHint": "Share it with your partner. It refreshes automatically every 5 minutes.",
+  "coupleCodeExpiresIn": "Expires in {seconds}s",
+  "@coupleCodeExpiresIn": {
+    "placeholders": { "seconds": { "type": "int" } }
   },
-  "coupleQrHint": "Keep this code visible until it is scanned from Billey.",
-  "coupleScanQr": "Scan QR",
-  "coupleScanHint": "Point the camera at the Billey QR code.",
-  "coupleScanFromCamera": "Scanning with Billey's camera",
-  "coupleScanFromGallery": "Choose from gallery",
-  "coupleQrNotFound": "No Billey QR detected. Try again with better lighting.",
-  "couplePasteHint": "If the camera does not work, paste here the code shown under the QR.",
-  "couplePasteConfirm": "Use code",
-  "coupleLinkedWith": "Sharing with {name}",
+  "coupleEnterPartnerCode": "Have your partner's code?",
+  "coupleEnterCodeHint": "6-digit code",
+  "coupleLinkButton": "Link",
+  "coupleLinkedWith": "Linked with {name}",
   "@coupleLinkedWith": {
     "placeholders": { "name": { "type": "String" } }
   },
-  "coupleSyncReminder": "After each expense, share an update via QR so both of you see the movements.",
-  "coupleShareUpdate": "Share QR",
-  "coupleScanUpdate": "Scan",
-  "coupleSharedWallets": "Shared transfers",
-  "coupleWalletsEmpty": "Create a transfer (e.g. 2M) and share the QR so they receive it on their phone.",
-  "coupleNewTransfer": "New transfer",
-  "coupleTransferTitle": "Title",
-  "coupleTransferTitleHint": "E.g. March budget",
-  "coupleTransferAmount": "Amount",
-  "coupleHolderIsPartner": "Used by {name}",
-  "@coupleHolderIsPartner": {
-    "placeholders": { "name": { "type": "String" } }
-  },
-  "coupleWalletCreated": "Transfer created. Show the QR to share it.",
-  "coupleSyncQrTitle": "Sync",
-  "coupleSyncQrSubtitle": "Scan to update \"{title}\"",
-  "@coupleSyncQrSubtitle": {
-    "placeholders": { "title": { "type": "String" } }
-  },
-  "coupleSyncQrSubtitleAll": "Scan to update all transfers and expenses",
-  "coupleSyncSuccess": "Data synced successfully",
-  "coupleSyncInvalid": "Could not read the QR. Make sure it's from Billey.",
+  "coupleLinkedSubtitle": "You can now share transactions with each other from any entry.",
   "coupleLinkedSuccess": "Successfully linked!",
+  "coupleInvalidCode": "That code isn't valid or has expired.",
+  "coupleGenericError": "Something went wrong. Please try again.",
   "coupleUnlink": "Unlink",
   "coupleUnlinkTitle": "Unlink shared finances?",
-  "coupleUnlinkMessage": "Shared transfers on this device will be deleted. The other person keeps their local copy.",
+  "coupleUnlinkMessage": "You'll stop seeing the transactions you shared with each other.",
   "coupleUnlinked": "Unlinked successfully",
-  "coupleSharedWallet": "Shared transfer",
-  "coupleWalletNotFound": "Transfer not found",
-  "coupleAddExpense": "Add expense",
-  "coupleExpenseTitle": "Expense description",
-  "coupleExpenseAmount": "Amount",
-  "coupleBudget": "Budget",
-  "coupleSpent": "Spent",
-  "coupleRemaining": "Remaining",
-  "coupleFrom": "From",
-  "coupleFor": "For",
-  "coupleExpenses": "Expenses",
-  "coupleNoExpensesYet": "No expenses in this transfer yet",
+  "shareWithPartner": "Share with {name}",
+  "@shareWithPartner": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "shareWithPartnerHint": "Your partner will be able to see this transaction",
+  "coupleSharedCountZero": "You aren't sharing any transactions with {name} yet",
+  "@coupleSharedCountZero": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "coupleSharedCountOne": "You're sharing 1 transaction with {name}",
+  "@coupleSharedCountOne": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "coupleSharedCountMany": "You're sharing {count} transactions with {name}",
+  "@coupleSharedCountMany": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "name": { "type": "String" }
+    }
+  },
   "assistantVoice": "Assistant voice",
   "assistantVoiceDescription": "Choose the voice for spoken confirmations",
   "assistantFemaleVoice": "Warm female",

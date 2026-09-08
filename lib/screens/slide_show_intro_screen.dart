@@ -6,7 +6,7 @@ import 'package:billey/screens/main_navigation_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../services/local_profile_storage.dart';
+import '../services/onboarding_status.dart';
 import '../theme/colors/app_colors.dart';
 import '../theme/billey_theme_scope.dart';
 import 'profile_setup_screen.dart';
@@ -54,7 +54,7 @@ class _IntroScreenState extends State<IntroScreen>
   Future<void> _goToMainApp() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasSeenOnboarding', true);
-    final hasCustomProfile = await LocalProfileStorage.hasCustomProfile();
+    final hasCustomProfile = await OnboardingStatus.hasCompleted();
     if (!mounted) return;
 
     Navigator.of(context).pushReplacement(

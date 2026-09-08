@@ -526,8 +526,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get transactionUpdated => 'Transacción actualizada correctamente';
 
   @override
-  String get transactionDeleteError =>
-      'No se pudo eliminar la transacción. Se restauró en la lista.';
+  String get transactionDeleteError => 'No se pudo eliminar la transacción.';
+
+  @override
+  String get transactionDeletedUndo => 'Transacción eliminada';
+
+  @override
+  String get undo => 'Deshacer';
+
+  @override
+  String get transactionSaveError =>
+      'No se pudo guardar la transacción. Intenta de nuevo.';
 
   @override
   String get voiceNotAvailable =>
@@ -620,7 +629,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get selectLanguage => 'Seleccionar idioma';
 
   @override
-  String get versionInfo => 'Versión 1.0.0 (Build 1)';
+  String versionInfo(String version, String build) {
+    return 'Versión $version ($build)';
+  }
 
   @override
   String get selectCurrency => 'Seleccionar moneda';
@@ -711,11 +722,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get photoRemoved => 'Foto de perfil eliminada';
 
   @override
+  String get photoUpdateError =>
+      'No se pudo subir la foto. Revisa tu conexión e intenta de nuevo.';
+
+  @override
   String get editProfile => 'Editar perfil';
 
   @override
   String get dataStoredLocally =>
-      'Los datos se guardan solo en este dispositivo.';
+      'Tu nombre se sincroniza con tu cuenta. El correo es el de tu inicio de sesión y no se puede editar aquí.';
 
   @override
   String get yourName => 'Tu nombre';
@@ -1112,6 +1127,41 @@ class AppLocalizationsEs extends AppLocalizations {
   String get templateCustomSubtitle => 'Tu propia regla de distribución';
 
   @override
+  String get aiSuggestGoalsTooltip => 'Sugerir metas con IA';
+
+  @override
+  String get aiGoalSuggestionsTitle => 'Sugerencias para ti';
+
+  @override
+  String aiGoalSuggestionsSubtitle(String plan, String ratio) {
+    return 'Según tu plan $plan ($ratio), esto es lo que te sugerimos ahorrar';
+  }
+
+  @override
+  String get aiSuggestedEmergencyFund => 'Fondo de emergencia';
+
+  @override
+  String get aiSuggestedDebtPayoff => 'Pago de deudas';
+
+  @override
+  String get aiSuggestedInvestmentFund => 'Fondo de inversión';
+
+  @override
+  String get aiSuggestedIncomeBuffer => 'Colchón de ingresos';
+
+  @override
+  String aiSuggestionMonthlyHint(String amount) {
+    return '~$amount/mes según tu plan';
+  }
+
+  @override
+  String get aiAddSelectedGoals => 'Agregar seleccionadas';
+
+  @override
+  String get aiNoNewSuggestions =>
+      'Ya tienes una meta para todo lo que sugiere tu plan actual.';
+
+  @override
   String get txnCategoryFood => 'Comida';
 
   @override
@@ -1240,123 +1290,47 @@ class AppLocalizationsEs extends AppLocalizations {
   String get coupleFinanceTitle => 'Finanzas compartidas';
 
   @override
-  String get couplePairingIntro =>
-      'Vincula tu celular con familiares o amigos escaneando un QR. Luego podrán compartir aportes y ver los gastos sincronizando con QR.';
+  String get coupleIntro =>
+      'Vincula tu cuenta con tu pareja para decidir, transacción por transacción, qué gastos e ingresos quieren verse mutuamente.';
 
   @override
-  String get couplePartnerName => 'Nombre de quien compartes';
+  String get coupleMyCodeLabel => 'Tu código';
 
   @override
-  String get couplePartnerNameHint => 'Ej. María, papá, hermano';
+  String get coupleMyCodeHint =>
+      'Compártelo con tu pareja. Se renueva solo cada 5 minutos.';
 
   @override
-  String get couplePartnerNameRequired => 'Escribe un nombre';
-
-  @override
-  String get coupleShowPairingQr => 'Mostrar QR de vinculación';
-
-  @override
-  String get coupleScanPairingQr => 'Escanear QR';
-
-  @override
-  String get couplePairingQrTitle => 'Vincular';
-
-  @override
-  String couplePairingQrSubtitle(String name) {
-    return 'Pide a $name que escanee este código';
+  String coupleCodeExpiresIn(int seconds) {
+    return 'Expira en ${seconds}s';
   }
 
   @override
-  String get coupleQrHint =>
-      'Mantén este código visible hasta que lo escaneen desde Billey.';
+  String get coupleEnterPartnerCode => '¿Tienes el código de tu pareja?';
 
   @override
-  String get coupleScanQr => 'Escanear QR';
+  String get coupleEnterCodeHint => 'Código de 6 dígitos';
 
   @override
-  String get coupleScanHint => 'Apunta la cámara al código QR de Billey.';
-
-  @override
-  String get coupleScanFromCamera => 'Escaneando con la cámara de Billey';
-
-  @override
-  String get coupleScanFromGallery => 'Elegir de galería';
-
-  @override
-  String get coupleQrNotFound =>
-      'No se detectó un QR de Billey. Intenta de nuevo con mejor luz.';
-
-  @override
-  String get couplePasteHint =>
-      'Si la cámara no funciona, pega aquí el código que aparece bajo el QR.';
-
-  @override
-  String get couplePasteConfirm => 'Usar código';
+  String get coupleLinkButton => 'Vincular';
 
   @override
   String coupleLinkedWith(String name) {
-    return 'Compartiendo con $name';
+    return 'Vinculado con $name';
   }
 
   @override
-  String get coupleSyncReminder =>
-      'Después de cada gasto, compartan actualización por QR para verse los movimientos.';
-
-  @override
-  String get coupleShareUpdate => 'Compartir QR';
-
-  @override
-  String get coupleScanUpdate => 'Escanear';
-
-  @override
-  String get coupleSharedWallets => 'Aportes compartidos';
-
-  @override
-  String get coupleWalletsEmpty =>
-      'Crea un aporte (ej. 2M) y comparte el QR para que lo reciban en su celular.';
-
-  @override
-  String get coupleNewTransfer => 'Nuevo aporte';
-
-  @override
-  String get coupleTransferTitle => 'Concepto';
-
-  @override
-  String get coupleTransferTitleHint => 'Ej. Mes de marzo';
-
-  @override
-  String get coupleTransferAmount => 'Monto';
-
-  @override
-  String coupleHolderIsPartner(String name) {
-    return 'Lo usa $name';
-  }
-
-  @override
-  String get coupleWalletCreated =>
-      'Aporte creado. Muestra el QR para compartirlo.';
-
-  @override
-  String get coupleSyncQrTitle => 'Sincronizar';
-
-  @override
-  String coupleSyncQrSubtitle(String title) {
-    return 'Escanea para actualizar \"$title\"';
-  }
-
-  @override
-  String get coupleSyncQrSubtitleAll =>
-      'Escanea para actualizar todos los aportes y gastos';
-
-  @override
-  String get coupleSyncSuccess => 'Datos sincronizados correctamente';
-
-  @override
-  String get coupleSyncInvalid =>
-      'No se pudo leer el QR. Verifica que sea de Billey.';
+  String get coupleLinkedSubtitle =>
+      'Ya pueden compartir transacciones entre ustedes desde cada registro.';
 
   @override
   String get coupleLinkedSuccess => '¡Vinculación exitosa!';
+
+  @override
+  String get coupleInvalidCode => 'Ese código no es válido o ya expiró.';
+
+  @override
+  String get coupleGenericError => 'Algo salió mal. Intenta de nuevo.';
 
   @override
   String get coupleUnlink => 'Desvincular';
@@ -1366,46 +1340,33 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get coupleUnlinkMessage =>
-      'Se borrarán los aportes compartidos en este dispositivo. La otra persona conservará su copia local.';
+      'Dejarán de ver las transacciones que se compartían mutuamente.';
 
   @override
   String get coupleUnlinked => 'Desvinculado correctamente';
 
   @override
-  String get coupleSharedWallet => 'Aporte compartido';
+  String shareWithPartner(String name) {
+    return 'Compartir con $name';
+  }
 
   @override
-  String get coupleWalletNotFound => 'No se encontró este aporte';
+  String get shareWithPartnerHint => 'Tu pareja podrá ver esta transacción';
 
   @override
-  String get coupleAddExpense => 'Registrar gasto';
+  String coupleSharedCountZero(String name) {
+    return 'Aún no compartes ninguna transacción con $name';
+  }
 
   @override
-  String get coupleExpenseTitle => 'Concepto del gasto';
+  String coupleSharedCountOne(String name) {
+    return 'Estás compartiendo 1 transacción con $name';
+  }
 
   @override
-  String get coupleExpenseAmount => 'Monto';
-
-  @override
-  String get coupleBudget => 'Presupuesto';
-
-  @override
-  String get coupleSpent => 'Gastado';
-
-  @override
-  String get coupleRemaining => 'Disponible';
-
-  @override
-  String get coupleFrom => 'De';
-
-  @override
-  String get coupleFor => 'Para';
-
-  @override
-  String get coupleExpenses => 'Gastos';
-
-  @override
-  String get coupleNoExpensesYet => 'Aún no hay gastos en este aporte';
+  String coupleSharedCountMany(int count, String name) {
+    return 'Estás compartiendo $count transacciones con $name';
+  }
 
   @override
   String get assistantVoice => 'Voz del asistente';
