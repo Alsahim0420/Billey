@@ -1,13 +1,18 @@
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/providers/currency_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../models/transaction.dart';
+import '../providers/couple_link_provider.dart';
+import '../providers/profile_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../theme/colors/app_colors.dart';
+import '../widgets/owner_avatar.dart';
 import 'add_transaction_screen.dart';
 import '../theme/billey_theme_scope.dart';
 
@@ -25,6 +30,7 @@ class _EnhancedTransactionListScreenState
     extends State<EnhancedTransactionListScreen> {
   final TextEditingController _searchController = TextEditingController();
   _ActivityFilter _filter = _ActivityFilter.all;
+  String? _justRestoredId;
 
   @override
   void dispose() {
@@ -44,14 +50,12 @@ class _EnhancedTransactionListScreenState
             final grouped = _groupTransactions(context, transactions);
             return Column(
               children: [
-                _ActivityHeader(onBack: () => Navigator.maybePop(context)),
+                const _ActivityHeader(),
                 _SearchAndFilters(
                   controller: _searchController,
                   selectedFilter: _filter,
                   onChanged: (_) => setState(() {}),
-                  onFilterChanged: (filter) {
-                    setState(() => _filter = filter);
-                  },
+                  onOpenFilters: _showFilterSheet,
                 ),
                 Expanded(
                   child: _ActivityList(
@@ -59,7 +63,10 @@ class _EnhancedTransactionListScreenState
                     currencyProvider: currencyProvider,
                     onEdit: _editTransaction,
                     onDelete: (transaction) =>
-                        _confirmDelete(provider, transaction),
+                        _deleteWithUndo(provider, transaction),
+                    justRestoredId: _justRestoredId,
+                    onRestoreAnimationDone: () =>
+                        setState(() => _justRestoredId = null),
                   ),
                 ),
               ],
@@ -134,6 +141,66 @@ class _EnhancedTransactionListScreenState
     return DateFormat('MMM d, yyyy').format(date).toUpperCase();
   }
 
+  Future<void> _showFilterSheet() async {
+    final options = <(_ActivityFilter, String)>[
+      (_ActivityFilter.all, context.l10n.filterAll),
+      (_ActivityFilter.income, context.l10n.filterIncome),
+      (_ActivityFilter.expenses, context.l10n.filterExpenses),
+      (_ActivityFilter.pending, context.l10n.filterPending),
+    ];
+
+    final chosen = await showModalBottomSheet<_ActivityFilter>(
+      context: context,
+      backgroundColor: AppColors.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderSubtle,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                for (final (filter, label) in options)
+                  ListTile(
+                    onTap: () => Navigator.of(sheetContext).pop(filter),
+                    title: Text(
+                      label,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: filter == _filter
+                            ? FontWeight.w900
+                            : FontWeight.w600,
+                      ),
+                    ),
+                    trailing: filter == _filter
+                        ? const Icon(TablerIcons.check,
+                            color: AppColors.primaryColor)
+                        : null,
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (chosen != null && mounted) {
+      setState(() => _filter = chosen);
+    }
+  }
+
   Future<void> _editTransaction(TransactionModel transaction) async {
     await Navigator.of(context).push(
       MaterialPageRoute(
@@ -142,88 +209,71 @@ class _EnhancedTransactionListScreenState
     );
   }
 
-  Future<void> _confirmDelete(
+  /// No confirmation dialog: the row already slides away (see
+  /// `DismissiblePane` on `_TransactionRow`) as the delete commits, and
+  /// this snackbar gives 6 seconds to undo it instead.
+  Future<void> _deleteWithUndo(
     TransactionProvider provider,
     TransactionModel transaction,
   ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surfaceColor,
-        title: Text(context.l10n.deleteTransactionTitle),
-        content: Text(
-          context.l10n.deleteTransactionMessage(transaction.title),
-          style: TextStyle(color: AppColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              context.l10n.delete,
-              style: const TextStyle(color: AppColors.expenseColor),
-            ),
-          ),
-        ],
-      ),
-    );
+    final id = transaction.id;
+    if (id == null) return;
 
-    if (confirmed == true && transaction.id != null) {
-      try {
-        await provider.deleteTransaction(transaction.id!);
-      } catch (_) {
-        if (!mounted) return;
+    try {
+      await provider.deleteTransaction(id);
+    } catch (_) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(context.l10n.transactionDeleteError)),
         );
       }
+      return;
     }
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 6),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.surfaceColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          content: Text(
+            context.l10n.transactionDeletedUndo,
+            style: TextStyle(color: AppColors.textPrimary),
+          ),
+          action: SnackBarAction(
+            label: context.l10n.undo,
+            textColor: AppColors.primaryColor,
+            onPressed: () async {
+              await provider.addTransaction(transaction);
+              if (mounted) setState(() => _justRestoredId = id);
+            },
+          ),
+        ),
+      );
   }
 }
 
 class _ActivityHeader extends StatelessWidget {
-  final VoidCallback onBack;
-
-  const _ActivityHeader({required this.onBack});
+  const _ActivityHeader();
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 18),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: onBack,
-            icon: Icon(
-              TablerIcons.arrow_left,
-              color: AppColors.textPrimary,
-              size: 28,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              context.l10n.transactions,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 21,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.35,
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: Icon(
-              TablerIcons.dots,
-              color: AppColors.textPrimary,
-              size: 28,
-            ),
-          ),
-        ],
+      child: Text(
+        context.l10n.transactions,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 21,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -0.35,
+        ),
       ),
     );
   }
@@ -233,137 +283,90 @@ class _SearchAndFilters extends StatelessWidget {
   final TextEditingController controller;
   final _ActivityFilter selectedFilter;
   final ValueChanged<String> onChanged;
-  final ValueChanged<_ActivityFilter> onFilterChanged;
+  final VoidCallback onOpenFilters;
 
   const _SearchAndFilters({
     required this.controller,
     required this.selectedFilter,
     required this.onChanged,
-    required this.onFilterChanged,
+    required this.onOpenFilters,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasActiveFilter = selectedFilter != _ActivityFilter.all;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(30, 0, 30, 24),
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: controller,
-                  onChanged: onChanged,
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
-                  ),
-                  cursorColor: AppColors.primaryColor,
-                  decoration: InputDecoration(
-                    hintText: context.l10n.searchHint,
-                    hintStyle: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 16,
-                    ),
-                    prefixIcon: Icon(
-                      TablerIcons.search,
-                      color: AppColors.textSecondary,
-                    ),
-                    filled: true,
-                    fillColor: AppColors.surfaceInput,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 15),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              onChanged: onChanged,
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
               ),
-              const SizedBox(width: 14),
-              Container(
-                width: 62,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceInput,
+              cursorColor: AppColors.primaryColor,
+              decoration: InputDecoration(
+                hintText: context.l10n.searchHint,
+                hintStyle: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 16,
+                ),
+                prefixIcon: Icon(
+                  TablerIcons.search,
+                  color: AppColors.textSecondary,
+                ),
+                filled: true,
+                fillColor: AppColors.surfaceInput,
+                contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(
-                  TablerIcons.adjustments_horizontal,
-                  color: AppColors.primaryColor,
-                  size: 28,
+                  borderSide: BorderSide.none,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              _FilterPill(
-                label: context.l10n.filterAll,
-                selected: selectedFilter == _ActivityFilter.all,
-                onTap: () => onFilterChanged(_ActivityFilter.all),
-              ),
-              const SizedBox(width: 10),
-              _FilterPill(
-                label: context.l10n.filterIncome,
-                selected: selectedFilter == _ActivityFilter.income,
-                onTap: () => onFilterChanged(_ActivityFilter.income),
-              ),
-              const SizedBox(width: 10),
-              _FilterPill(
-                label: context.l10n.filterExpenses,
-                selected: selectedFilter == _ActivityFilter.expenses,
-                onTap: () => onFilterChanged(_ActivityFilter.expenses),
-              ),
-              const SizedBox(width: 10),
-              _FilterPill(
-                label: context.l10n.filterPending,
-                selected: selectedFilter == _ActivityFilter.pending,
-                onTap: () => onFilterChanged(_ActivityFilter.pending),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FilterPill extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _FilterPill({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          height: 36,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: selected ? AppColors.primaryColor : AppColors.surfaceInput,
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: selected ? AppColors.white : AppColors.textSecondary,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
             ),
           ),
-        ),
+          const SizedBox(width: 14),
+          GestureDetector(
+            onTap: onOpenFilters,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 62,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceInput,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(
+                    TablerIcons.adjustments_horizontal,
+                    color: AppColors.primaryColor,
+                    size: 28,
+                  ),
+                ),
+                if (hasActiveFilter)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      width: 9,
+                      height: 9,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor,
+                        shape: BoxShape.circle,
+                        border:
+                            Border.all(color: AppColors.surfaceInput, width: 2),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -374,12 +377,16 @@ class _ActivityList extends StatelessWidget {
   final CurrencyProvider currencyProvider;
   final ValueChanged<TransactionModel> onEdit;
   final Future<void> Function(TransactionModel) onDelete;
+  final String? justRestoredId;
+  final VoidCallback onRestoreAnimationDone;
 
   const _ActivityList({
     required this.grouped,
     required this.currencyProvider,
     required this.onEdit,
     required this.onDelete,
+    required this.justRestoredId,
+    required this.onRestoreAnimationDone,
   });
 
   @override
@@ -405,16 +412,79 @@ class _ActivityList extends StatelessWidget {
           _GroupLabel(entry.key),
           const SizedBox(height: 18),
           for (final transaction in entry.value)
-            _TransactionRow(
-              transaction: transaction,
-              currencyProvider: currencyProvider,
-              onEdit: () => onEdit(transaction),
-              onDelete: () => onDelete(transaction),
-            ),
+            if (transaction.id != null && transaction.id == justRestoredId)
+              _SlideInOnce(
+                key: ValueKey('restore-${transaction.id}'),
+                onDone: onRestoreAnimationDone,
+                child: _TransactionRow(
+                  transaction: transaction,
+                  currencyProvider: currencyProvider,
+                  onEdit: () => onEdit(transaction),
+                  onDelete: () => onDelete(transaction),
+                ),
+              )
+            else
+              _TransactionRow(
+                key: ValueKey(transaction.id ?? transaction.hashCode),
+                transaction: transaction,
+                currencyProvider: currencyProvider,
+                onEdit: () => onEdit(transaction),
+                onDelete: () => onDelete(transaction),
+              ),
           const SizedBox(height: 22),
         ],
       ],
     );
+  }
+}
+
+/// Plays a one-shot slide-in-from-the-left entrance animation, used when a
+/// deleted transaction is restored via the "Deshacer" snackbar so it visibly
+/// slides back into place instead of just popping back in.
+class _SlideInOnce extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onDone;
+
+  const _SlideInOnce({
+    super.key,
+    required this.child,
+    required this.onDone,
+  });
+
+  @override
+  State<_SlideInOnce> createState() => _SlideInOnceState();
+}
+
+class _SlideInOnceState extends State<_SlideInOnce>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<Offset> _offset;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 380),
+    );
+    _offset = Tween<Offset>(
+      begin: const Offset(-1, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    _controller.forward().whenComplete(() {
+      if (mounted) widget.onDone();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SlideTransition(position: _offset, child: widget.child);
   }
 }
 
@@ -425,6 +495,7 @@ class _TransactionRow extends StatelessWidget {
   final Future<void> Function() onDelete;
 
   const _TransactionRow({
+    super.key,
     required this.transaction,
     required this.currencyProvider,
     required this.onEdit,
@@ -439,18 +510,61 @@ class _TransactionRow extends StatelessWidget {
       isIncome: isIncome,
     );
     final color = isIncome ? AppColors.primaryColor : AppColors.expenseColor;
+    final couple = context.watch<CoupleLinkProvider>();
+    final isMine = transaction.ownerId == null ||
+        transaction.ownerId == FirebaseAuth.instance.currentUser?.uid;
+    final profile = context.watch<ProfileProvider>();
+    final ownerName = couple.isLinked
+        ? (isMine ? profile.displayName : couple.partnerDisplayName)
+        : null;
+    final ownerPhotoUrl = couple.isLinked
+        ? (isMine ? profile.avatarUrl : couple.partnerPhotoUrl)
+        : null;
 
-    return Dismissible(
+    return Slidable(
       key: ValueKey(transaction.id ?? transaction.hashCode),
-      direction: DismissDirection.endToStart,
-      confirmDismiss: (_) async {
-        await onDelete();
-        return false;
-      },
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        child: const Icon(TablerIcons.trash, color: AppColors.expenseColor),
+      endActionPane: ActionPane(
+        motion: const DrawerMotion(),
+        extentRatio: 0.22,
+        // No `dismissible` here on purpose: swiping only reveals the
+        // button and stays pinned there — it never deletes by itself.
+        // Deleting (and the slide-away animation) only happens from an
+        // explicit tap on the trash button below.
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 26, left: 8),
+              child: Material(
+                color: AppColors.expenseColor.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(16),
+                // `Builder` gives us a context that's actually a descendant
+                // of the `Slidable` below (unlike this method's own
+                // `context`, which is the Slidable's *parent*) — required
+                // for `Slidable.of(context)` to find it.
+                child: Builder(
+                  builder: (buttonContext) => InkWell(
+                    onTap: () {
+                      // Tapping the button plays the same slide-away
+                      // animation as a full swipe, then deletes.
+                      Slidable.of(buttonContext)?.dismiss(
+                        ResizeRequest(
+                          const Duration(milliseconds: 300),
+                          onDelete,
+                        ),
+                        duration: const Duration(milliseconds: 300),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: const Center(
+                      child:
+                          Icon(TablerIcons.trash, color: AppColors.expenseColor),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       child: InkWell(
         onTap: onEdit,
@@ -459,13 +573,19 @@ class _TransactionRow extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 26),
           child: Row(
             children: [
-              _ActivityIcon(
-                icon: isIncome
-                    ? TablerIcons.wallet
-                    : _categoryIcon(transaction.category),
-                color: isIncome
-                    ? AppColors.primaryColor
-                    : transaction.category.color,
+              OwnerBadgedIcon(
+                ownerName: ownerName,
+                ownerPhotoUrl: ownerPhotoUrl,
+                isMine: isMine,
+                badgeSize: 22,
+                child: _ActivityIcon(
+                  icon: isIncome
+                      ? TablerIcons.wallet
+                      : _categoryIcon(transaction.category),
+                  color: isIncome
+                      ? AppColors.primaryColor
+                      : transaction.category.color,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(

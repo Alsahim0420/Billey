@@ -15,6 +15,8 @@ import '../models/savings_goal_style.dart';
 import '../providers/currency_provider.dart';
 import '../providers/income_distribution_provider.dart';
 import '../providers/profile_provider.dart';
+import '../services/onboarding_status.dart';
+import '../services/user_scope.dart';
 import '../theme/colors/app_colors.dart';
 import 'main_navigation_screen.dart';
 
@@ -177,12 +179,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final profile = context.read<ProfileProvider>();
     final ok = await profile.updateProfile(
       displayName: _nameController.text,
-      email: _emailController.text,
     );
 
     if (ok) {
       await _applyGoalsPreference();
       await _applyTemplatePreference();
+      await OnboardingStatus.markCompleted();
     }
 
     setState(() => _saving = false);
@@ -207,20 +209,21 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final l10n = context.l10n;
     final prefs = await SharedPreferences.getInstance();
 
+    final storageKey = UserScope.key(_goalsStorageKey);
     switch (_goalsMode) {
       case _GoalsMode.empty:
         await prefs.setString(
-          _goalsStorageKey,
+          storageKey,
           jsonEncode(<Map<String, dynamic>>[]),
         );
       case _GoalsMode.starter:
         await prefs.setString(
-          _goalsStorageKey,
+          storageKey,
           jsonEncode(_suggestedGoals(l10n).map((g) => g.toJson()).toList()),
         );
       case _GoalsMode.custom:
         await prefs.setString(
-          _goalsStorageKey,
+          storageKey,
           jsonEncode(_customGoals.map((g) => g.toJson()).toList()),
         );
     }
@@ -435,20 +438,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         const SizedBox(height: 20),
         _sectionLabel(l10n.email),
         const SizedBox(height: 8),
+        // Read-only: this is the account's real sign-in email (Firebase
+        // Auth), shown for confirmation only — changing it here wouldn't
+        // change what you actually log in with.
         TextFormField(
           controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          decoration: InputDecoration(
-            hintText: l10n.emailHint,
-          ),
-          validator: (value) {
-            final v = value?.trim() ?? '';
-            if (v.isEmpty) return l10n.emailRequired;
-            if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v)) {
-              return l10n.emailInvalid;
-            }
-            return null;
-          },
+          enabled: false,
         ),
         const SizedBox(height: 24),
         const SpeechVoiceSelector(),

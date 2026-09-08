@@ -42,6 +42,18 @@ class PaymentReminderProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Re-loads reminders for whoever is now signed in. Must be called on
+  /// every auth change (not just app start): this provider lives for the
+  /// whole app session, and its reminders — and the OS notifications
+  /// scheduled from them — are user-specific. Cancels the previous user's
+  /// scheduled notifications before loading the new user's data.
+  Future<void> reload() async {
+    await _notifications.cancelAll();
+    _isLoaded = false;
+    _reminders = [];
+    await initialize();
+  }
+
   Future<bool> requestPermissions() => _notifications.requestPermissions();
 
   Future<void> addReminder(

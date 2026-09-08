@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/category.dart';
+import '../services/user_scope.dart';
 import '../theme/colors/app_colors.dart';
 
 class CategoryProvider with ChangeNotifier {
@@ -13,8 +14,45 @@ class CategoryProvider with ChangeNotifier {
   List<CategoryModel> get allCategories => _categories;
 
   Future<void> initialize() async {
-    _box = await Hive.openBox<CategoryModel>(_boxName);
+    final targetBoxName = UserScope.key(_boxName);
+    await _migrateGlobalBoxIfNeeded(targetBoxName);
+
+    if (_box != null) {
+      if (_box!.name == targetBoxName && _box!.isOpen) return;
+      await _box!.close();
+    }
+    _box = await Hive.openBox<CategoryModel>(targetBoxName);
     await loadCategories();
+  }
+
+  /// Called on every auth change (login/logout/switch account): closes
+  /// the previous user's box and opens the now-signed-in user's own box,
+  /// so custom categories never leak across accounts on the same device.
+  Future<void> reload() => initialize();
+
+  /// One-time migration: the box used to be a single global `'categories'`
+  /// box shared by every account on the device. The first time a signed-in
+  /// user's own scoped box doesn't exist yet, copy that legacy data into it
+  /// (covers the common single-user-device case) and clear the legacy box
+  /// so it's never copied into a *different* account afterwards.
+  Future<void> _migrateGlobalBoxIfNeeded(String targetBoxName) async {
+    if (targetBoxName == _boxName) return; // signed out; nothing to scope
+    if (await Hive.boxExists(targetBoxName)) return;
+    if (!await Hive.boxExists(_boxName)) return;
+
+    final legacyBox = await Hive.openBox<CategoryModel>(_boxName);
+    if (legacyBox.isNotEmpty) {
+      final scopedBox = await Hive.openBox<CategoryModel>(targetBoxName);
+      for (final key in legacyBox.keys) {
+        final value = legacyBox.get(key);
+        // .copyWith() detaches a fresh, box-less instance — a HiveObject
+        // already bound to legacyBox can't be put into a second box as-is.
+        if (value != null) await scopedBox.put(key, value.copyWith());
+      }
+      await scopedBox.close();
+    }
+    await legacyBox.clear();
+    await legacyBox.close();
   }
 
   Future<void> loadCategories() async {

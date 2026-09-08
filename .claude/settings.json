@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(flutter build *)"
+      "Bash(flutter build *)",
+      "Bash(firebase use *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(firebase deploy *)"
     ]
   }
 }

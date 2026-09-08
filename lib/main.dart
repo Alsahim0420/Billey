@@ -1,4 +1,5 @@
 // lib/main.dart
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -17,7 +18,7 @@ import 'providers/profile_provider.dart';
 import 'providers/theme_settings_provider.dart';
 import 'providers/locale_settings_provider.dart';
 import 'providers/payment_reminder_provider.dart';
-import 'providers/couple_finance_provider.dart';
+import 'providers/couple_link_provider.dart';
 import 'models/transaction.dart';
 import 'models/category.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -52,8 +53,29 @@ void main() async {
   );
   await paymentReminders.initialize();
 
-  final coupleFinance = CoupleFinanceProvider.instance;
-  await coupleFinance.initialize();
+  final transactionProvider = TransactionProvider.cloud();
+  final categoryProvider = CategoryProvider();
+  final profileProvider = ProfileProvider();
+  final incomeDistribution = IncomeDistributionProvider();
+
+  final coupleLink = CoupleLinkProvider()..initialize();
+  coupleLink.addListener(() {
+    transactionProvider.setPartnerUid(coupleLink.partnerUid);
+  });
+
+  // Local storage (SharedPreferences, Hive) has no built-in concept of
+  // "the signed-in user" the way Firestore paths do, so every provider
+  // backed by it must explicitly re-load when the account changes —
+  // otherwise a new sign-in on the same device keeps showing (or
+  // overwriting) the previous account's name, categories, budget split,
+  // savings goals and payment reminders.
+  FirebaseAuth.instance.authStateChanges().listen((_) {
+    profileProvider.load();
+    categoryProvider.initialize();
+    incomeDistribution.load();
+    paymentReminders.reload();
+    transactionProvider.loadTransactions();
+  });
 
   final speechVoiceProvider = SpeechVoiceProvider();
   await speechVoiceProvider.initialize();
@@ -73,15 +95,15 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => TransactionProvider.cloud()),
-        ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider.value(value: transactionProvider),
+        ChangeNotifierProvider.value(value: categoryProvider),
         ChangeNotifierProvider.value(value: currencyProvider),
-        ChangeNotifierProvider(create: (_) => IncomeDistributionProvider()),
-        ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider.value(value: incomeDistribution),
+        ChangeNotifierProvider.value(value: profileProvider),
         ChangeNotifierProvider.value(value: themeSettings),
         ChangeNotifierProvider.value(value: localeSettings),
         ChangeNotifierProvider.value(value: paymentReminders),
-        ChangeNotifierProvider.value(value: coupleFinance),
+        ChangeNotifierProvider.value(value: coupleLink),
         ChangeNotifierProvider.value(value: speechAssistant),
         ChangeNotifierProvider.value(value: speechVoiceProvider),
       ],

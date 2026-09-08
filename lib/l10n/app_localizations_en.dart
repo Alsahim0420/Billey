@@ -529,6 +529,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'The transaction could not be deleted. It was restored to the list.';
 
   @override
+  String get transactionDeletedUndo => 'Transaction deleted';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get transactionSaveError =>
+      'Couldn\'t save the transaction. Please try again.';
+
+  @override
   String get voiceNotAvailable =>
       'Voice not available. Stop the app, run \"flutter pub get\", then \"cd ios && pod install\" and reopen with flutter run (don\'t use hot reload).';
 
@@ -619,7 +629,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectLanguage => 'Select Language';
 
   @override
-  String get versionInfo => 'Version 1.0.0 (Build 1)';
+  String versionInfo(String version, String build) {
+    return 'Version $version ($build)';
+  }
 
   @override
   String get selectCurrency => 'Select Currency';
@@ -707,10 +719,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get photoRemoved => 'Profile photo removed';
 
   @override
+  String get photoUpdateError =>
+      'Couldn\'t upload the photo. Check your connection and try again.';
+
+  @override
   String get editProfile => 'Edit profile';
 
   @override
-  String get dataStoredLocally => 'Data is stored only on this device.';
+  String get dataStoredLocally =>
+      'Your name syncs with your account. The email is your sign-in email and can\'t be edited here.';
 
   @override
   String get yourName => 'Your name';
@@ -1106,6 +1123,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get templateCustomSubtitle => 'Your own distribution rule';
 
   @override
+  String get aiSuggestGoalsTooltip => 'Suggest goals with AI';
+
+  @override
+  String get aiGoalSuggestionsTitle => 'Suggested for you';
+
+  @override
+  String aiGoalSuggestionsSubtitle(String plan, String ratio) {
+    return 'Based on your $plan plan ($ratio), here\'s what we\'d suggest saving for';
+  }
+
+  @override
+  String get aiSuggestedEmergencyFund => 'Emergency fund';
+
+  @override
+  String get aiSuggestedDebtPayoff => 'Pay off debt';
+
+  @override
+  String get aiSuggestedInvestmentFund => 'Investment fund';
+
+  @override
+  String get aiSuggestedIncomeBuffer => 'Income buffer';
+
+  @override
+  String aiSuggestionMonthlyHint(String amount) {
+    return '~$amount/month following your plan';
+  }
+
+  @override
+  String get aiAddSelectedGoals => 'Add selected';
+
+  @override
+  String get aiNoNewSuggestions =>
+      'You already have a goal for everything your current plan suggests.';
+
+  @override
   String get txnCategoryFood => 'Food';
 
   @override
@@ -1234,123 +1286,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get coupleFinanceTitle => 'Shared finances';
 
   @override
-  String get couplePairingIntro =>
-      'Link your phone with family or friends by scanning a QR code. Then share transfers and track spending by syncing with QR.';
+  String get coupleIntro =>
+      'Link your account with your partner to decide, transaction by transaction, which expenses and income you want to see from each other.';
 
   @override
-  String get couplePartnerName => 'Name of person you share with';
+  String get coupleMyCodeLabel => 'Your code';
 
   @override
-  String get couplePartnerNameHint => 'E.g. Maria, dad, sibling';
+  String get coupleMyCodeHint =>
+      'Share it with your partner. It refreshes automatically every 5 minutes.';
 
   @override
-  String get couplePartnerNameRequired => 'Enter a name';
-
-  @override
-  String get coupleShowPairingQr => 'Show pairing QR';
-
-  @override
-  String get coupleScanPairingQr => 'Scan QR';
-
-  @override
-  String get couplePairingQrTitle => 'Link';
-
-  @override
-  String couplePairingQrSubtitle(String name) {
-    return 'Ask $name to scan this code';
+  String coupleCodeExpiresIn(int seconds) {
+    return 'Expires in ${seconds}s';
   }
 
   @override
-  String get coupleQrHint =>
-      'Keep this code visible until it is scanned from Billey.';
+  String get coupleEnterPartnerCode => 'Have your partner\'s code?';
 
   @override
-  String get coupleScanQr => 'Scan QR';
+  String get coupleEnterCodeHint => '6-digit code';
 
   @override
-  String get coupleScanHint => 'Point the camera at the Billey QR code.';
-
-  @override
-  String get coupleScanFromCamera => 'Scanning with Billey\'s camera';
-
-  @override
-  String get coupleScanFromGallery => 'Choose from gallery';
-
-  @override
-  String get coupleQrNotFound =>
-      'No Billey QR detected. Try again with better lighting.';
-
-  @override
-  String get couplePasteHint =>
-      'If the camera does not work, paste here the code shown under the QR.';
-
-  @override
-  String get couplePasteConfirm => 'Use code';
+  String get coupleLinkButton => 'Link';
 
   @override
   String coupleLinkedWith(String name) {
-    return 'Sharing with $name';
+    return 'Linked with $name';
   }
 
   @override
-  String get coupleSyncReminder =>
-      'After each expense, share an update via QR so both of you see the movements.';
-
-  @override
-  String get coupleShareUpdate => 'Share QR';
-
-  @override
-  String get coupleScanUpdate => 'Scan';
-
-  @override
-  String get coupleSharedWallets => 'Shared transfers';
-
-  @override
-  String get coupleWalletsEmpty =>
-      'Create a transfer (e.g. 2M) and share the QR so they receive it on their phone.';
-
-  @override
-  String get coupleNewTransfer => 'New transfer';
-
-  @override
-  String get coupleTransferTitle => 'Title';
-
-  @override
-  String get coupleTransferTitleHint => 'E.g. March budget';
-
-  @override
-  String get coupleTransferAmount => 'Amount';
-
-  @override
-  String coupleHolderIsPartner(String name) {
-    return 'Used by $name';
-  }
-
-  @override
-  String get coupleWalletCreated =>
-      'Transfer created. Show the QR to share it.';
-
-  @override
-  String get coupleSyncQrTitle => 'Sync';
-
-  @override
-  String coupleSyncQrSubtitle(String title) {
-    return 'Scan to update \"$title\"';
-  }
-
-  @override
-  String get coupleSyncQrSubtitleAll =>
-      'Scan to update all transfers and expenses';
-
-  @override
-  String get coupleSyncSuccess => 'Data synced successfully';
-
-  @override
-  String get coupleSyncInvalid =>
-      'Could not read the QR. Make sure it\'s from Billey.';
+  String get coupleLinkedSubtitle =>
+      'You can now share transactions with each other from any entry.';
 
   @override
   String get coupleLinkedSuccess => 'Successfully linked!';
+
+  @override
+  String get coupleInvalidCode => 'That code isn\'t valid or has expired.';
+
+  @override
+  String get coupleGenericError => 'Something went wrong. Please try again.';
 
   @override
   String get coupleUnlink => 'Unlink';
@@ -1360,46 +1336,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coupleUnlinkMessage =>
-      'Shared transfers on this device will be deleted. The other person keeps their local copy.';
+      'You\'ll stop seeing the transactions you shared with each other.';
 
   @override
   String get coupleUnlinked => 'Unlinked successfully';
 
   @override
-  String get coupleSharedWallet => 'Shared transfer';
+  String shareWithPartner(String name) {
+    return 'Share with $name';
+  }
 
   @override
-  String get coupleWalletNotFound => 'Transfer not found';
+  String get shareWithPartnerHint =>
+      'Your partner will be able to see this transaction';
 
   @override
-  String get coupleAddExpense => 'Add expense';
+  String coupleSharedCountZero(String name) {
+    return 'You aren\'t sharing any transactions with $name yet';
+  }
 
   @override
-  String get coupleExpenseTitle => 'Expense description';
+  String coupleSharedCountOne(String name) {
+    return 'You\'re sharing 1 transaction with $name';
+  }
 
   @override
-  String get coupleExpenseAmount => 'Amount';
-
-  @override
-  String get coupleBudget => 'Budget';
-
-  @override
-  String get coupleSpent => 'Spent';
-
-  @override
-  String get coupleRemaining => 'Remaining';
-
-  @override
-  String get coupleFrom => 'From';
-
-  @override
-  String get coupleFor => 'For';
-
-  @override
-  String get coupleExpenses => 'Expenses';
-
-  @override
-  String get coupleNoExpensesYet => 'No expenses in this transfer yet';
+  String coupleSharedCountMany(int count, String name) {
+    return 'You\'re sharing $count transactions with $name';
+  }
 
   @override
   String get assistantVoice => 'Assistant voice';

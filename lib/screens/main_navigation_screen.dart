@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:provider/provider.dart';
 
-import '../services/local_profile_storage.dart';
+import '../services/onboarding_status.dart';
 import '../providers/theme_settings_provider.dart';
 import '../theme/colors/app_colors.dart';
 import 'add_transaction_screen.dart';
@@ -34,7 +34,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Future<void> _validateProfileSetup() async {
-    final hasCustomProfile = await LocalProfileStorage.hasCustomProfile();
+    final hasCustomProfile = await OnboardingStatus.hasCompleted();
     if (!hasCustomProfile && mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(

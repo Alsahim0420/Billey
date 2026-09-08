@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/user_scope.dart';
+
 class IncomeDistributionProvider extends ChangeNotifier {
   static const _selectedTemplateKey = 'income_distribution_selected_template';
   static const _autoEnabledKey = 'income_distribution_auto_enabled';
@@ -178,11 +180,16 @@ class IncomeDistributionProvider extends ChangeNotifier {
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
-    _autoEnabled = prefs.getBool(_autoEnabledKey) ?? true;
+    await UserScope.migrateBool(prefs, _autoEnabledKey);
+    await UserScope.migrateString(prefs, _selectedTemplateKey);
+    await UserScope.migrateString(prefs, _customBucketsKey);
+    _autoEnabled = prefs.getBool(UserScope.key(_autoEnabledKey)) ?? true;
     _selectedTemplateId =
-        prefs.getString(_selectedTemplateKey) ?? 'balanced_50_30_20';
-    _customBuckets = _decodeBuckets(prefs.getString(_customBucketsKey)) ??
-        templates.first.buckets;
+        prefs.getString(UserScope.key(_selectedTemplateKey)) ??
+            'balanced_50_30_20';
+    _customBuckets =
+        _decodeBuckets(prefs.getString(UserScope.key(_customBucketsKey))) ??
+            templates.first.buckets;
     _isLoaded = true;
     notifyListeners();
   }
@@ -192,7 +199,7 @@ class IncomeDistributionProvider extends ChangeNotifier {
     notifyListeners();
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_autoEnabledKey, enabled);
+    await prefs.setBool(UserScope.key(_autoEnabledKey), enabled);
   }
 
   Future<void> selectTemplate(String templateId) async {
@@ -205,7 +212,7 @@ class IncomeDistributionProvider extends ChangeNotifier {
     notifyListeners();
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_selectedTemplateKey, templateId);
+    await prefs.setString(UserScope.key(_selectedTemplateKey), templateId);
   }
 
   Future<void> saveCustomBuckets(
@@ -222,9 +229,15 @@ class IncomeDistributionProvider extends ChangeNotifier {
     notifyListeners();
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_customBucketsKey, jsonEncode(_customBuckets));
+    await prefs.setString(
+      UserScope.key(_customBucketsKey),
+      jsonEncode(_customBuckets),
+    );
     if (selectCustom) {
-      await prefs.setString(_selectedTemplateKey, customTemplateId);
+      await prefs.setString(
+        UserScope.key(_selectedTemplateKey),
+        customTemplateId,
+      );
     }
   }
 
