@@ -472,6 +472,15 @@ class AppLocalizationsEn extends AppLocalizations {
       'I could not identify whether it was an expense or income. Try saying “I spent”, “I bought”, “I was paid”, or “I received”.';
 
   @override
+  String get manualEntryDividerLabel => 'or type it in yourself';
+
+  @override
+  String get manualEntryExpenseButton => 'Expense';
+
+  @override
+  String get manualEntryIncomeButton => 'Income';
+
+  @override
   String get salaryQuestionTitle => 'What is your usual salary?';
 
   @override
@@ -537,6 +546,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get transactionSaveError =>
       'Couldn\'t save the transaction. Please try again.';
+
+  @override
+  String get goalSaveError => 'Couldn\'t save the goal. Please try again.';
+
+  @override
+  String get goalDeleteError => 'Couldn\'t delete the goal.';
 
   @override
   String get voiceNotAvailable =>
@@ -708,6 +723,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chooseFromGallery => 'Choose from gallery';
+
+  @override
+  String get updateFromGoogle => 'Update with Google photo';
 
   @override
   String get removePhoto => 'Remove photo';
@@ -1349,6 +1367,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get shareWithPartnerHint =>
       'Your partner will be able to see this transaction';
+
+  @override
+  String get shareGoalWithPartnerHint =>
+      'Your partner will be able to see this goal';
 
   @override
   String coupleSharedCountZero(String name) {

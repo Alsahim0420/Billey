@@ -26,6 +26,7 @@ import '../providers/transaction_provider.dart';
 import '../services/firestore_salary_service.dart';
 import '../theme/colors/app_colors.dart';
 import '../theme/billey_theme_scope.dart';
+import '../widgets/share_with_partner_toggle.dart';
 
 enum _SaveState { idle, saving, success }
 
@@ -230,10 +231,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                             onPlay: _playVoiceConfirmation,
                           ),
                           const SizedBox(height: 26),
-                          _ShareWithPartnerToggle(
+                          ShareWithPartnerToggle(
                             value: _shareWithPartner,
                             onChanged: (value) =>
                                 setState(() => _shareWithPartner = value),
+                            hint: l10n.shareWithPartnerHint,
                           ),
                         ],
                       ),
@@ -280,6 +282,32 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                     resultSummary: _voiceSummary,
                     onTap: _toggleVoiceListening,
                     onPlay: _playVoiceConfirmation,
+                  ),
+                  const SizedBox(height: 30),
+                  _OrDivider(label: l10n.manualEntryDividerLabel),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _ManualEntryButton(
+                          label: l10n.manualEntryExpenseButton,
+                          icon: TablerIcons.arrow_down,
+                          color: AppColors.expenseColor,
+                          onTap: () =>
+                              _selectTypeManually(TransactionType.gasto),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: _ManualEntryButton(
+                          label: l10n.manualEntryIncomeButton,
+                          icon: TablerIcons.arrow_up,
+                          color: AppColors.primaryColor,
+                          onTap: () =>
+                              _selectTypeManually(TransactionType.ingreso),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -346,10 +374,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                         ),
                       ),
                       const SizedBox(height: 28),
-                      _ShareWithPartnerToggle(
+                      ShareWithPartnerToggle(
                         value: _shareWithPartner,
                         onChanged: (value) =>
                             setState(() => _shareWithPartner = value),
+                        hint: l10n.shareWithPartnerHint,
                       ),
                       const SizedBox(height: 12),
                       _DistributionCard(
@@ -487,6 +516,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       return amount.round().toString();
     }
     return amount.toStringAsFixed(2);
+  }
+
+  /// Skips voice entirely: reveals the manual form for [type] directly, the
+  /// same way it opens once voice classification succeeds, just without
+  /// anything pre-filled from a transcript.
+  void _selectTypeManually(TransactionType type) {
+    setState(() {
+      _type = type;
+      _awaitingVoiceClassification = false;
+      _selectedCategory = null;
+    });
   }
 
   Future<void> _toggleVoiceListening() async {
@@ -1852,90 +1892,6 @@ class _ConceptField extends StatelessWidget {
 /// Lets the user opt this transaction in/out of being visible to their
 /// linked partner. Renders nothing if no partner is linked, so it's
 /// invisible for anyone who hasn't set up shared finances.
-class _ShareWithPartnerToggle extends StatelessWidget {
-  const _ShareWithPartnerToggle({
-    required this.value,
-    required this.onChanged,
-  });
-
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Consumer<CoupleLinkProvider>(
-      builder: (context, couple, _) {
-        if (!couple.isLinked) return const SizedBox.shrink();
-        final partnerName = couple.partnerDisplayName?.trim().isNotEmpty == true
-            ? couple.partnerDisplayName!.trim()
-            : l10n.defaultUser;
-
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceInput,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: value
-                  ? AppColors.infoColor.withValues(alpha: 0.45)
-                  : AppColors.borderSubtle,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: AppColors.infoColor.withValues(alpha: 0.14),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: const Icon(
-                  TablerIcons.users,
-                  color: AppColors.infoColor,
-                  size: 19,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.shareWithPartner(partnerName),
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 13.5,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      l10n.shareWithPartnerHint,
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 11.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Switch.adaptive(
-                value: value,
-                activeThumbColor: AppColors.white,
-                activeTrackColor: AppColors.infoColor,
-                onChanged: onChanged,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
 class _CategoryPill extends StatelessWidget {
   final CategoryModel category;
   final VoidCallback onTap;
@@ -2087,6 +2043,82 @@ class _AmountInputFieldState extends State<_AmountInputField> {
                   ),
                   onChanged: (_) => widget.onChanged(),
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OrDivider extends StatelessWidget {
+  final String label;
+
+  const _OrDivider({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Divider(color: AppColors.textSecondary.withValues(alpha: 0.2)),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Divider(color: AppColors.textSecondary.withValues(alpha: 0.2)),
+        ),
+      ],
+    );
+  }
+}
+
+class _ManualEntryButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ManualEntryButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 22),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ],

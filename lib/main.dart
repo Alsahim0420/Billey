@@ -19,6 +19,7 @@ import 'providers/theme_settings_provider.dart';
 import 'providers/locale_settings_provider.dart';
 import 'providers/payment_reminder_provider.dart';
 import 'providers/couple_link_provider.dart';
+import 'providers/goals_provider.dart';
 import 'models/transaction.dart';
 import 'models/category.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -57,10 +58,12 @@ void main() async {
   final categoryProvider = CategoryProvider();
   final profileProvider = ProfileProvider();
   final incomeDistribution = IncomeDistributionProvider();
+  final goalsProvider = GoalsProvider();
 
   final coupleLink = CoupleLinkProvider()..initialize();
   coupleLink.addListener(() {
     transactionProvider.setPartnerUid(coupleLink.partnerUid);
+    goalsProvider.setPartnerUid(coupleLink.partnerUid);
   });
 
   // Local storage (SharedPreferences, Hive) has no built-in concept of
@@ -75,6 +78,7 @@ void main() async {
     incomeDistribution.load();
     paymentReminders.reload();
     transactionProvider.loadTransactions();
+    goalsProvider.load();
   });
 
   final speechVoiceProvider = SpeechVoiceProvider();
@@ -103,6 +107,7 @@ void main() async {
         ChangeNotifierProvider.value(value: themeSettings),
         ChangeNotifierProvider.value(value: localeSettings),
         ChangeNotifierProvider.value(value: paymentReminders),
+        ChangeNotifierProvider.value(value: goalsProvider),
         ChangeNotifierProvider.value(value: coupleLink),
         ChangeNotifierProvider.value(value: speechAssistant),
         ChangeNotifierProvider.value(value: speechVoiceProvider),

@@ -529,6 +529,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   onTap: () => Navigator.pop(context, 'gallery'),
                 ),
+                if (profile.isGoogleAccount)
+                  ListTile(
+                    leading: const Icon(
+                      TablerIcons.brand_google,
+                      color: AppColors.primaryColor,
+                    ),
+                    title: Text(
+                      l10n.updateFromGoogle,
+                      style: TextStyle(color: AppColors.textPrimary),
+                    ),
+                    onTap: () => Navigator.pop(context, 'google'),
+                  ),
                 if (profile.hasAvatar)
                   ListTile(
                     leading: const Icon(
@@ -552,6 +564,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (action == 'gallery') {
       final saved = await profile.pickAndSaveAvatar();
+      if (!mounted) return;
+      _showSnackBar(saved ? l10n.photoUpdated : l10n.photoUpdateError);
+      return;
+    }
+
+    if (action == 'google') {
+      final saved = await profile.refreshFromGoogle();
       if (!mounted) return;
       _showSnackBar(saved ? l10n.photoUpdated : l10n.photoUpdateError);
       return;
@@ -1134,18 +1153,10 @@ class _ProfileSettingTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           child: Row(
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.primaryColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  icon,
-                  color: AppColors.primaryColor,
-                  size: 21,
-                ),
+              Icon(
+                icon,
+                color: AppColors.primaryColor,
+                size: 26,
               ),
               const SizedBox(width: 14),
               Expanded(

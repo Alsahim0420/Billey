@@ -473,6 +473,15 @@ class AppLocalizationsEs extends AppLocalizations {
       'No pude identificar si fue un gasto o un ingreso. Prueba diciendo “gasté”, “compré”, “me pagaron” o “me consignaron”.';
 
   @override
+  String get manualEntryDividerLabel => 'o llénalo tú mismo';
+
+  @override
+  String get manualEntryExpenseButton => 'Gasto';
+
+  @override
+  String get manualEntryIncomeButton => 'Ingreso';
+
+  @override
   String get salaryQuestionTitle => '¿Cuál es tu sueldo habitual?';
 
   @override
@@ -537,6 +546,12 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get transactionSaveError =>
       'No se pudo guardar la transacción. Intenta de nuevo.';
+
+  @override
+  String get goalSaveError => 'No se pudo guardar la meta. Intenta de nuevo.';
+
+  @override
+  String get goalDeleteError => 'No se pudo eliminar la meta.';
 
   @override
   String get voiceNotAvailable =>
@@ -711,6 +726,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get chooseFromGallery => 'Elegir de la galería';
+
+  @override
+  String get updateFromGoogle => 'Actualizar con foto de Google';
 
   @override
   String get removePhoto => 'Quitar foto';
@@ -1352,6 +1370,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get shareWithPartnerHint => 'Tu pareja podrá ver esta transacción';
+
+  @override
+  String get shareGoalWithPartnerHint => 'Tu pareja podrá ver esta meta';
 
   @override
   String coupleSharedCountZero(String name) {

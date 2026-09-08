@@ -153,6 +153,9 @@
   "newTransactionByVoice": "Nueva transacción",
   "voiceTransactionPrompt": "Cuéntame qué pasó. Identificaré si es un gasto o un ingreso y completaré los datos por ti.",
   "voiceTransactionTypeNotUnderstood": "No pude identificar si fue un gasto o un ingreso. Prueba diciendo “gasté”, “compré”, “me pagaron” o “me consignaron”.",
+  "manualEntryDividerLabel": "o llénalo tú mismo",
+  "manualEntryExpenseButton": "Gasto",
+  "manualEntryIncomeButton": "Ingreso",
   "salaryQuestionTitle": "¿Cuál es tu sueldo habitual?",
   "salaryQuestionMessage": "Lo guardaré de forma segura en tu perfil para entender futuros ingresos, descuentos o pagos adicionales.",
   "salaryAmountHint": "Ej. 3.000.000",
@@ -173,6 +176,8 @@
   "transactionDeletedUndo": "Transacción eliminada",
   "undo": "Deshacer",
   "transactionSaveError": "No se pudo guardar la transacción. Intenta de nuevo.",
+  "goalSaveError": "No se pudo guardar la meta. Intenta de nuevo.",
+  "goalDeleteError": "No se pudo eliminar la meta.",
   "voiceNotAvailable": "Voz no disponible. Detén la app, ejecuta \"flutter pub get\", luego \"cd ios && pod install\" y vuelve a abrir con flutter run (no uses hot reload).",
   "micPermissionRequired": "Activa el permiso de micrófono para registrar gastos por voz.",
   "voiceAmountNotUnderstood": "No entendí el monto. Prueba: \"Gasté 50000 en comida\" o \"Pagué 25 mil de taxi\".",
@@ -231,6 +236,7 @@
   "transactionTypeExpense": "Gasto",
   "profilePhoto": "Foto de perfil",
   "chooseFromGallery": "Elegir de la galería",
+  "updateFromGoogle": "Actualizar con foto de Google",
   "removePhoto": "Quitar foto",
   "photoUpdated": "Foto de perfil actualizada",
   "photoRemoved": "Foto de perfil eliminada",
@@ -450,6 +456,7 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "shareWithPartnerHint": "Tu pareja podrá ver esta transacción",
+  "shareGoalWithPartnerHint": "Tu pareja podrá ver esta meta",
   "coupleSharedCountZero": "Aún no compartes ninguna transacción con {name}",
   "@coupleSharedCountZero": {
     "placeholders": { "name": { "type": "String" } }

@@ -99,6 +99,40 @@ class AuthService {
     );
   }
 
+  /// The account's current Google profile photo, fetched fresh from Google
+  /// (not whatever Firebase Auth's `photoURL` happened to capture at the
+  /// last sign-in, which never updates on its own). Returns null if the
+  /// account isn't Google-linked, if the user isn't reachable without
+  /// interactive sign-in (e.g. revoked access), or has no photo set.
+  Future<String?> fetchFreshGooglePhotoUrl() async {
+    final isGoogleAccount = _firebaseAuth.currentUser?.providerData
+            .any((info) => info.providerId == GoogleAuthProvider.PROVIDER_ID) ??
+        false;
+    if (!isGoogleAccount) return null;
+
+    try {
+      if (kIsWeb) {
+        // Firebase Auth's own copy is the only thing available on web
+        // without a fresh interactive sign-in — still worth a shot in case
+        // it's more current than what we last imported.
+        return _firebaseAuth.currentUser?.photoURL;
+      }
+
+      final googleSignIn = GoogleSignIn.instance;
+      _googleSignInInitialization ??= googleSignIn.initialize(
+        serverClientId: _googleSignInServerClientId,
+      );
+      await _googleSignInInitialization;
+      // `attemptLightweightAuthentication()` can itself return null instead
+      // of a Future (see its doc comment) — awaiting a null value is valid
+      // Dart and simply yields null.
+      final account = await googleSignIn.attemptLightweightAuthentication();
+      return account?.photoUrl;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> signOut() async {
     try {
       await GoogleSignIn.instance.signOut();
