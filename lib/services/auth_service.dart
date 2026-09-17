@@ -99,6 +99,19 @@ class AuthService {
     );
   }
 
+  Future<void> signInWithApple() async {
+    final userCredential =
+        await _firebaseAuth.signInWithProvider(AppleAuthProvider());
+    final user = userCredential.user!;
+    await _saveUserProfile(
+      user,
+      fullName: user.displayName ?? '',
+      email: user.email ?? '',
+      birthDate: null,
+      provider: 'apple',
+    );
+  }
+
   /// The account's current Google profile photo, fetched fresh from Google
   /// (not whatever Firebase Auth's `photoURL` happened to capture at the
   /// last sign-in, which never updates on its own). Returns null if the

@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -110,6 +111,24 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
       }
     } on FirebaseAuthException catch (e) {
       _showSnackBar(_messageFromException(e));
+    } catch (e) {
+      _showSnackBar(e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    setState(() => _isSubmitting = true);
+    try {
+      await _authService.signInWithApple();
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code != 'canceled' && e.code != 'web-context-canceled') {
+        _showSnackBar(_messageFromException(e));
+      }
     } catch (e) {
       _showSnackBar(e.toString().replaceFirst('Exception: ', ''));
     } finally {
@@ -376,6 +395,32 @@ class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
                                 label: const Text('Continuar con Google'),
                               ),
                             ),
+                            if (!kIsWeb &&
+                                defaultTargetPlatform ==
+                                    TargetPlatform.iOS) ...[
+                              const SizedBox(height: 12),
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed:
+                                      _isSubmitting ? null : _signInWithApple,
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                        color: AppColors.primaryColor
+                                            .withValues(alpha: 0.35)),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 14),
+                                    foregroundColor: AppColors.textPrimary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                  icon: const FaIcon(FontAwesomeIcons.apple,
+                                      size: 20),
+                                  label: const Text('Continuar con Apple'),
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 16),
                             Center(
                               child: TextButton(
