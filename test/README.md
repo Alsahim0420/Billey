@@ -108,22 +108,14 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
-  mockito: ^5.4.4
-  test: ^1.24.9
 ```
 
 ### Configuración de Mocking
-Para tests que requieren mocks (como base de datos), se usa Mockito:
-
-```dart
-import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
-
-@GenerateMocks([DatabaseHelper])
-void main() {
-  // Tests aquí
-}
-```
+Los tests actuales importan `package:flutter_test/flutter_test.dart` y usan
+dobles manuales cuando hace falta. `test` y `mockito` no son dependencias
+directas: su resolución con el SDK actual entra en conflicto con el
+`analyzer <7` que requiere `hive_generator 2.0.1`. No agregues overrides de
+`analyzer` o `matcher` para forzar esa combinación.
 
 ## Mejores Prácticas
 
@@ -190,4 +182,3 @@ Al agregar nuevas funcionalidades:
 - [Flutter Testing Documentation](https://docs.flutter.dev/testing)
 - [Widget Testing](https://docs.flutter.dev/cookbook/testing/widget/introduction)
 - [Integration Testing](https://docs.flutter.dev/cookbook/testing/integration/introduction)
-- [Mockito Documentation](https://pub.dev/packages/mockito) 

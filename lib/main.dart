@@ -28,6 +28,7 @@ import 'firebase_options.dart';
 import 'features/speech/application/speech_assistant_controller.dart';
 import 'features/speech/application/speech_voice_provider.dart';
 import 'features/speech/speech_dependencies.dart';
+import 'features/apple_pay/apple_pay_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,6 +57,9 @@ void main() async {
 
   final transactionProvider = TransactionProvider.cloud();
   final categoryProvider = CategoryProvider();
+  final applePay = ApplePayController(
+      transactionProvider, categoryProvider, currencyProvider);
+  await applePay.initialize();
   final profileProvider = ProfileProvider();
   final incomeDistribution = IncomeDistributionProvider();
   final goalsProvider = GoalsProvider();
@@ -74,7 +78,11 @@ void main() async {
   // savings goals and payment reminders.
   FirebaseAuth.instance.authStateChanges().listen((_) {
     profileProvider.load();
-    categoryProvider.initialize();
+    if (ApplePayController.isIOS) {
+      applePay.sessionChanged();
+    } else {
+      categoryProvider.initialize();
+    }
     incomeDistribution.load();
     paymentReminders.reload();
     transactionProvider.loadTransactions();
@@ -101,6 +109,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider.value(value: transactionProvider),
         ChangeNotifierProvider.value(value: categoryProvider),
+        ChangeNotifierProvider.value(value: applePay),
         ChangeNotifierProvider.value(value: currencyProvider),
         ChangeNotifierProvider.value(value: incomeDistribution),
         ChangeNotifierProvider.value(value: profileProvider),

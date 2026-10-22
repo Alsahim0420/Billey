@@ -78,6 +78,18 @@ class TransactionProvider with ChangeNotifier {
     await loadTransactions();
   }
 
+  Future<void> importApplePay(
+      TransactionModel transaction, String owner) async {
+    if (firestoreService != null) {
+      await firestoreService!.importApplePay(transaction, owner);
+    } else {
+      final existing = await dbHelper!.readAllTransactions();
+      if (!existing.any((t) => t.id == transaction.id)) {
+        await dbHelper!.create(transaction);
+      }
+    }
+  }
+
   Future<void> editTransaction(TransactionModel transaction) async {
     if (firestoreService != null) {
       await firestoreService!.update(transaction);

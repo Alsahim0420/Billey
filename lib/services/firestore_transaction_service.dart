@@ -56,6 +56,28 @@ class FirestoreTransactionService {
     });
   }
 
+  /// Uses the existing collection and security rules. A lost acknowledgment
+  /// may retry, but must never overwrite an existing expense or its edits.
+  Future<void> importApplePay(
+      TransactionModel transaction, String owner) async {
+    final user = _requireUser();
+    if (user.uid != owner) {
+      throw StateError(
+          'La cuenta cambió. Reintenta al volver a la cuenta de recepción.');
+    }
+    final ref = _transactionsFor(user).doc(_requireTransactionId(transaction));
+    await _firestore.runTransaction((tx) async {
+      final existing = await tx.get(ref);
+      if (existing.exists) return;
+      tx.set(ref, {
+        ...transaction.toFirestore(userId: owner),
+        'source': 'apple_pay_shortcuts',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    });
+  }
+
   Future<void> update(TransactionModel transaction) async {
     final user = _requireUser();
     final id = _requireTransactionId(transaction);

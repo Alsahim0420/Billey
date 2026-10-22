@@ -2677,6 +2677,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hi, {name}. I\'ll help you record your expenses and confirm that everything is correct in Billey.'**
   String assistantVoicePreviewMessage(String name);
+
+  /// No description provided for @applePayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record purchases with Apple Pay'**
+  String get applePayTitle;
+
+  /// No description provided for @applePayScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive the data a personal Wallet automation sends to Billey. It is stored in a local inbox even without opening the app, then imported while Billey is open and connected. This does not include history or guarantee all purchases, online payments or Apple Watch payments.'**
+  String get applePayScope;
+
+  /// No description provided for @applePayRequiresIOS17.
+  ///
+  /// In en, this message translates to:
+  /// **'The Transaction automation requires iOS 17 or later. This feature is unavailable on this device.'**
+  String get applePayRequiresIOS17;
+
+  /// No description provided for @applePayAllowReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow receipt for this account'**
+  String get applePayAllowReceipt;
+
+  /// No description provided for @applePayReceiptConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Save incoming expenses to this account in {currency}. This does not create or enable a Shortcuts automation. Switching accounts disables receipt.'**
+  String applePayReceiptConsent(String currency);
+
+  /// No description provided for @applePayAutomationStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Billey cannot verify whether your automation exists or is enabled.'**
+  String get applePayAutomationStatus;
+
+  /// No description provided for @applePayConfiguredCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency configured for receipt: {currency}'**
+  String applePayConfiguredCurrency(String currency);
+
+  /// No description provided for @applePayUseCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Use {currency} for future receipts'**
+  String applePayUseCurrency(String currency);
+
+  /// No description provided for @applePayLastReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Last expense received: {date}'**
+  String applePayLastReceipt(String date);
+
+  /// No description provided for @applePayNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get applePayNone;
+
+  /// No description provided for @applePayPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to import: {count}'**
+  String applePayPending(int count);
+
+  /// No description provided for @applePayRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Check and import pending expenses'**
+  String get applePayRetry;
+
+  /// No description provided for @applePayTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Test receipt (no expense created)'**
+  String get applePayTest;
+
+  /// No description provided for @applePayTestExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'The test sends 12500.50 in the selected currency through the same native inbox. It does not affect balances or the last real receipt date. It does not test Wallet or your automation.'**
+  String get applePayTestExplanation;
+
+  /// No description provided for @applePaySetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up in Shortcuts'**
+  String get applePaySetup;
+
+  /// No description provided for @applePaySteps.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Allow receipt above.\n2. Open Shortcuts → Automation → +.\n3. On iOS 17/18 look for Transaction; later versions may call it Wallet. Select your cards.\n4. Select Run Immediately.\n5. Create a blank automation and add Registrar gasto en Billey. You can also run an intermediate shortcut and pass the transaction as Shortcut Input.\n6. Configure the input fields and save. Verify with a real purchase; running it manually may not supply a Wallet transaction.'**
+  String get applePaySteps;
+
+  /// No description provided for @applePayMapping.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount: tap Shortcut Input and inspect the properties the transaction offers on your iPhone. If Amount is available, select it and convert it to numeric text without a symbol (for example 12500.50). ISO currency: use the real code if available; otherwise explicitly configure the currency of that card and verify a purchase before automating it. Currency is never inferred from \$. Merchant and card alias are optional and should only be mapped if available. Date is optional: a missing date is labeled as receipt time. Wallet is not assumed to supply all these fields. If amount is missing, stop the shortcut and review the expense manually. For retries, keep the same UUID per purchase in Event reference; a new purchase requires a new UUID.'**
+  String get applePayMapping;
+
+  /// No description provided for @applePayLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'While locked, Billey attempts receipt without opening the interface after the first unlock following a restart. iOS, Shortcuts and permissions may prevent execution. Pending expenses are imported when you return to Billey. No FinanceKit or bank connection is used. A different currency is rejected; amounts are not converted.'**
+  String get applePayLocked;
+
+  /// No description provided for @applePayShortcutAvailability.
+  ///
+  /// In en, this message translates to:
+  /// **'No shortcut is published for installation yet. You can use the action directly. Field extraction must be verified on an iPhone with Wallet before sharing a shortcut.'**
+  String get applePayShortcutAvailability;
 }
 
 class _AppLocalizationsDelegate

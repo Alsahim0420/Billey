@@ -3,6 +3,8 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import '../features/apple_pay/apple_pay_controller.dart';
+import '../features/apple_pay/apple_pay_settings_screen.dart';
 
 import '../features/speech/application/speech_voice_provider.dart';
 import '../features/speech/presentation/speech_voice_selector.dart';
@@ -114,6 +116,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
               },
             ),
+            if (ApplePayController.isIOS) ...[
+              const SizedBox(height: 10),
+              _ProfileSettingTile(
+                icon: Icons.account_balance_wallet_outlined,
+                title: l10n.applePayTitle,
+                onTap: () {
+                  context.read<ApplePayController>().refresh();
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => const ApplePaySettingsScreen(),
+                  ));
+                },
+              ),
+            ],
             const SizedBox(height: 10),
             _ProfileSettingTile(
               icon: TablerIcons.users,

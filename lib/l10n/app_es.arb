@@ -487,5 +487,59 @@
         "type": "String"
       }
     }
+  },
+  "applePayTitle": "Registrar compras con Apple Pay",
+  "applePayScope": "Recibe los datos que una automatización personal de Wallet envíe a Billey. Se guardan en una bandeja local incluso sin abrir la app y se importan cuando Billey está abierta y tiene conexión. No incluye historial ni garantiza todas las compras, pagos por internet o desde Apple Watch.",
+  "applePayRequiresIOS17": "La automatización de Transacción requiere iOS 17 o posterior. Esta función no está disponible en este dispositivo.",
+  "applePayAllowReceipt": "Permitir recepción para esta cuenta",
+  "applePayReceiptConsent": "Guarda los próximos gastos en esta cuenta, en {currency}. Esto no crea ni activa una automatización en Atajos. Al cambiar de cuenta se deshabilita la recepción.",
+  "applePayAutomationStatus": "Billey no puede comprobar si tu automatización está creada o activada.",
+  "applePayConfiguredCurrency": "Moneda configurada para recepción: {currency}",
+  "applePayUseCurrency": "Usar {currency} para próximas recepciones",
+  "applePayLastReceipt": "Último gasto recibido: {date}",
+  "applePayNone": "Ninguno",
+  "applePayPending": "Pendientes de importar: {count}",
+  "applePayRetry": "Revisar e importar pendientes",
+  "applePayTest": "Probar recepción (sin crear gasto)",
+  "applePayTestExplanation": "La prueba envía 12500.50 en la moneda seleccionada por la misma bandeja nativa. No modifica saldos ni la fecha del último gasto real. No prueba Wallet ni tu automatización.",
+  "applePaySetup": "Configurar en Atajos",
+  "applePaySteps": "1. Permite la recepción arriba.\n2. Abre Atajos → Automatización → +.\n3. En iOS 17/18 busca Transacción; en versiones posteriores puede aparecer como Wallet o Cartera. Selecciona las tarjetas que usarás.\n4. Selecciona Ejecutar inmediatamente.\n5. Crea una automatización en blanco y añade Registrar gasto en Billey. También puedes ejecutar tu atajo intermediario y pasar la transacción como Entrada del atajo.\n6. Configura los campos de entrada y guarda. Haz una compra real para comprobarla; el botón de reproducción puede no tener una transacción de Wallet.",
+  "applePayMapping": "Monto: toca Entrada del atajo y comprueba qué propiedades ofrece la transacción en tu iPhone. Si hay Importe/Monto, selecciona ese valor y conviértelo a texto numérico sin símbolo (por ejemplo, 12500.50). Moneda ISO: usa el código real si está disponible; si no, configura explícitamente la moneda de esa tarjeta y valida una compra antes de automatizarla. No se deduce moneda a partir de $. Comercio y alias de tarjeta son opcionales y solo deben mapearse si existen. La fecha es opcional: si falta, se marca como fecha de recepción. No se asume que Wallet entregue todos estos campos. Si falta el monto, detén el atajo y revisa el gasto manualmente. Para reintentos conserva un mismo UUID por compra en Referencia del evento; una compra nueva requiere otro UUID.",
+  "applePayLocked": "Con el iPhone bloqueado se intenta recibir sin abrir la interfaz, después del primer desbloqueo tras reiniciar. iOS, Atajos y los permisos pueden impedir la ejecución. Los pendientes se importan al volver a Billey. No se usa FinanceKit ni conexión bancaria. Una moneda diferente se rechaza; no se convierten importes.",
+  "applePayShortcutAvailability": "No hay un atajo publicado para instalar todavía. Puedes usar la acción directamente. La extracción de los campos debe validarse en un iPhone con Wallet antes de compartir un atajo.",
+  "@applePayReceiptConsent": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "@applePayConfiguredCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "@applePayUseCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "@applePayLastReceipt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@applePayPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

@@ -3,6 +3,10 @@
 La configuración y arquitectura de voz con ElevenLabs está documentada en
 [docs/ELEVENLABS.md](docs/ELEVENLABS.md).
 
+La recepción de gastos desde Apple Pay y Atajos, su configuración y las pruebas
+pendientes en iPhone están documentadas en
+[docs/APPLE_PAY_SHORTCUTS.md](docs/APPLE_PAY_SHORTCUTS.md).
+
 ![Billey](https://res.cloudinary.com/panmecar/image/upload/v1752550787/ChatGPT_Image_14_jul_2025_10_30_44_p.m._hpoaxj.png)
 
 ---
@@ -37,6 +41,12 @@ La configuración y arquitectura de voz con ElevenLabs está documentada en
 ---
 
 ## 🚀 Instalación
+
+Versión configurada y comprobada: Flutter **3.47.4** (Dart **3.13.3**).
+Si usas FVM, ejecuta `fvm install` y utiliza `fvm flutter` en los comandos
+de abajo. VS Code apunta al enlace `.fvm/flutter_sdk` que crea FVM.
+Si no usas FVM, selecciona tu instalación de Flutter con **Flutter: Change SDK**
+en VS Code y comprueba su versión con `flutter --version`.
 
 ```bash
 git clone https://github.com/Alsahim0420/Billey

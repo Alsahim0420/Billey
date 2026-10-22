@@ -614,5 +614,59 @@
         "type": "String"
       }
     }
+  },
+  "applePayTitle": "Record purchases with Apple Pay",
+  "applePayScope": "Receive the data a personal Wallet automation sends to Billey. It is stored in a local inbox even without opening the app, then imported while Billey is open and connected. This does not include history or guarantee all purchases, online payments or Apple Watch payments.",
+  "applePayRequiresIOS17": "The Transaction automation requires iOS 17 or later. This feature is unavailable on this device.",
+  "applePayAllowReceipt": "Allow receipt for this account",
+  "applePayReceiptConsent": "Save incoming expenses to this account in {currency}. This does not create or enable a Shortcuts automation. Switching accounts disables receipt.",
+  "applePayAutomationStatus": "Billey cannot verify whether your automation exists or is enabled.",
+  "applePayConfiguredCurrency": "Currency configured for receipt: {currency}",
+  "applePayUseCurrency": "Use {currency} for future receipts",
+  "applePayLastReceipt": "Last expense received: {date}",
+  "applePayNone": "None",
+  "applePayPending": "Waiting to import: {count}",
+  "applePayRetry": "Check and import pending expenses",
+  "applePayTest": "Test receipt (no expense created)",
+  "applePayTestExplanation": "The test sends 12500.50 in the selected currency through the same native inbox. It does not affect balances or the last real receipt date. It does not test Wallet or your automation.",
+  "applePaySetup": "Set up in Shortcuts",
+  "applePaySteps": "1. Allow receipt above.\n2. Open Shortcuts → Automation → +.\n3. On iOS 17/18 look for Transaction; later versions may call it Wallet. Select your cards.\n4. Select Run Immediately.\n5. Create a blank automation and add Registrar gasto en Billey. You can also run an intermediate shortcut and pass the transaction as Shortcut Input.\n6. Configure the input fields and save. Verify with a real purchase; running it manually may not supply a Wallet transaction.",
+  "applePayMapping": "Amount: tap Shortcut Input and inspect the properties the transaction offers on your iPhone. If Amount is available, select it and convert it to numeric text without a symbol (for example 12500.50). ISO currency: use the real code if available; otherwise explicitly configure the currency of that card and verify a purchase before automating it. Currency is never inferred from $. Merchant and card alias are optional and should only be mapped if available. Date is optional: a missing date is labeled as receipt time. Wallet is not assumed to supply all these fields. If amount is missing, stop the shortcut and review the expense manually. For retries, keep the same UUID per purchase in Event reference; a new purchase requires a new UUID.",
+  "applePayLocked": "While locked, Billey attempts receipt without opening the interface after the first unlock following a restart. iOS, Shortcuts and permissions may prevent execution. Pending expenses are imported when you return to Billey. No FinanceKit or bank connection is used. A different currency is rejected; amounts are not converted.",
+  "applePayShortcutAvailability": "No shortcut is published for installation yet. You can use the action directly. Field extraction must be verified on an iPhone with Wallet before sharing a shortcut.",
+  "@applePayReceiptConsent": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "@applePayConfiguredCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "@applePayUseCurrency": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "@applePayLastReceipt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "@applePayPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }
