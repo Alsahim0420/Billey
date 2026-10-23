@@ -1200,7 +1200,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get txnCategoryEducation => 'Education';
 
   @override
-  String get txnCategoryOther => 'Other';
+  String get txnCategoryOther => 'Uncategorized';
 
   @override
   String get insightDemoHousing => 'Housing';
@@ -1416,4 +1416,288 @@ class AppLocalizationsEn extends AppLocalizations {
   String assistantVoicePreviewMessage(String name) {
     return 'Hi, $name. I\'ll help you record your expenses and confirm that everything is correct in Billey.';
   }
+
+  @override
+  String get applePayTitle => 'Record purchases with Apple Pay';
+
+  @override
+  String get applePayScope =>
+      'Receive the data a personal Wallet automation sends to Billey. It is stored in a local inbox even without opening the app, then imported while Billey is open and connected. This does not include history or guarantee all purchases, online payments or Apple Watch payments.';
+
+  @override
+  String get applePayRequiresIOS17 =>
+      'The Transaction automation requires iOS 17 or later. This feature is unavailable on this device.';
+
+  @override
+  String get applePayAllowReceipt => 'Allow receipt for this account';
+
+  @override
+  String applePayReceiptConsent(String currency) {
+    return 'Save incoming expenses to this account in $currency. This does not create or enable a Shortcuts automation. Switching accounts disables receipt.';
+  }
+
+  @override
+  String get applePayAutomationStatus =>
+      'Billey cannot verify whether your automation exists or is enabled.';
+
+  @override
+  String applePayConfiguredCurrency(String currency) {
+    return 'Currency configured for receipt: $currency';
+  }
+
+  @override
+  String applePayUseCurrency(String currency) {
+    return 'Use $currency for future receipts';
+  }
+
+  @override
+  String applePayLastReceipt(String date) {
+    return 'Last expense received: $date';
+  }
+
+  @override
+  String get applePayNone => 'None';
+
+  @override
+  String applePayPending(int count) {
+    return 'Waiting to import: $count';
+  }
+
+  @override
+  String get applePayRetry => 'Check and import pending expenses';
+
+  @override
+  String get applePayTest => 'Test receipt (no expense created)';
+
+  @override
+  String get applePayTestExplanation =>
+      'The test sends 12500.50 in the selected currency through the same native inbox. It does not affect balances or the last real receipt date. It does not test Wallet or your automation.';
+
+  @override
+  String get applePaySetup => 'Set up in Shortcuts';
+
+  @override
+  String get applePaySteps =>
+      '1. Allow receipt above.\n2. Open Shortcuts → Automation → +.\n3. On iOS 17/18 look for Transaction; later versions may call it Wallet. Select your cards.\n4. Select Run Immediately.\n5. Create a blank automation and add Registrar gasto en Billey. You can also run an intermediate shortcut and pass the transaction as Shortcut Input.\n6. Configure the input fields and save. Verify with a real purchase; running it manually may not supply a Wallet transaction.';
+
+  @override
+  String get applePayMapping =>
+      'Amount: tap Shortcut Input and inspect the properties the transaction offers on your iPhone. If Amount is available, select it and convert it to numeric text without a symbol (for example 12500.50). ISO currency: use the real code if available; otherwise explicitly configure the currency of that card and verify a purchase before automating it. Currency is never inferred from \$. Merchant and card alias are optional and should only be mapped if available. Date is optional: a missing date is labeled as receipt time. Wallet is not assumed to supply all these fields. If amount is missing, stop the shortcut and review the expense manually. For retries, keep the same UUID per purchase in Event reference; a new purchase requires a new UUID.';
+
+  @override
+  String get applePayLocked =>
+      'While locked, Billey attempts receipt without opening the interface after the first unlock following a restart. iOS, Shortcuts and permissions may prevent execution. Pending expenses are imported when you return to Billey. No FinanceKit or bank connection is used. A different currency is rejected; amounts are not converted.';
+
+  @override
+  String get applePayShortcutAvailability =>
+      'No shortcut is published for installation yet. You can use the action directly. Field extraction must be verified on an iPhone with Wallet before sharing a shortcut.';
+
+  @override
+  String get applePayIntro =>
+      'Connect Shortcuts to Billey and bring your purchases into your expenses, without entering each one.';
+
+  @override
+  String applePayAccountHint(String currency) {
+    return 'Receive purchases in this account in $currency. They will be imported when you open Billey.';
+  }
+
+  @override
+  String get applePayActivity => 'Your activity';
+
+  @override
+  String get applePayLastLabel => 'Last expense received';
+
+  @override
+  String get applePayPendingLabel => 'Waiting to import';
+
+  @override
+  String get applePayTestShort => 'Test receipt';
+
+  @override
+  String get applePayTestHint =>
+      'Uses sample data. No expenses are created and your balance stays the same.';
+
+  @override
+  String get applePayMoreDetails => 'Good to know';
+
+  @override
+  String get applePayMappingTitle => 'What to send from Shortcuts';
+
+  @override
+  String get applePayScopeTitle => 'Scope and privacy';
+
+  @override
+  String get applePayShortcutTitle => 'About shortcuts and testing';
+
+  @override
+  String get applePayGuideSteps =>
+      'Open Shortcuts → Automation → + → Transaction or Wallet and select your cards.\nChoose Run Immediately and create a blank automation.\nAdd Registrar gasto en Billey. Map the available amount and merchant; enter your card currency.\nSave and check a real purchase. Open Billey to import and review the expense.';
+
+  @override
+  String get transactionDetailsTitle => 'Transaction details';
+
+  @override
+  String get transactionDataTitle => 'Transaction information';
+
+  @override
+  String get transactionNameLabel => 'Name';
+
+  @override
+  String get transactionAmountLabel => 'Amount';
+
+  @override
+  String get transactionNotesLabel => 'Notes and source';
+
+  @override
+  String get transactionSharedReadOnly =>
+      'This transaction was shared with you. Only its owner can edit it.';
+
+  @override
+  String get monthlyBudgets => 'Monthly budgets';
+
+  @override
+  String get budgetIntro =>
+      'Plan how much to spend per category this month. Limits are saved to your account and synced with Firebase.';
+
+  @override
+  String get budgetPreviousMonth => 'Previous month';
+
+  @override
+  String get budgetNextMonth => 'Next month';
+
+  @override
+  String get budgetPlanned => 'Monthly budget';
+
+  @override
+  String get budgetTrackedSpend => 'Spent in budgeted categories';
+
+  @override
+  String get budgetAvailable => 'Available';
+
+  @override
+  String get budgetExceeded => 'Over budget';
+
+  @override
+  String get budgetCopyPrevious => 'Copy previous month';
+
+  @override
+  String get budgetCopyHint =>
+      'Only copies categories without a budget in this month.';
+
+  @override
+  String budgetCopied(int count) {
+    return 'Copied $count budgets. Nothing changes if there were no previous limits or they were already configured.';
+  }
+
+  @override
+  String get budgetNotSet => 'No budget · Tap to configure';
+
+  @override
+  String budgetSpentOf(String spent, String limit) {
+    return '$spent spent of $limit';
+  }
+
+  @override
+  String budgetRemaining(String amount) {
+    return 'Available: $amount';
+  }
+
+  @override
+  String budgetOverBy(String amount) {
+    return 'Over budget by $amount';
+  }
+
+  @override
+  String get budgetEditTitle => 'Category budget';
+
+  @override
+  String get budgetInvalidAmount =>
+      'Enter an amount greater than zero, up to 1 trillion.';
+
+  @override
+  String get budgetRemove => 'Remove budget for this month';
+
+  @override
+  String get budgetSaveError =>
+      'Could not save. Check your connection and session, then try again.';
+
+  @override
+  String get budgetLoadError =>
+      'Could not sync budgets. Previously saved data may be displayed.';
+
+  @override
+  String get budgetRetry => 'Retry sync';
+
+  @override
+  String get budgetSignIn => 'Sign in to configure your budgets.';
+
+  @override
+  String get budgetLegacyHint =>
+      'Only your expenses count, excluding your partner’s transactions and income. Currencies are not converted. Older transactions without a currency count in the selected currency; older custom categories stored as Other need recategorization to distinguish them. Each month has its own limits.';
+
+  @override
+  String get budgetChartLegend =>
+      'Solid: spent · Line: budget · Your expenses only';
+
+  @override
+  String get budgetAutomaticHint =>
+      'Initial limits follow your template and recorded income for this month (or the previous month if no income is recorded yet). Needs and wants follow the last 3 months of spending, with 10% shared equally; without history, they are shared equally. Savings, investment, debt and buffer remain reserved. No amounts are invented without income. Manual overrides take priority and are saved in Firebase.';
+
+  @override
+  String get categoryReviewRequired =>
+      'Could not identify a category. Tap the category, choose the correct one and save again.';
+
+  @override
+  String get categoryAutomaticLabel => 'Automatic category';
+
+  @override
+  String get categoryMigrationTitle => 'Categorize pending expenses with AI';
+
+  @override
+  String get categoryMigrationHint =>
+      'Processes up to 20 uncategorized expenses from your account at a time. Gemini receives their titles and your categories. Ambiguous expenses remain for review; amounts and dates stay unchanged.';
+
+  @override
+  String get categoryMigrationAction => 'Categorize pending';
+
+  @override
+  String get categoryMigrationError =>
+      'Could not complete. Check your Gemini key, connection and session. Saved changes remain; you can retry.';
+
+  @override
+  String categoryMigrationReport(
+      int updated, int unresolved, int skipped, int remaining) {
+    return 'Categorized: $updated. Review needed: $unresolved. Skipped due to recent changes: $skipped. Not processed: $remaining.';
+  }
+
+  @override
+  String get categoryReviewEmpty => 'No expenses need a category.';
+
+  @override
+  String categoryReviewCount(int count) {
+    return '$count expenses to categorize';
+  }
+
+  @override
+  String get categoryReviewHint =>
+      'Choose a category for each expense. It saves immediately and removes the expense from this list.';
+
+  @override
+  String get categoryReviewSaveError =>
+      'Could not save or the expense changed. Check your connection and select the category again.';
+
+  @override
+  String get homeRefreshPull => 'Pull to refresh';
+
+  @override
+  String get homeRefreshRelease => 'Release to refresh';
+
+  @override
+  String get homeRefreshing => 'Updating your information…';
+
+  @override
+  String get homeRefreshDone => 'All up to date';
+
+  @override
+  String get homeRefreshFailed => 'Could not refresh. Try again.';
 }

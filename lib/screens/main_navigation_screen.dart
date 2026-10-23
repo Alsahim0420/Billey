@@ -51,7 +51,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final isDark = context.watch<ThemeSettingsProvider>().isDarkMode;
 
     final screens = [
-      DashboardScreen(key: ValueKey('dash-$isDark')),
+      DashboardScreen(
+        key: ValueKey('dash-$isDark'),
+        onViewAllTransactions: () => _selectTab(2),
+      ),
       SavingsGoalsScreen(key: ValueKey('goals-$isDark')),
       EnhancedTransactionListScreen(key: ValueKey('activity-$isDark')),
     ];
@@ -95,11 +98,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
     return Expanded(
       child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
+        onTap: () => _selectTab(index),
         behavior: HitTestBehavior.opaque,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -210,6 +209,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _navigateToAddTransaction() {
     _openAddTransaction();
+  }
+
+  void _selectTab(int index) {
+    if (_selectedIndex == index) return;
+    setState(() => _selectedIndex = index);
   }
 
   void _openAddTransaction() {

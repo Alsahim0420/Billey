@@ -13,7 +13,7 @@ import '../providers/profile_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../theme/colors/app_colors.dart';
 import '../widgets/owner_avatar.dart';
-import 'add_transaction_screen.dart';
+import 'transaction_detail_screen.dart';
 import '../theme/billey_theme_scope.dart';
 
 enum _ActivityFilter { all, income, expenses, pending }
@@ -204,7 +204,7 @@ class _EnhancedTransactionListScreenState
   Future<void> _editTransaction(TransactionModel transaction) async {
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => AddTransactionScreen(transaction: transaction),
+        builder: (context) => TransactionDetailScreen(transaction: transaction),
       ),
     );
   }
@@ -556,8 +556,8 @@ class _TransactionRow extends StatelessWidget {
                     },
                     borderRadius: BorderRadius.circular(16),
                     child: const Center(
-                      child:
-                          Icon(TablerIcons.trash, color: AppColors.expenseColor),
+                      child: Icon(TablerIcons.trash,
+                          color: AppColors.expenseColor),
                     ),
                   ),
                 ),

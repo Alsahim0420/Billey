@@ -33,7 +33,6 @@ class ThemeSettingsProvider extends ChangeNotifier {
     if (_isDarkMode == enabled) return;
 
     _isDarkMode = enabled;
-    AppColors.isDarkMode = enabled;
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_storageKey, enabled);

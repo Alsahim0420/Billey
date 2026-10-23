@@ -2315,7 +2315,7 @@ abstract class AppLocalizations {
   /// No description provided for @txnCategoryOther.
   ///
   /// In en, this message translates to:
-  /// **'Other'**
+  /// **'Uncategorized'**
   String get txnCategoryOther;
 
   /// No description provided for @insightDemoHousing.
@@ -2677,6 +2677,475 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hi, {name}. I\'ll help you record your expenses and confirm that everything is correct in Billey.'**
   String assistantVoicePreviewMessage(String name);
+
+  /// No description provided for @applePayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record purchases with Apple Pay'**
+  String get applePayTitle;
+
+  /// No description provided for @applePayScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive the data a personal Wallet automation sends to Billey. It is stored in a local inbox even without opening the app, then imported while Billey is open and connected. This does not include history or guarantee all purchases, online payments or Apple Watch payments.'**
+  String get applePayScope;
+
+  /// No description provided for @applePayRequiresIOS17.
+  ///
+  /// In en, this message translates to:
+  /// **'The Transaction automation requires iOS 17 or later. This feature is unavailable on this device.'**
+  String get applePayRequiresIOS17;
+
+  /// No description provided for @applePayAllowReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow receipt for this account'**
+  String get applePayAllowReceipt;
+
+  /// No description provided for @applePayReceiptConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Save incoming expenses to this account in {currency}. This does not create or enable a Shortcuts automation. Switching accounts disables receipt.'**
+  String applePayReceiptConsent(String currency);
+
+  /// No description provided for @applePayAutomationStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Billey cannot verify whether your automation exists or is enabled.'**
+  String get applePayAutomationStatus;
+
+  /// No description provided for @applePayConfiguredCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency configured for receipt: {currency}'**
+  String applePayConfiguredCurrency(String currency);
+
+  /// No description provided for @applePayUseCurrency.
+  ///
+  /// In en, this message translates to:
+  /// **'Use {currency} for future receipts'**
+  String applePayUseCurrency(String currency);
+
+  /// No description provided for @applePayLastReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Last expense received: {date}'**
+  String applePayLastReceipt(String date);
+
+  /// No description provided for @applePayNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get applePayNone;
+
+  /// No description provided for @applePayPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to import: {count}'**
+  String applePayPending(int count);
+
+  /// No description provided for @applePayRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Check and import pending expenses'**
+  String get applePayRetry;
+
+  /// No description provided for @applePayTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Test receipt (no expense created)'**
+  String get applePayTest;
+
+  /// No description provided for @applePayTestExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'The test sends 12500.50 in the selected currency through the same native inbox. It does not affect balances or the last real receipt date. It does not test Wallet or your automation.'**
+  String get applePayTestExplanation;
+
+  /// No description provided for @applePaySetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up in Shortcuts'**
+  String get applePaySetup;
+
+  /// No description provided for @applePaySteps.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Allow receipt above.\n2. Open Shortcuts → Automation → +.\n3. On iOS 17/18 look for Transaction; later versions may call it Wallet. Select your cards.\n4. Select Run Immediately.\n5. Create a blank automation and add Registrar gasto en Billey. You can also run an intermediate shortcut and pass the transaction as Shortcut Input.\n6. Configure the input fields and save. Verify with a real purchase; running it manually may not supply a Wallet transaction.'**
+  String get applePaySteps;
+
+  /// No description provided for @applePayMapping.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount: tap Shortcut Input and inspect the properties the transaction offers on your iPhone. If Amount is available, select it and convert it to numeric text without a symbol (for example 12500.50). ISO currency: use the real code if available; otherwise explicitly configure the currency of that card and verify a purchase before automating it. Currency is never inferred from \$. Merchant and card alias are optional and should only be mapped if available. Date is optional: a missing date is labeled as receipt time. Wallet is not assumed to supply all these fields. If amount is missing, stop the shortcut and review the expense manually. For retries, keep the same UUID per purchase in Event reference; a new purchase requires a new UUID.'**
+  String get applePayMapping;
+
+  /// No description provided for @applePayLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'While locked, Billey attempts receipt without opening the interface after the first unlock following a restart. iOS, Shortcuts and permissions may prevent execution. Pending expenses are imported when you return to Billey. No FinanceKit or bank connection is used. A different currency is rejected; amounts are not converted.'**
+  String get applePayLocked;
+
+  /// No description provided for @applePayShortcutAvailability.
+  ///
+  /// In en, this message translates to:
+  /// **'No shortcut is published for installation yet. You can use the action directly. Field extraction must be verified on an iPhone with Wallet before sharing a shortcut.'**
+  String get applePayShortcutAvailability;
+
+  /// No description provided for @applePayIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Shortcuts to Billey and bring your purchases into your expenses, without entering each one.'**
+  String get applePayIntro;
+
+  /// No description provided for @applePayAccountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive purchases in this account in {currency}. They will be imported when you open Billey.'**
+  String applePayAccountHint(String currency);
+
+  /// No description provided for @applePayActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Your activity'**
+  String get applePayActivity;
+
+  /// No description provided for @applePayLastLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last expense received'**
+  String get applePayLastLabel;
+
+  /// No description provided for @applePayPendingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to import'**
+  String get applePayPendingLabel;
+
+  /// No description provided for @applePayTestShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Test receipt'**
+  String get applePayTestShort;
+
+  /// No description provided for @applePayTestHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses sample data. No expenses are created and your balance stays the same.'**
+  String get applePayTestHint;
+
+  /// No description provided for @applePayMoreDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Good to know'**
+  String get applePayMoreDetails;
+
+  /// No description provided for @applePayMappingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What to send from Shortcuts'**
+  String get applePayMappingTitle;
+
+  /// No description provided for @applePayScopeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scope and privacy'**
+  String get applePayScopeTitle;
+
+  /// No description provided for @applePayShortcutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About shortcuts and testing'**
+  String get applePayShortcutTitle;
+
+  /// No description provided for @applePayGuideSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Shortcuts → Automation → + → Transaction or Wallet and select your cards.\nChoose Run Immediately and create a blank automation.\nAdd Registrar gasto en Billey. Map the available amount and merchant; enter your card currency.\nSave and check a real purchase. Open Billey to import and review the expense.'**
+  String get applePayGuideSteps;
+
+  /// No description provided for @transactionDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction details'**
+  String get transactionDetailsTitle;
+
+  /// No description provided for @transactionDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction information'**
+  String get transactionDataTitle;
+
+  /// No description provided for @transactionNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get transactionNameLabel;
+
+  /// No description provided for @transactionAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get transactionAmountLabel;
+
+  /// No description provided for @transactionNotesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes and source'**
+  String get transactionNotesLabel;
+
+  /// No description provided for @transactionSharedReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'This transaction was shared with you. Only its owner can edit it.'**
+  String get transactionSharedReadOnly;
+
+  /// No description provided for @monthlyBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly budgets'**
+  String get monthlyBudgets;
+
+  /// No description provided for @budgetIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan how much to spend per category this month. Limits are saved to your account and synced with Firebase.'**
+  String get budgetIntro;
+
+  /// No description provided for @budgetPreviousMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous month'**
+  String get budgetPreviousMonth;
+
+  /// No description provided for @budgetNextMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Next month'**
+  String get budgetNextMonth;
+
+  /// No description provided for @budgetPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly budget'**
+  String get budgetPlanned;
+
+  /// No description provided for @budgetTrackedSpend.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent in budgeted categories'**
+  String get budgetTrackedSpend;
+
+  /// No description provided for @budgetAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get budgetAvailable;
+
+  /// No description provided for @budgetExceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Over budget'**
+  String get budgetExceeded;
+
+  /// No description provided for @budgetCopyPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy previous month'**
+  String get budgetCopyPrevious;
+
+  /// No description provided for @budgetCopyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only copies categories without a budget in this month.'**
+  String get budgetCopyHint;
+
+  /// No description provided for @budgetCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied {count} budgets. Nothing changes if there were no previous limits or they were already configured.'**
+  String budgetCopied(int count);
+
+  /// No description provided for @budgetNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'No budget · Tap to configure'**
+  String get budgetNotSet;
+
+  /// No description provided for @budgetSpentOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{spent} spent of {limit}'**
+  String budgetSpentOf(String spent, String limit);
+
+  /// No description provided for @budgetRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Available: {amount}'**
+  String budgetRemaining(String amount);
+
+  /// No description provided for @budgetOverBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Over budget by {amount}'**
+  String budgetOverBy(String amount);
+
+  /// No description provided for @budgetEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Category budget'**
+  String get budgetEditTitle;
+
+  /// No description provided for @budgetInvalidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount greater than zero, up to 1 trillion.'**
+  String get budgetInvalidAmount;
+
+  /// No description provided for @budgetRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove budget for this month'**
+  String get budgetRemove;
+
+  /// No description provided for @budgetSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save. Check your connection and session, then try again.'**
+  String get budgetSaveError;
+
+  /// No description provided for @budgetLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not sync budgets. Previously saved data may be displayed.'**
+  String get budgetLoadError;
+
+  /// No description provided for @budgetRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry sync'**
+  String get budgetRetry;
+
+  /// No description provided for @budgetSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to configure your budgets.'**
+  String get budgetSignIn;
+
+  /// No description provided for @budgetLegacyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only your expenses count, excluding your partner’s transactions and income. Currencies are not converted. Older transactions without a currency count in the selected currency; older custom categories stored as Other need recategorization to distinguish them. Each month has its own limits.'**
+  String get budgetLegacyHint;
+
+  /// No description provided for @budgetChartLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid: spent · Line: budget · Your expenses only'**
+  String get budgetChartLegend;
+
+  /// No description provided for @budgetAutomaticHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Initial limits follow your template and recorded income for this month (or the previous month if no income is recorded yet). Needs and wants follow the last 3 months of spending, with 10% shared equally; without history, they are shared equally. Savings, investment, debt and buffer remain reserved. No amounts are invented without income. Manual overrides take priority and are saved in Firebase.'**
+  String get budgetAutomaticHint;
+
+  /// No description provided for @categoryReviewRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not identify a category. Tap the category, choose the correct one and save again.'**
+  String get categoryReviewRequired;
+
+  /// No description provided for @categoryAutomaticLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic category'**
+  String get categoryAutomaticLabel;
+
+  /// No description provided for @categoryMigrationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Categorize pending expenses with AI'**
+  String get categoryMigrationTitle;
+
+  /// No description provided for @categoryMigrationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Processes up to 20 uncategorized expenses from your account at a time. Gemini receives their titles and your categories. Ambiguous expenses remain for review; amounts and dates stay unchanged.'**
+  String get categoryMigrationHint;
+
+  /// No description provided for @categoryMigrationAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Categorize pending'**
+  String get categoryMigrationAction;
+
+  /// No description provided for @categoryMigrationError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not complete. Check your Gemini key, connection and session. Saved changes remain; you can retry.'**
+  String get categoryMigrationError;
+
+  /// No description provided for @categoryMigrationReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Categorized: {updated}. Review needed: {unresolved}. Skipped due to recent changes: {skipped}. Not processed: {remaining}.'**
+  String categoryMigrationReport(
+      int updated, int unresolved, int skipped, int remaining);
+
+  /// No description provided for @categoryReviewEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses need a category.'**
+  String get categoryReviewEmpty;
+
+  /// No description provided for @categoryReviewCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} expenses to categorize'**
+  String categoryReviewCount(int count);
+
+  /// No description provided for @categoryReviewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a category for each expense. It saves immediately and removes the expense from this list.'**
+  String get categoryReviewHint;
+
+  /// No description provided for @categoryReviewSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save or the expense changed. Check your connection and select the category again.'**
+  String get categoryReviewSaveError;
+
+  /// No description provided for @homeRefreshPull.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull to refresh'**
+  String get homeRefreshPull;
+
+  /// No description provided for @homeRefreshRelease.
+  ///
+  /// In en, this message translates to:
+  /// **'Release to refresh'**
+  String get homeRefreshRelease;
+
+  /// No description provided for @homeRefreshing.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating your information…'**
+  String get homeRefreshing;
+
+  /// No description provided for @homeRefreshDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All up to date'**
+  String get homeRefreshDone;
+
+  /// No description provided for @homeRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not refresh. Try again.'**
+  String get homeRefreshFailed;
 }
 
 class _AppLocalizationsDelegate

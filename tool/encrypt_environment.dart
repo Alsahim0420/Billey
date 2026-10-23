@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:billey/features/speech/config/env_encryption_key.dart';
 
 import 'package:billey/features/speech/config/encrypted_environment_codec.dart';
 
@@ -8,15 +9,17 @@ Future<void> main() async {
 
   try {
     final source = File(sourcePath);
-    if (!await source.exists()) {
+    if (!await source.exists() && !await File('.env').exists()) {
       throw StateError(
         'No existe $sourcePath. Crea el archivo desde .env.example.',
       );
     }
 
-    final encodedKey = Platform.environment['ENV_ENCRYPTION_KEY'] ?? '';
+    final encodedKey =
+        Platform.environment['ENV_ENCRYPTION_KEY'] ?? defaultEnvEncryptionKey;
     final key = EncryptedEnvironmentCodec.decodeKey(encodedKey);
-    final clearText = await source.readAsString();
+    final clearText =
+        '${await source.exists() ? await source.readAsString() : ''}\n${await File('.env').exists() ? await File('.env').readAsString() : ''}';
     final encrypted = await EncryptedEnvironmentCodec().encrypt(
       plainText: clearText,
       key: key,

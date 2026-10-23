@@ -12,16 +12,25 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/localization_helpers.dart';
 import '../models/transaction.dart';
+import '../models/category_budget.dart';
+import '../providers/budget_provider.dart';
+import '../providers/income_distribution_provider.dart';
+import '../models/category.dart';
+import '../providers/category_provider.dart';
+import 'category_budgets_screen.dart';
 import '../providers/couple_link_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../theme/colors/app_colors.dart';
 import '../widgets/owner_avatar.dart';
-import 'enhanced_transaction_list_screen.dart';
+import '../widgets/billey_pull_to_refresh.dart';
 import '../theme/billey_theme_scope.dart';
+import 'transaction_detail_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({super.key, this.onViewAllTransactions});
+
+  final VoidCallback? onViewAllTransactions;
 
   @override
   Widget build(BuildContext context) {
@@ -38,51 +47,62 @@ class DashboardScreen extends StatelessWidget {
             final balance = totalIncome - totalExpenses;
             final recentTransactions = provider.transactions.take(4).toList();
 
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(24, 30, 24, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _HomeHeader(
-                    greeting: profile.greetingForHour(
-                      DateTime.now().hour,
-                      context.l10n,
+            return BilleyPullToRefresh(
+              onRefresh: () async {
+                final budgets = context.read<BudgetProvider>();
+                await Future.wait([
+                  provider.loadTransactions(),
+                  profile.load(),
+                  budgets.refresh(),
+                ]);
+              },
+              builder: (context, physics) => SingleChildScrollView(
+                physics: physics,
+                padding: const EdgeInsets.fromLTRB(24, 30, 24, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _HomeHeader(
+                      greeting: profile.greetingForHour(
+                        DateTime.now().hour,
+                        context.l10n,
+                      ),
+                      avatarUrl: profile.hasAvatar ? profile.avatarUrl : null,
                     ),
-                    avatarUrl: profile.hasAvatar ? profile.avatarUrl : null,
-                  ),
-                  const SizedBox(height: 44),
-                  _TotalBalance(balance: balance, currency: currencyProvider),
-                  const SizedBox(height: 38),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _MetricCard(
-                          label: context.l10n.income,
-                          amount: totalIncome,
-                          color: AppColors.incomeColor,
+                    const SizedBox(height: 44),
+                    _TotalBalance(balance: balance, currency: currencyProvider),
+                    const SizedBox(height: 38),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetricCard(
+                            label: context.l10n.income,
+                            amount: totalIncome,
+                            color: AppColors.incomeColor,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _MetricCard(
-                          label: context.l10n.expenses,
-                          amount: totalExpenses,
-                          color: AppColors.expenseColor,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _MetricCard(
+                            label: context.l10n.expenses,
+                            amount: totalExpenses,
+                            color: AppColors.expenseColor,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  _HomeAnalyticsChart(
-                    transactions: provider.allTransactions,
-                  ),
-                  const SizedBox(height: 26),
-                  _RecentTransactions(
-                    transactions: recentTransactions,
-                    currencyProvider: currencyProvider,
-                  ),
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    _HomeAnalyticsChart(
+                      transactions: provider.allTransactions,
+                    ),
+                    const SizedBox(height: 26),
+                    _RecentTransactions(
+                      onViewAll: onViewAllTransactions,
+                      transactions: recentTransactions,
+                      currencyProvider: currencyProvider,
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -95,8 +115,6 @@ class DashboardScreen extends StatelessWidget {
 enum _HomeChartMode { monthlyTrend, expensesByCategory, expensesByPerson }
 
 enum _HomeChartPeriod { thisMonth, lastMonth }
-
-enum _ChartVisual { pie, bar }
 
 class _HomeAnalyticsChart extends StatefulWidget {
   const _HomeAnalyticsChart({required this.transactions});
@@ -112,7 +130,6 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
 
   _HomeChartMode _mode = _HomeChartMode.expensesByCategory;
   _HomeChartPeriod _period = _HomeChartPeriod.thisMonth;
-  _ChartVisual _visual = _ChartVisual.pie;
 
   @override
   Widget build(BuildContext context) {
@@ -159,13 +176,6 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
                 ],
               ),
             ),
-            if (isBreakdown) ...[
-              const SizedBox(width: 8),
-              _ChartVisualToggle(
-                value: _visual,
-                onChanged: (visual) => setState(() => _visual = visual),
-              ),
-            ],
           ],
         ),
         if (isBreakdown) ...[
@@ -203,7 +213,6 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
                 : _personChartData(l10n, couple, profile),
             periodLabel: _periodLabel(l10n),
             currency: currency,
-            visual: _visual,
           ),
       ],
     );
@@ -269,23 +278,48 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
   }
 
   _BreakdownChartData _categoryChartData(AppLocalizations l10n) {
-    final totals = <TransactionCategory, double>{};
-    for (final transaction in _expensesInSelectedMonth()) {
-      totals[transaction.category] =
-          (totals[transaction.category] ?? 0) + transaction.amount;
+    final currency = context.watch<CurrencyProvider>().selectedCurrency.code;
+    final budgetsProvider = context.watch<BudgetProvider>();
+    final categories = context.watch<CategoryProvider>().allCategories;
+    final owner = FirebaseAuth.instance.currentUser?.uid;
+    final totals = CategoryBudget.spending(
+      transactions: widget.transactions,
+      month: _selectedMonth,
+      currency: currency,
+      owner: owner ?? '',
+    );
+    final budgets = {
+      if (owner != null && budgetsProvider.userId == owner)
+        for (final b in budgetsProvider.effectiveForMonth(
+            _selectedMonth, currency,
+            distribution: context.watch<IncomeDistributionProvider?>(),
+            categories: categories.isEmpty
+                ? CategoryModel.getDefaultCategories()
+                : categories,
+            transactions: widget.transactions))
+          b.categoryId: b,
+    };
+    final items = <_SpendItem>[];
+    for (final id in {...totals.keys, ...budgets.keys}) {
+      final category = categories.where((c) => c.id == id).firstOrNull;
+      final legacy =
+          TransactionCategory.values.where((c) => c.name == id).firstOrNull;
+      items.add(_SpendItem(
+        label: category?.isDefault == false
+            ? category!.name
+            : legacy?.localizedName(l10n) ??
+                category?.name ??
+                budgets[id]?.categoryName ??
+                TransactionCategory.other.localizedName(l10n),
+        icon: category?.icon ??
+            _categoryIcon(legacy ?? TransactionCategory.other),
+        amount: totals[id] ?? 0,
+        color: category?.color ??
+            _categoryColor(legacy ?? TransactionCategory.other),
+        budget: budgets[id]?.limit,
+      ));
     }
-
-    final items = totals.entries
-        .map(
-          (entry) => _SpendItem(
-            label: entry.key.localizedName(l10n),
-            icon: _categoryIcon(entry.key),
-            amount: entry.value,
-            color: _categoryColor(entry.key),
-          ),
-        )
-        .toList()
-      ..sort((a, b) => b.amount.compareTo(a.amount));
+    items.sort((a, b) => b.amount.compareTo(a.amount));
 
     final total = items.fold(0.0, (sum, item) => sum + item.amount);
     return _BreakdownChartData(items: items, total: total);
@@ -555,86 +589,18 @@ class _MonthlyTrendContent extends StatelessWidget {
   }
 }
 
-class _ChartVisualToggle extends StatelessWidget {
-  const _ChartVisualToggle({required this.value, required this.onChanged});
-
-  final _ChartVisual value;
-  final ValueChanged<_ChartVisual> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundAlt,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _ChartVisualButton(
-            icon: Icons.pie_chart_rounded,
-            selected: value == _ChartVisual.pie,
-            onTap: () => onChanged(_ChartVisual.pie),
-          ),
-          _ChartVisualButton(
-            icon: Icons.bar_chart_rounded,
-            selected: value == _ChartVisual.bar,
-            onTap: () => onChanged(_ChartVisual.bar),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ChartVisualButton extends StatelessWidget {
-  const _ChartVisualButton({
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: selected ? AppColors.primaryColor : Colors.transparent,
-      borderRadius: BorderRadius.circular(999),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(999),
-        child: Padding(
-          padding: const EdgeInsets.all(7),
-          child: Icon(
-            icon,
-            size: 18,
-            color: selected ? AppColors.white : AppColors.textSecondary,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _BreakdownContent extends StatelessWidget {
   const _BreakdownContent({
     required this.title,
     required this.data,
     required this.periodLabel,
     required this.currency,
-    required this.visual,
   });
 
   final String title;
   final _BreakdownChartData data;
   final String periodLabel;
   final CurrencyProvider currency;
-  final _ChartVisual visual;
 
   @override
   Widget build(BuildContext context) {
@@ -682,26 +648,57 @@ class _BreakdownContent extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 14),
+        if (data.items.any((i) => i.budget != null)) ...[
+          Row(children: [
+            const Icon(TablerIcons.chart_bar,
+                size: 14, color: AppColors.primaryColor),
+            const SizedBox(width: 6),
+            Expanded(
+                child: Text(l10n.budgetChartLegend,
+                    style: TextStyle(
+                        color: AppColors.textSecondary, fontSize: 11))),
+            IconButton(
+              tooltip: l10n.budgetLimits,
+              icon: const Icon(TablerIcons.adjustments_horizontal,
+                  size: 19, color: AppColors.primaryColor),
+              onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                      builder: (_) => const CategoryBudgetsScreen())),
+            ),
+          ]),
+          const SizedBox(height: 8),
+        ],
         if (data.items.isEmpty)
           _ChartEmptyState(message: l10n.noExpensesInPeriod)
         else ...[
-          SizedBox(
-            height: visual == _ChartVisual.pie ? 300 : 260,
-            child: _AnimatedChartReveal(
-              // A fresh key per title/visual/dataset so switching filters
-              // (category ↔ person, this month ↔ last month, pie ↔ bar)
-              // replays the fill-in animation instead of just snapping to
-              // the new values.
-              key: ValueKey(
-                '$title-$visual-${data.total}-${data.items.length}',
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: FractionallySizedBox(
+                widthFactor: 0.92,
+                child: Container(
+                  height: 432,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: AppColors.isDarkMode
+                        ? AppColors.surfaceColor
+                        : AppColors.backgroundAlt,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.borderSubtle),
+                  ),
+                  // The bars scroll inside this bounded viewport; headings,
+                  // filters and the breakdown below remain stationary.
+                  child: _AnimatedChartReveal(
+                    key: ValueKey(
+                      '$title-$periodLabel-${data.items.map((i) => '${i.amount}:${i.budget}').join(',')}',
+                    ),
+                    builder: (context, progress) =>
+                        _BreakdownBarChart(data: data, progress: progress),
+                  ),
+                ),
               ),
-              builder: (context, progress) => visual == _ChartVisual.pie
-                  ? _BreakdownPieChart(
-                      data: data,
-                      currency: currency,
-                      progress: progress,
-                    )
-                  : _BreakdownBarChart(data: data, progress: progress),
             ),
           ),
           const SizedBox(height: 14),
@@ -785,107 +782,6 @@ String _compactAmount(double amount) {
   return '$sign${abs.round()}';
 }
 
-/// Clips to a wedge that sweeps clockwise from the top (matching the pie's
-/// own `startDegreeOffset: -90`), growing from nothing to the full circle
-/// as [progress] goes 0→1 — used to reveal the pie chart with a circular
-/// "fill" motion instead of every section just scaling in place.
-class _PieSweepClipper extends CustomClipper<Path> {
-  const _PieSweepClipper(this.progress);
-
-  final double progress;
-
-  @override
-  Path getClip(Size size) {
-    if (progress >= 1) {
-      return Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
-    }
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.longestSide;
-    const startAngle = -math.pi / 2;
-    final sweepAngle = 2 * math.pi * progress;
-    return Path()
-      ..moveTo(center.dx, center.dy)
-      ..arcTo(
-        Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweepAngle,
-        false,
-      )
-      ..close();
-  }
-
-  @override
-  bool shouldReclip(covariant _PieSweepClipper oldClipper) =>
-      oldClipper.progress != progress;
-}
-
-class _BreakdownPieChart extends StatelessWidget {
-  const _BreakdownPieChart({
-    required this.data,
-    required this.currency,
-    required this.progress,
-  });
-
-  final _BreakdownChartData data;
-  final CurrencyProvider currency;
-  final double progress;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // Reveals the ring sweeping clockwise from the top instead of every
-        // wedge scaling in place at once — the clip grows from a sliver to
-        // the full circle as `progress` goes 0→1.
-        ClipPath(
-          clipper: _PieSweepClipper(progress),
-          child: PieChart(
-            PieChartData(
-              centerSpaceRadius: 80,
-              sectionsSpace: 2,
-              startDegreeOffset: -90,
-              sections: data.items.map((item) {
-                return PieChartSectionData(
-                  value: item.amount,
-                  color: item.color,
-                  title: '',
-                  radius: 50,
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              l10n.totalSpend,
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              // Counts up in step with the ring's own sweep-in animation
-              // (see `_PieSweepClipper`) rather than its own timer.
-              currency.format(data.total * progress),
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
 class _BreakdownBarChart extends StatelessWidget {
   const _BreakdownBarChart({required this.data, required this.progress});
 
@@ -894,97 +790,242 @@ class _BreakdownBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (data.items.any((item) => item.budget != null)) {
+      return _BudgetComparisonBars(data: data, progress: progress);
+    }
     final maxAmount = data.items
         .map((item) => item.amount)
         .fold(0.0, (max, value) => value > max ? value : max);
 
-    return BarChart(
-      BarChartData(
-        // Extra headroom above the tallest bar so its always-on value
-        // label (below) has room to sit above the bar instead of clipping.
-        maxY: maxAmount * 1.35,
-        gridData: const FlGridData(show: false),
-        borderData: FlBorderData(show: false),
-        barTouchData: BarTouchData(
-          enabled: false,
-          touchTooltipData: BarTouchTooltipData(
-            tooltipPadding: EdgeInsets.zero,
-            tooltipMargin: 10,
-            direction: TooltipDirection.top,
-            getTooltipColor: (_) => Colors.transparent,
-            getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              final item = data.items[group.x];
-              return BarTooltipItem(
-                _compactAmount(item.amount),
-                TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.only(top: 8, bottom: 12),
+        child: SizedBox(
+          // Each category keeps enough room for its bar, value and icon.
+          // Overflow scrolls instead of squeezing the chart into the viewport.
+          width: math.max(constraints.maxWidth, data.items.length * 104.0),
+          height: constraints.maxHeight - 20,
+          child: BarChart(
+            BarChartData(
+              alignment: BarChartAlignment.spaceAround,
+              // Extra headroom above the tallest bar so its always-on value
+              // label (below) has room to sit above the bar instead of clipping.
+              maxY: maxAmount * 1.35,
+              gridData: const FlGridData(show: false),
+              borderData: FlBorderData(show: false),
+              barTouchData: BarTouchData(
+                enabled: false,
+                touchTooltipData: BarTouchTooltipData(
+                  tooltipPadding: EdgeInsets.zero,
+                  tooltipMargin: 10,
+                  direction: TooltipDirection.top,
+                  getTooltipColor: (_) => Colors.transparent,
+                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                    final item = data.items[group.x];
+                    return BarTooltipItem(
+                      _compactAmount(item.amount),
+                      TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ),
-        titlesData: FlTitlesData(
-          leftTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 30,
-              getTitlesWidget: (value, meta) {
-                final index = value.toInt();
-                if (index < 0 || index >= data.items.length) {
-                  return const SizedBox.shrink();
-                }
-                final item = data.items[index];
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: item.isMine != null
-                      ? OwnerAvatar(
-                          name: item.label,
-                          isMine: item.isMine!,
-                          photoUrl: item.avatarUrl,
-                          size: 22,
-                        )
-                      : Icon(
-                          item.icon,
-                          color: item.color,
-                          size: 18,
-                        ),
-                );
-              },
-            ),
-          ),
-        ),
-        barGroups: [
-          for (var i = 0; i < data.items.length; i++)
-            BarChartGroupData(
-              x: i,
-              showingTooltipIndicators: const [0],
-              barRods: [
-                BarChartRodData(
-                  // A lopsided breakdown (one category dominating) can
-                  // otherwise shrink small bars into an almost-invisible
-                  // sliver, leaving their value label floating above
-                  // nothing with barely a gap — this keeps every bar
-                  // visibly present so its label reads as clearly "on
-                  // top of" something.
-                  toY: math.max(data.items[i].amount, maxAmount * 0.04) *
-                      progress,
-                  color: data.items[i].color,
-                  width: 48,
-                  borderRadius: BorderRadius.circular(10),
+              ),
+              titlesData: FlTitlesData(
+                leftTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 30,
+                    getTitlesWidget: (value, meta) {
+                      final index = value.toInt();
+                      if (index < 0 || index >= data.items.length) {
+                        return const SizedBox.shrink();
+                      }
+                      final item = data.items[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: item.isMine != null
+                            ? OwnerAvatar(
+                                name: item.label,
+                                isMine: item.isMine!,
+                                photoUrl: item.avatarUrl,
+                                size: 22,
+                              )
+                            : Icon(
+                                item.icon,
+                                color: item.color,
+                                size: 18,
+                              ),
+                      );
+                    },
+                  ),
                 ),
+              ),
+              barGroups: [
+                for (var i = 0; i < data.items.length; i++)
+                  BarChartGroupData(
+                    x: i,
+                    showingTooltipIndicators: const [0],
+                    barRods: [
+                      BarChartRodData(
+                        toY: data.items[i].amount * progress,
+                        color: data.items[i].color,
+                        width: 64,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ],
+                  ),
               ],
             ),
-        ],
+          ),
+        ),
       ),
     );
+  }
+}
+
+/// Shared monetary scale: the line marks the limit, the fill is actual spend.
+class _BudgetComparisonBars extends StatelessWidget {
+  const _BudgetComparisonBars({required this.data, required this.progress});
+  final _BreakdownChartData data;
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final currency = context.watch<CurrencyProvider>();
+    final l10n = context.l10n;
+    final maxValue = data.items.fold<double>(
+        1,
+        (value, item) =>
+            math.max(value, math.max(item.amount, item.budget ?? 0)));
+    return LayoutBuilder(builder: (context, constraints) {
+      final plotHeight = math.max(1.0, constraints.maxHeight - 92);
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: SizedBox(
+          width: math.max(constraints.maxWidth, data.items.length * 112.0),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            for (final item in data.items)
+              Expanded(
+                  child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Tooltip(
+                  triggerMode: TooltipTriggerMode.tap,
+                  message: item.budget == null
+                      ? '${item.label}: ${currency.format(item.amount)}'
+                      : '${item.label}\n${l10n.budgetSpentOf(currency.format(item.amount), currency.format(item.budget!))}\n${item.amount > item.budget! ? l10n.budgetOverBy(currency.format(item.amount - item.budget!)) : l10n.budgetRemaining(currency.format(item.budget! - item.amount))}',
+                  child: Column(children: [
+                    Text(currency.formatCompact(item.amount),
+                        maxLines: 1,
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                            color: item.budget != null &&
+                                    item.amount > item.budget!
+                                ? AppColors.expenseColor
+                                : AppColors.textPrimary)),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                        height: plotHeight,
+                        width: 64,
+                        child: Stack(
+                            clipBehavior: Clip.none,
+                            alignment: Alignment.bottomCenter,
+                            children: [
+                              if (item.budget != null)
+                                Container(
+                                    height:
+                                        plotHeight * item.budget! / maxValue,
+                                    decoration: BoxDecoration(
+                                        color:
+                                            item.color.withValues(alpha: 0.12),
+                                        borderRadius:
+                                            BorderRadius.circular(3))),
+                              ClipRRect(
+                                  borderRadius: BorderRadius.circular(3),
+                                  child: SizedBox(
+                                      height: plotHeight *
+                                          item.amount /
+                                          maxValue *
+                                          progress,
+                                      child: Column(children: [
+                                        if (item.budget != null &&
+                                            item.amount > item.budget!)
+                                          Expanded(
+                                              flex: ((item.amount -
+                                                          item.budget!) *
+                                                      1000 /
+                                                      item.amount)
+                                                  .round()
+                                                  .clamp(1, 1000),
+                                              child: Container(
+                                                  color:
+                                                      AppColors.expenseColor)),
+                                        Expanded(
+                                            flex: item.budget != null &&
+                                                    item.amount > item.budget!
+                                                ? (item.budget! *
+                                                        1000 /
+                                                        item.amount)
+                                                    .round()
+                                                    .clamp(1, 1000)
+                                                : 1000,
+                                            child:
+                                                Container(color: item.color)),
+                                      ]))),
+                              if (item.budget != null)
+                                Positioned(
+                                    bottom:
+                                        plotHeight * item.budget! / maxValue -
+                                            1,
+                                    left: -4,
+                                    right: -4,
+                                    child: Container(
+                                        height: 2,
+                                        decoration: BoxDecoration(
+                                            color: item.color,
+                                            borderRadius:
+                                                BorderRadius.circular(1)))),
+                            ])),
+                    const SizedBox(height: 8),
+                    Icon(item.icon, color: item.color, size: 19),
+                    const SizedBox(height: 3),
+                    Text(item.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700)),
+                    Text(
+                        item.budget == null
+                            ? '—'
+                            : '${(item.amount / item.budget! * 100).round()}%',
+                        style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: item.budget != null &&
+                                    item.amount > item.budget!
+                                ? AppColors.expenseColor
+                                : AppColors.textSecondary)),
+                  ]),
+                ),
+              )),
+          ]),
+        ),
+      );
+    });
   }
 }
 
@@ -1086,12 +1127,14 @@ class _SpendItem {
     required this.color,
     this.isMine,
     this.avatarUrl,
+    this.budget,
   });
 
   final String label;
   final IconData icon;
   final double amount;
   final Color color;
+  final double? budget;
 
   /// Set only for "by person" items — null keeps category items on their
   /// plain category icon in the bar chart's axis instead of an avatar.
@@ -1364,10 +1407,12 @@ class _ChartLabel extends StatelessWidget {
 }
 
 class _RecentTransactions extends StatelessWidget {
+  final VoidCallback? onViewAll;
   final List<TransactionModel> transactions;
   final CurrencyProvider currencyProvider;
 
   const _RecentTransactions({
+    this.onViewAll,
     required this.transactions,
     required this.currencyProvider,
   });
@@ -1390,13 +1435,7 @@ class _RecentTransactions extends StatelessWidget {
               ),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const EnhancedTransactionListScreen(),
-                  ),
-                );
-              },
+              onPressed: onViewAll,
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.primaryColor,
                 padding: EdgeInsets.zero,
@@ -1457,74 +1496,80 @@ class _RecentTransactionRow extends StatelessWidget {
         ? (isMine ? profile.avatarUrl : couple.partnerPhotoUrl)
         : null;
 
-    return Row(
-      children: [
-        OwnerBadgedIcon(
-          ownerName: ownerName,
-          ownerPhotoUrl: ownerPhotoUrl,
-          isMine: isMine,
-          child: Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceColor,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.borderSubtle),
-            ),
-            child: Icon(
-              isIncome ? Icons.payments_outlined : transaction.category.icon,
-              color: isIncome ? AppColors.incomeColor : AppColors.textPrimary,
-              size: 23,
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                transaction.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.25,
-                ),
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => TransactionDetailScreen(transaction: transaction),
+      )),
+      child: Row(
+        children: [
+          OwnerBadgedIcon(
+            ownerName: ownerName,
+            ownerPhotoUrl: ownerPhotoUrl,
+            isMine: isMine,
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceColor,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.borderSubtle),
               ),
-              const SizedBox(height: 3),
-              Text(
-                _formatTransactionTime(context, transaction.date),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
+              child: Icon(
+                isIncome ? Icons.payments_outlined : transaction.category.icon,
+                color: isIncome ? AppColors.incomeColor : AppColors.textPrimary,
+                size: 23,
               ),
-            ],
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          currencyProvider.formatWithSign(
-            transaction.amount,
-            isIncome: isIncome,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transaction.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.25,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  _formatTransactionTime(context, transaction.date),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.right,
-          style: TextStyle(
-            color: amountColor,
-            fontSize: 16,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.25,
+          const SizedBox(width: 12),
+          Text(
+            currencyProvider.formatWithSign(
+              transaction.amount,
+              isIncome: isIncome,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              color: amountColor,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.25,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

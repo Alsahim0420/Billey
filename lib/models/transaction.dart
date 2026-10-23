@@ -28,6 +28,14 @@ class TransactionModel extends HiveObject {
   @HiveField(6)
   final String? description;
 
+  @HiveField(7)
+  final String? categoryId;
+
+  @HiveField(8)
+  final String? currencyCode;
+
+  String get effectiveCategoryId => categoryId ?? category.name;
+
   /// UIDs of linked partners this transaction has been explicitly shared
   /// with. Empty by default (private). Not persisted locally (Hive) since
   /// sharing only applies to cloud-synced accounts; only read/written via
@@ -47,6 +55,8 @@ class TransactionModel extends HiveObject {
     required this.type,
     required this.category,
     this.description,
+    this.categoryId,
+    this.currencyCode,
     this.sharedWith = const [],
     this.ownerId,
   });
@@ -60,6 +70,8 @@ class TransactionModel extends HiveObject {
       type: type,
       category: category,
       description: description,
+      categoryId: categoryId,
+      currencyCode: currencyCode,
       sharedWith: sharedWith ?? this.sharedWith,
       ownerId: ownerId,
     );
@@ -74,6 +86,8 @@ class TransactionModel extends HiveObject {
       'type': type.toString().split('.').last,
       'category': category.toString().split('.').last,
       'description': description,
+      'categoryId': categoryId,
+      'currencyCode': currencyCode,
     };
   }
 
@@ -88,6 +102,8 @@ class TransactionModel extends HiveObject {
       category: TransactionCategory.values.firstWhere(
           (e) => e.toString().split('.').last == (map['category'] ?? 'other')),
       description: map['description'],
+      categoryId: map['categoryId'] as String?,
+      currencyCode: map['currencyCode'] as String?,
     );
   }
 
@@ -104,6 +120,8 @@ class TransactionModel extends HiveObject {
       'category': category.name,
       'description': description,
       'sharedWith': sharedWith,
+      'categoryId': categoryId,
+      'currencyCode': currencyCode,
     };
   }
 
@@ -128,6 +146,8 @@ class TransactionModel extends HiveObject {
         (data['category'] as String?) ?? TransactionCategory.other.name,
       ),
       description: data['description'] as String?,
+      categoryId: data['categoryId'] as String?,
+      currencyCode: data['currencyCode'] as String?,
       sharedWith: (data['sharedWith'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??

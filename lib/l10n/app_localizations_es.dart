@@ -1204,7 +1204,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get txnCategoryEducation => 'Educación';
 
   @override
-  String get txnCategoryOther => 'Otros';
+  String get txnCategoryOther => 'Sin categorizar';
 
   @override
   String get insightDemoHousing => 'Vivienda';
@@ -1418,4 +1418,288 @@ class AppLocalizationsEs extends AppLocalizations {
   String assistantVoicePreviewMessage(String name) {
     return 'Hola, $name. Te acompañaré a registrar tus gastos y confirmar que todo esté correcto en Billey.';
   }
+
+  @override
+  String get applePayTitle => 'Registrar compras con Apple Pay';
+
+  @override
+  String get applePayScope =>
+      'Recibe los datos que una automatización personal de Wallet envíe a Billey. Se guardan en una bandeja local incluso sin abrir la app y se importan cuando Billey está abierta y tiene conexión. No incluye historial ni garantiza todas las compras, pagos por internet o desde Apple Watch.';
+
+  @override
+  String get applePayRequiresIOS17 =>
+      'La automatización de Transacción requiere iOS 17 o posterior. Esta función no está disponible en este dispositivo.';
+
+  @override
+  String get applePayAllowReceipt => 'Permitir recepción para esta cuenta';
+
+  @override
+  String applePayReceiptConsent(String currency) {
+    return 'Guarda los próximos gastos en esta cuenta, en $currency. Esto no crea ni activa una automatización en Atajos. Al cambiar de cuenta se deshabilita la recepción.';
+  }
+
+  @override
+  String get applePayAutomationStatus =>
+      'Billey no puede comprobar si tu automatización está creada o activada.';
+
+  @override
+  String applePayConfiguredCurrency(String currency) {
+    return 'Moneda configurada para recepción: $currency';
+  }
+
+  @override
+  String applePayUseCurrency(String currency) {
+    return 'Usar $currency para próximas recepciones';
+  }
+
+  @override
+  String applePayLastReceipt(String date) {
+    return 'Último gasto recibido: $date';
+  }
+
+  @override
+  String get applePayNone => 'Ninguno';
+
+  @override
+  String applePayPending(int count) {
+    return 'Pendientes de importar: $count';
+  }
+
+  @override
+  String get applePayRetry => 'Revisar e importar pendientes';
+
+  @override
+  String get applePayTest => 'Probar recepción (sin crear gasto)';
+
+  @override
+  String get applePayTestExplanation =>
+      'La prueba envía 12500.50 en la moneda seleccionada por la misma bandeja nativa. No modifica saldos ni la fecha del último gasto real. No prueba Wallet ni tu automatización.';
+
+  @override
+  String get applePaySetup => 'Configurar en Atajos';
+
+  @override
+  String get applePaySteps =>
+      '1. Permite la recepción arriba.\n2. Abre Atajos → Automatización → +.\n3. En iOS 17/18 busca Transacción; en versiones posteriores puede aparecer como Wallet o Cartera. Selecciona las tarjetas que usarás.\n4. Selecciona Ejecutar inmediatamente.\n5. Crea una automatización en blanco y añade Registrar gasto en Billey. También puedes ejecutar tu atajo intermediario y pasar la transacción como Entrada del atajo.\n6. Configura los campos de entrada y guarda. Haz una compra real para comprobarla; el botón de reproducción puede no tener una transacción de Wallet.';
+
+  @override
+  String get applePayMapping =>
+      'Monto: toca Entrada del atajo y comprueba qué propiedades ofrece la transacción en tu iPhone. Si hay Importe/Monto, selecciona ese valor y conviértelo a texto numérico sin símbolo (por ejemplo, 12500.50). Moneda ISO: usa el código real si está disponible; si no, configura explícitamente la moneda de esa tarjeta y valida una compra antes de automatizarla. No se deduce moneda a partir de \$. Comercio y alias de tarjeta son opcionales y solo deben mapearse si existen. La fecha es opcional: si falta, se marca como fecha de recepción. No se asume que Wallet entregue todos estos campos. Si falta el monto, detén el atajo y revisa el gasto manualmente. Para reintentos conserva un mismo UUID por compra en Referencia del evento; una compra nueva requiere otro UUID.';
+
+  @override
+  String get applePayLocked =>
+      'Con el iPhone bloqueado se intenta recibir sin abrir la interfaz, después del primer desbloqueo tras reiniciar. iOS, Atajos y los permisos pueden impedir la ejecución. Los pendientes se importan al volver a Billey. No se usa FinanceKit ni conexión bancaria. Una moneda diferente se rechaza; no se convierten importes.';
+
+  @override
+  String get applePayShortcutAvailability =>
+      'No hay un atajo publicado para instalar todavía. Puedes usar la acción directamente. La extracción de los campos debe validarse en un iPhone con Wallet antes de compartir un atajo.';
+
+  @override
+  String get applePayIntro =>
+      'Conecta Atajos con Billey y lleva tus compras a tus gastos, sin anotarlas una por una.';
+
+  @override
+  String applePayAccountHint(String currency) {
+    return 'Recibe las compras en esta cuenta y en $currency. Se importarán cuando abras Billey.';
+  }
+
+  @override
+  String get applePayActivity => 'Tu actividad';
+
+  @override
+  String get applePayLastLabel => 'Último gasto recibido';
+
+  @override
+  String get applePayPendingLabel => 'Pendientes de importar';
+
+  @override
+  String get applePayTestShort => 'Probar recepción';
+
+  @override
+  String get applePayTestHint =>
+      'Usa datos de ejemplo. No crea gastos ni cambia tu saldo.';
+
+  @override
+  String get applePayMoreDetails => 'Resuelve tus dudas';
+
+  @override
+  String get applePayMappingTitle => 'Qué datos enviar desde Atajos';
+
+  @override
+  String get applePayScopeTitle => 'Alcance y privacidad';
+
+  @override
+  String get applePayShortcutTitle => 'Sobre el atajo y las pruebas';
+
+  @override
+  String get applePayGuideSteps =>
+      'Abre Atajos → Automatización → + → Transacción o Wallet y selecciona tus tarjetas.\nElige Ejecutar inmediatamente y crea una automatización en blanco.\nAñade Registrar gasto en Billey. Pasa el monto y el comercio disponibles; indica la moneda de tu tarjeta.\nGuarda y comprueba una compra real. Abre Billey para importar y revisar el gasto.';
+
+  @override
+  String get transactionDetailsTitle => 'Detalle de transacción';
+
+  @override
+  String get transactionDataTitle => 'Datos del movimiento';
+
+  @override
+  String get transactionNameLabel => 'Nombre';
+
+  @override
+  String get transactionAmountLabel => 'Monto';
+
+  @override
+  String get transactionNotesLabel => 'Notas y origen';
+
+  @override
+  String get transactionSharedReadOnly =>
+      'Este movimiento fue compartido contigo. Solo su propietario puede editarlo.';
+
+  @override
+  String get monthlyBudgets => 'Presupuestos mensuales';
+
+  @override
+  String get budgetIntro =>
+      'Define cuánto quieres gastar por categoría este mes. Tus límites se guardan en tu cuenta y se sincronizan con Firebase.';
+
+  @override
+  String get budgetPreviousMonth => 'Mes anterior';
+
+  @override
+  String get budgetNextMonth => 'Mes siguiente';
+
+  @override
+  String get budgetPlanned => 'Presupuesto del mes';
+
+  @override
+  String get budgetTrackedSpend => 'Gastado en categorías con presupuesto';
+
+  @override
+  String get budgetAvailable => 'Disponible';
+
+  @override
+  String get budgetExceeded => 'Excedido';
+
+  @override
+  String get budgetCopyPrevious => 'Copiar mes anterior';
+
+  @override
+  String get budgetCopyHint =>
+      'Solo copia categorías que aún no tienen presupuesto en este mes.';
+
+  @override
+  String budgetCopied(int count) {
+    return 'Se copiaron $count presupuestos. Si no había límites previos o ya estaban configurados, no se modificó nada.';
+  }
+
+  @override
+  String get budgetNotSet => 'Sin presupuesto · Toca para configurar';
+
+  @override
+  String budgetSpentOf(String spent, String limit) {
+    return '$spent gastado de $limit';
+  }
+
+  @override
+  String budgetRemaining(String amount) {
+    return 'Disponible: $amount';
+  }
+
+  @override
+  String budgetOverBy(String amount) {
+    return 'Excediste el presupuesto en $amount';
+  }
+
+  @override
+  String get budgetEditTitle => 'Presupuesto de la categoría';
+
+  @override
+  String get budgetInvalidAmount =>
+      'Introduce un monto mayor que cero y de hasta 1 billón.';
+
+  @override
+  String get budgetRemove => 'Quitar ajuste manual de este mes';
+
+  @override
+  String get budgetSaveError =>
+      'No se pudo guardar. Comprueba tu conexión y tu sesión e inténtalo de nuevo.';
+
+  @override
+  String get budgetLoadError =>
+      'No se pudieron sincronizar los presupuestos. Puedes estar viendo datos guardados anteriormente.';
+
+  @override
+  String get budgetRetry => 'Reintentar sincronización';
+
+  @override
+  String get budgetSignIn => 'Inicia sesión para configurar tus presupuestos.';
+
+  @override
+  String get budgetLegacyHint =>
+      'Solo se cuentan tus gastos, sin los de tu pareja ni ingresos. No se convierten monedas. Los movimientos antiguos sin moneda se cuentan en la moneda seleccionada; las categorías personalizadas antiguas guardadas como Otros requieren recategorización para distinguirlas. Cada mes tiene sus propios límites.';
+
+  @override
+  String get budgetChartLegend =>
+      'Sólido: gastado · Línea: presupuesto · Solo tus gastos';
+
+  @override
+  String get budgetAutomaticHint =>
+      'Los límites iniciales se calculan con tu plantilla y tus ingresos registrados del mes (o del mes anterior si aún no hay ingresos). Necesidades y gustos se reparten según los gastos de los últimos 3 meses, reservando un 10 % para repartir por igual; sin historial, se reparten por igual. Ahorro, inversión, deudas y colchón quedan reservados. Sin ingresos registrados no se inventan montos. Tus ajustes manuales tienen prioridad y se guardan en Firebase.';
+
+  @override
+  String get categoryReviewRequired =>
+      'No se pudo identificar la categoría. Toca la categoría, elige la correcta y vuelve a guardar.';
+
+  @override
+  String get categoryAutomaticLabel => 'Categoría automática';
+
+  @override
+  String get categoryMigrationTitle => 'Clasificar gastos pendientes con IA';
+
+  @override
+  String get categoryMigrationHint =>
+      'Procesa hasta 20 gastos sin categorizar de tu cuenta por vez. Gemini recibe sus títulos y tus categorías. Los gastos ambiguos quedan para revisión; no se modifican montos ni fechas.';
+
+  @override
+  String get categoryMigrationAction => 'Clasificar pendientes';
+
+  @override
+  String get categoryMigrationError =>
+      'No se pudo completar. Comprueba la clave de Gemini, la conexión y tu sesión. Los cambios ya guardados se conservan; puedes volver a intentar.';
+
+  @override
+  String categoryMigrationReport(
+      int updated, int unresolved, int skipped, int remaining) {
+    return 'Clasificados: $updated. Por revisar: $unresolved. Omitidos por cambios recientes: $skipped. Sin procesar: $remaining.';
+  }
+
+  @override
+  String get categoryReviewEmpty => 'No tienes gastos pendientes de categoría.';
+
+  @override
+  String categoryReviewCount(int count) {
+    return '$count gastos por categorizar';
+  }
+
+  @override
+  String get categoryReviewHint =>
+      'Elige una categoría para cada gasto. Se guarda al seleccionarla y el gasto sale de esta lista.';
+
+  @override
+  String get categoryReviewSaveError =>
+      'No se pudo guardar o el gasto cambió. Revisa tu conexión y vuelve a seleccionar la categoría.';
+
+  @override
+  String get homeRefreshPull => 'Desliza para actualizar';
+
+  @override
+  String get homeRefreshRelease => 'Suelta para actualizar';
+
+  @override
+  String get homeRefreshing => 'Actualizando tu información…';
+
+  @override
+  String get homeRefreshDone => 'Todo actualizado';
+
+  @override
+  String get homeRefreshFailed => 'No se pudo actualizar. Intenta de nuevo.';
 }

@@ -1,3 +1,5 @@
+import '../widgets/uncategorized_expenses_review.dart';
+import '../widgets/billey_back_button.dart';
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -27,10 +29,7 @@ class CategoriesManagementScreen extends StatelessWidget {
         ),
         backgroundColor: AppColors.surfaceColor,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const BilleyBackButton(),
         actions: [
           IconButton(
             icon: const Icon(TablerIcons.plus, color: AppColors.primaryColor),
@@ -49,6 +48,8 @@ class CategoriesManagementScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const _PendingCategoriesCard(),
+                const SizedBox(height: 20),
                 ...categoriesBySection.entries.map((entry) {
                   final section = entry.key;
                   final categories = entry.value;
@@ -57,7 +58,6 @@ class CategoriesManagementScreen extends StatelessWidget {
                   return _buildSectionGroup(
                       context, section, categories, sectionColor);
                 }).toList(),
-
                 if (inactiveCategories.isNotEmpty) ...[
                   const SizedBox(height: 32),
                   _buildSectionHeader(
@@ -68,7 +68,6 @@ class CategoriesManagementScreen extends StatelessWidget {
                           context, category, provider, false))
                       .toList(),
                 ],
-
                 const SizedBox(height: 32),
                 _buildAddCategoryButton(context),
                 const SizedBox(height: 100),
@@ -171,7 +170,6 @@ class CategoriesManagementScreen extends StatelessWidget {
               ],
             ),
           ),
-
           ...categories
               .map((category) => _buildCategoryTile(context, category,
                   Provider.of<CategoryProvider>(context), true))
@@ -515,6 +513,23 @@ class CategoriesManagementScreen extends StatelessWidget {
         ),
         duration: const Duration(seconds: 2),
       ),
+    );
+  }
+}
+
+class _PendingCategoriesCard extends StatelessWidget {
+  const _PendingCategoriesCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: const UncategorizedExpensesReview(),
     );
   }
 }

@@ -1,3 +1,4 @@
+import '../widgets/billey_back_button.dart';
 import 'dart:math' as math;
 
 import 'package:billey/l10n/l10n_extensions.dart';
@@ -68,6 +69,8 @@ class _CoupleFinanceScreenState extends State<CoupleFinanceScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundAlt,
       appBar: AppBar(
+        leading:
+            Navigator.of(context).canPop() ? const BilleyBackButton() : null,
         backgroundColor: AppColors.surfaceColor,
         elevation: 0,
         title: Text(

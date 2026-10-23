@@ -56,12 +56,66 @@ class FirestoreTransactionService {
     });
   }
 
+  /// Uses the existing collection and security rules. A lost acknowledgment
+  /// may retry, but must never overwrite an existing expense or its edits.
+  Future<void> importApplePay(
+      TransactionModel transaction, String owner) async {
+    final user = _requireUser();
+    if (user.uid != owner) {
+      throw StateError(
+          'La cuenta cambió. Reintenta al volver a la cuenta de recepción.');
+    }
+    final ref = _transactionsFor(user).doc(_requireTransactionId(transaction));
+    await _firestore.runTransaction((tx) async {
+      final existing = await tx.get(ref);
+      if (existing.exists) return;
+      tx.set(ref, {
+        ...transaction.toFirestore(userId: owner),
+        'source': 'apple_pay_shortcuts',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    });
+  }
+
   Future<void> update(TransactionModel transaction) async {
     final user = _requireUser();
     final id = _requireTransactionId(transaction);
     await _transactionsFor(user).doc(id).update({
       ...transaction.toFirestore(userId: user.uid),
       'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Update category fields only, with an atomic check against concurrent edits.
+  Future<bool> categorizeIfUnchanged(
+      TransactionModel before, TransactionModel after, String owner) async {
+    final user = _requireUser();
+    if (user.uid != owner) throw StateError('La cuenta cambió.');
+    if (before.type != TransactionType.gasto ||
+        before.effectiveCategoryId != 'other' ||
+        after.effectiveCategoryId == 'other') {
+      return false;
+    }
+    final ref = _transactionsFor(user).doc(_requireTransactionId(before));
+    return _firestore.runTransaction((tx) async {
+      if (_requireUser().uid != owner) throw StateError('La cuenta cambió.');
+      final snapshot = await tx.get(ref);
+      final data = snapshot.data();
+      if (data == null ||
+          data['type'] != 'gasto' ||
+          (data['userId'] != null && data['userId'] != owner) ||
+          data['title'] != before.title ||
+          (data['category'] ?? 'other') != before.category.name ||
+          data['categoryId'] != before.categoryId) {
+        return false;
+      }
+      tx.update(ref, {
+        'category': after.category.name,
+        'categoryId': after.effectiveCategoryId,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      return true;
     });
   }
 

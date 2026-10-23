@@ -1,3 +1,4 @@
+import '../widgets/billey_back_button.dart';
 // lib/screens/monthly_summary_screen.dart
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:flutter/material.dart';
@@ -99,6 +100,8 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
+        leading:
+            Navigator.of(context).canPop() ? const BilleyBackButton() : null,
         title: Text(l10n.monthlySummary),
         backgroundColor: AppColors.surfaceColor,
         elevation: 0,

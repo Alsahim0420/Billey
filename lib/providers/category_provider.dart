@@ -10,7 +10,7 @@ class CategoryProvider with ChangeNotifier {
   List<CategoryModel> _categories = [];
 
   List<CategoryModel> get categories =>
-      _categories.where((c) => c.isActive).toList();
+      _categories.where((c) => c.isActive && c.id != 'other').toList();
   List<CategoryModel> get allCategories => _categories;
 
   Future<void> initialize() async {

@@ -1,3 +1,4 @@
+import '../widgets/billey_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:intl/intl.dart';
@@ -77,6 +78,8 @@ class _PaymentRemindersScreenState extends State<PaymentRemindersScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundAlt,
       appBar: AppBar(
+        leading:
+            Navigator.of(context).canPop() ? const BilleyBackButton() : null,
         title: Text(l10n.paymentReminders),
         backgroundColor: AppColors.backgroundAlt,
         elevation: 0,
