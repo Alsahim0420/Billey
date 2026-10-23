@@ -40,19 +40,16 @@ class _SpendingInsightsScreenState extends State<SpendingInsightsScreen> {
       body: SafeArea(
         child: Consumer2<TransactionProvider, CurrencyProvider>(
           builder: (context, provider, currencyProvider, child) {
-            final expenses =
-                _expensesForMonth(provider.transactions, _selectedMonth);
+            final expenses = _expensesForMonth(
+                provider.personalVisibleTransactions, _selectedMonth);
             final previousExpenses = _expensesForMonth(
-              provider.transactions,
+              provider.personalVisibleTransactions,
               DateTime(_selectedMonth.year, _selectedMonth.month - 1),
             );
             final categoryData = _categoryBreakdown(expenses);
-            final chartData =
-                categoryData.isEmpty ? _demoBreakdown(l10n) : categoryData;
+            final chartData = categoryData;
             final totalSpend = expenses.fold(0.0, (sum, tx) => sum + tx.amount);
-            final demoTotal =
-                chartData.fold(0.0, (sum, item) => sum + item.amount);
-            final displayedTotal = totalSpend == 0 ? demoTotal : totalSpend;
+            final displayedTotal = totalSpend;
             final weeklyThisMonth = _weeklyTotals(expenses);
             final weeklyLastMonth = _weeklyTotals(previousExpenses);
 
@@ -155,47 +152,7 @@ class _SpendingInsightsScreenState extends State<SpendingInsightsScreen> {
       final weekIndex = ((tx.date.day - 1) ~/ 7).clamp(0, 3);
       totals[weekIndex] += tx.amount;
     }
-    if (totals.every((amount) => amount == 0)) {
-      return const [420, 760, 540, 980];
-    }
     return totals;
-  }
-
-  List<_CategorySpend> _demoBreakdown(AppLocalizations l10n) {
-    return [
-      _CategorySpend(
-        category: TransactionCategory.other,
-        amount: 1296.20,
-        color: AppColors.primaryColor,
-        labelOverride: l10n.insightDemoHousing,
-        subtitleOverride: l10n.insightDemoHousingSubtitle,
-        iconOverride: TablerIcons.home,
-      ),
-      _CategorySpend(
-        category: TransactionCategory.food,
-        amount: 810.12,
-        color: AppColors.insightsFoodColor,
-        labelOverride: l10n.insightDemoFoodDining,
-        subtitleOverride: l10n.insightDemoFoodDiningSubtitle,
-        iconOverride: TablerIcons.tools_kitchen_2,
-      ),
-      _CategorySpend(
-        category: TransactionCategory.entertainment,
-        amount: 648.10,
-        color: const Color(0xFF5DF3E6),
-        labelOverride: l10n.insightDemoFun,
-        subtitleOverride: l10n.insightDemoFunSubtitle,
-        iconOverride: TablerIcons.sparkles,
-      ),
-      _CategorySpend(
-        category: TransactionCategory.transport,
-        amount: 486.08,
-        color: const Color(0xFF64748B),
-        labelOverride: l10n.insightDemoTransport,
-        subtitleOverride: l10n.insightDemoTransportSubtitle,
-        iconOverride: TablerIcons.car,
-      ),
-    ];
   }
 
   Color _insightColor(TransactionCategory category) {
@@ -835,24 +792,16 @@ class _CategorySpend {
   final TransactionCategory category;
   final double amount;
   final Color color;
-  final String? labelOverride;
-  final String? subtitleOverride;
-  final IconData? iconOverride;
 
   const _CategorySpend({
     required this.category,
     required this.amount,
     required this.color,
-    this.labelOverride,
-    this.subtitleOverride,
-    this.iconOverride,
   });
 
-  String label(AppLocalizations l10n) =>
-      labelOverride ?? category.localizedName(l10n);
+  String label(AppLocalizations l10n) => category.localizedName(l10n);
 
-  String subtitle(AppLocalizations l10n) =>
-      subtitleOverride ?? l10n.monthlySpending;
+  String subtitle(AppLocalizations l10n) => l10n.monthlySpending;
 
-  IconData get icon => iconOverride ?? category.icon;
+  IconData get icon => category.icon;
 }

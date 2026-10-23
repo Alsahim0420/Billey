@@ -559,7 +559,7 @@
   "notificationPermissionDenied": "Enable notifications in settings to receive payment reminders",
 
   "coupleFinanceTitle": "Shared finances",
-  "coupleIntro": "Link your account with your partner to decide, transaction by transaction, which expenses and income you want to see from each other.",
+  "coupleIntro": "Share transactions so the other person can see them. Expenses and income affect only the balance of the person recording them.",
   "coupleMyCodeLabel": "Your code",
   "coupleMyCodeHint": "Share it with your partner. It refreshes automatically every 5 minutes.",
   "coupleCodeExpiresIn": "Expires in {seconds}s",
@@ -573,7 +573,7 @@
   "@coupleLinkedWith": {
     "placeholders": { "name": { "type": "String" } }
   },
-  "coupleLinkedSubtitle": "You can now share transactions with each other from any entry.",
+  "coupleLinkedSubtitle": "Shared transactions are informational: they do not increase or reduce the other person’s balance.",
   "coupleLinkedSuccess": "Successfully linked!",
   "coupleInvalidCode": "That code isn't valid or has expired.",
   "coupleGenericError": "Something went wrong. Please try again.",
@@ -693,16 +693,16 @@
   "transactionNameLabel": "Name",
   "transactionAmountLabel": "Amount",
   "transactionNotesLabel": "Notes and source",
-  "transactionSharedReadOnly": "This transaction was shared with you. Only its owner can edit it.",
-  "monthlyBudgets": "Monthly budgets",
-  "budgetIntro": "Plan how much to spend per category this month. Limits are saved to your account and synced with Firebase.",
+  "transactionSharedReadOnly": "This transaction is informational and does not affect your balance or budgets. Only its owner can edit it.",
+  "monthlyBudgets": "Cycle budgets",
+  "budgetIntro": "Plan how much to spend per category this cycle. Limits are saved to your account and synced with Firebase.",
   "budgetPreviousMonth": "Previous month",
   "budgetNextMonth": "Next month",
   "budgetPlanned": "Monthly budget",
   "budgetTrackedSpend": "Spent in budgeted categories",
   "budgetAvailable": "Available",
   "budgetExceeded": "Over budget",
-  "budgetCopyPrevious": "Copy previous month",
+  "budgetCopyPrevious": "Copy previous cycle",
   "budgetCopyHint": "Only copies categories without a budget in this month.",
   "budgetCopied": "Copied {count} budgets. Nothing changes if there were no previous limits or they were already configured.",
   "budgetNotSet": "No budget · Tap to configure",
@@ -748,7 +748,7 @@
       }
     }
   },
-  "budgetChartLegend": "Solid: spent · Line: budget · Your expenses only",
+  "budgetChartLegend": "Color: spent · Marker: limit · Dark texture: over budget",
   "budgetAutomaticHint": "Initial limits follow your template and recorded income for this month (or the previous month if no income is recorded yet). Needs and wants follow the last 3 months of spending, with 10% shared equally; without history, they are shared equally. Savings, investment, debt and buffer remain reserved. No amounts are invented without income. Manual overrides take priority and are saved in Firebase.",
   "categoryReviewRequired": "Could not identify a category. Tap the category, choose the correct one and save again.",
   "categoryAutomaticLabel": "Automatic category",
@@ -791,5 +791,11 @@
   "homeRefreshRelease": "Release to refresh",
   "homeRefreshing": "Updating your information…",
   "homeRefreshDone": "All up to date",
-  "homeRefreshFailed": "Could not refresh. Try again."
+  "homeRefreshFailed": "Could not refresh. Try again.",
+
+  "sharedInformational": "Informational · Does not affect your balance",
+  "sharedComparisonTitle": "Informational comparison",
+  "transactionCategoryUnavailable": "Category unavailable",
+  "monthlyBalance": "Monthly balance",
+  "budgetCopyNext": "Copy next cycle"
 }

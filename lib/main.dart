@@ -1,3 +1,4 @@
+import 'providers/amount_visibility_provider.dart';
 // lib/main.dart
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -15,6 +16,7 @@ import 'providers/category_provider.dart';
 import 'services/expense_categorizer.dart';
 import 'features/speech/config/encrypted_environment_secret_provider.dart';
 import 'providers/budget_provider.dart';
+import 'providers/financial_cycle_provider.dart';
 import 'providers/currency_provider.dart';
 import 'providers/income_distribution_provider.dart';
 import 'providers/profile_provider.dart';
@@ -52,6 +54,8 @@ void main() async {
   final localeSettings = LocaleSettingsProvider();
   await localeSettings.initialize();
 
+  final amountVisibility = AmountVisibilityProvider();
+  await amountVisibility.initialize();
   final currencyProvider = CurrencyProvider();
   final paymentReminders = PaymentReminderProvider(
     amountFormatter: currencyProvider.format,
@@ -67,6 +71,7 @@ void main() async {
           ? CategoryModel.getDefaultCategories()
           : categoryProvider.categories;
   final budgetProvider = BudgetProvider();
+  final financialCycle = FinancialCycleProvider();
   final applePay = ApplePayController(
       transactionProvider, categoryProvider, currencyProvider);
   await applePay.initialize();
@@ -89,6 +94,7 @@ void main() async {
   FirebaseAuth.instance.authStateChanges().listen((user) {
     transactionProvider.categorizer?.clear();
     budgetProvider.bindUser(user?.uid);
+    financialCycle.bindUser(user?.uid);
     profileProvider.load();
     if (ApplePayController.isIOS) {
       applePay.sessionChanged();
@@ -122,8 +128,10 @@ void main() async {
         ChangeNotifierProvider.value(value: transactionProvider),
         ChangeNotifierProvider.value(value: categoryProvider),
         ChangeNotifierProvider.value(value: budgetProvider),
+        ChangeNotifierProvider.value(value: financialCycle),
         ChangeNotifierProvider.value(value: applePay),
         ChangeNotifierProvider.value(value: currencyProvider),
+        ChangeNotifierProvider.value(value: amountVisibility),
         ChangeNotifierProvider.value(value: incomeDistribution),
         ChangeNotifierProvider.value(value: profileProvider),
         ChangeNotifierProvider.value(value: themeSettings),

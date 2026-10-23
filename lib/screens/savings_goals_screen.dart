@@ -76,7 +76,7 @@ class _SavingsGoalsScreenState extends State<SavingsGoalsScreen> {
 
   double _estimateMonthlyIncome(TransactionProvider provider) {
     final incomeByMonth = <String, double>{};
-    for (final transaction in provider.allTransactions) {
+    for (final transaction in provider.personalTransactions) {
       if (transaction.type != TransactionType.ingreso) continue;
       final key = '${transaction.date.year}-${transaction.date.month}';
       incomeByMonth[key] = (incomeByMonth[key] ?? 0) + transaction.amount;

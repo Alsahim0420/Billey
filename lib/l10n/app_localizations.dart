@@ -2513,7 +2513,7 @@ abstract class AppLocalizations {
   /// No description provided for @coupleIntro.
   ///
   /// In en, this message translates to:
-  /// **'Link your account with your partner to decide, transaction by transaction, which expenses and income you want to see from each other.'**
+  /// **'Share transactions so the other person can see them. Expenses and income affect only the balance of the person recording them.'**
   String get coupleIntro;
 
   /// No description provided for @coupleMyCodeLabel.
@@ -2561,7 +2561,7 @@ abstract class AppLocalizations {
   /// No description provided for @coupleLinkedSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'You can now share transactions with each other from any entry.'**
+  /// **'Shared transactions are informational: they do not increase or reduce the other person’s balance.'**
   String get coupleLinkedSubtitle;
 
   /// No description provided for @coupleLinkedSuccess.
@@ -2897,19 +2897,19 @@ abstract class AppLocalizations {
   /// No description provided for @transactionSharedReadOnly.
   ///
   /// In en, this message translates to:
-  /// **'This transaction was shared with you. Only its owner can edit it.'**
+  /// **'This transaction is informational and does not affect your balance or budgets. Only its owner can edit it.'**
   String get transactionSharedReadOnly;
 
   /// No description provided for @monthlyBudgets.
   ///
   /// In en, this message translates to:
-  /// **'Monthly budgets'**
+  /// **'Cycle budgets'**
   String get monthlyBudgets;
 
   /// No description provided for @budgetIntro.
   ///
   /// In en, this message translates to:
-  /// **'Plan how much to spend per category this month. Limits are saved to your account and synced with Firebase.'**
+  /// **'Plan how much to spend per category this cycle. Limits are saved to your account and synced with Firebase.'**
   String get budgetIntro;
 
   /// No description provided for @budgetPreviousMonth.
@@ -2951,7 +2951,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetCopyPrevious.
   ///
   /// In en, this message translates to:
-  /// **'Copy previous month'**
+  /// **'Copy previous cycle'**
   String get budgetCopyPrevious;
 
   /// No description provided for @budgetCopyHint.
@@ -3041,7 +3041,7 @@ abstract class AppLocalizations {
   /// No description provided for @budgetChartLegend.
   ///
   /// In en, this message translates to:
-  /// **'Solid: spent · Line: budget · Your expenses only'**
+  /// **'Color: spent · Marker: limit · Dark texture: over budget'**
   String get budgetChartLegend;
 
   /// No description provided for @budgetAutomaticHint.
@@ -3146,6 +3146,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not refresh. Try again.'**
   String get homeRefreshFailed;
+
+  /// No description provided for @sharedInformational.
+  ///
+  /// In en, this message translates to:
+  /// **'Informational · Does not affect your balance'**
+  String get sharedInformational;
+
+  /// No description provided for @sharedComparisonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Informational comparison'**
+  String get sharedComparisonTitle;
+
+  /// No description provided for @transactionCategoryUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Category unavailable'**
+  String get transactionCategoryUnavailable;
+
+  /// No description provided for @monthlyBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly balance'**
+  String get monthlyBalance;
+
+  /// No description provided for @budgetCopyNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy next cycle'**
+  String get budgetCopyNext;
 }
 
 class _AppLocalizationsDelegate

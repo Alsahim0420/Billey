@@ -1,3 +1,4 @@
+import '../models/financial_cycle.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/category_budget.dart';
@@ -71,6 +72,7 @@ class BudgetProvider extends ChangeNotifier {
     DateTime month,
     String currency, {
     required IncomeDistributionProvider? distribution,
+    FinancialCycle cycle = const FinancialCycle(),
     required Iterable<CategoryModel> categories,
     required Iterable<TransactionModel> transactions,
   }) {
@@ -80,6 +82,7 @@ class BudgetProvider extends ChangeNotifier {
             distribution.autoEnabled
         ? AutomaticCategoryBudgets.calculate(
             month: month,
+            cycle: cycle,
             currency: currency,
             owner: userId!,
             template: distribution.activeTemplate,
@@ -112,6 +115,15 @@ class BudgetProvider extends ChangeNotifier {
     return _service.copyMonth(
         owner,
         CategoryBudget.monthKey(DateTime(month.year, month.month - 1)),
+        CategoryBudget.monthKey(month),
+        currency);
+  }
+
+  Future<int> copyNext(String owner, DateTime month, String currency) {
+    _check(owner);
+    return _service.copyMonth(
+        owner,
+        CategoryBudget.monthKey(DateTime(month.year, month.month + 1)),
         CategoryBudget.monthKey(month),
         currency);
   }

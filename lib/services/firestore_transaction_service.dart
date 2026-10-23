@@ -24,7 +24,8 @@ class FirestoreTransactionService {
     final snapshot =
         await _transactionsFor(user).orderBy('date', descending: true).get();
     return snapshot.docs
-        .map((doc) => TransactionModel.fromFirestore(doc.id, doc.data()))
+        .map((doc) => TransactionModel.fromFirestore(
+            doc.id, {...doc.data(), 'userId': user.uid}))
         .toList();
   }
 
@@ -42,7 +43,8 @@ class FirestoreTransactionService {
         .where('sharedWith', arrayContains: user.uid)
         .get();
     return snapshot.docs
-        .map((doc) => TransactionModel.fromFirestore(doc.id, doc.data()))
+        .map((doc) => TransactionModel.fromFirestore(
+            doc.id, {...doc.data(), 'userId': partnerUid}))
         .toList();
   }
 

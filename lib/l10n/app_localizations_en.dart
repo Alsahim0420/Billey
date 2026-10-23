@@ -1314,7 +1314,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coupleIntro =>
-      'Link your account with your partner to decide, transaction by transaction, which expenses and income you want to see from each other.';
+      'Share transactions so the other person can see them. Expenses and income affect only the balance of the person recording them.';
 
   @override
   String get coupleMyCodeLabel => 'Your code';
@@ -1344,7 +1344,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coupleLinkedSubtitle =>
-      'You can now share transactions with each other from any entry.';
+      'Shared transactions are informational: they do not increase or reduce the other person’s balance.';
 
   @override
   String get coupleLinkedSuccess => 'Successfully linked!';
@@ -1550,14 +1550,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transactionSharedReadOnly =>
-      'This transaction was shared with you. Only its owner can edit it.';
+      'This transaction is informational and does not affect your balance or budgets. Only its owner can edit it.';
 
   @override
-  String get monthlyBudgets => 'Monthly budgets';
+  String get monthlyBudgets => 'Cycle budgets';
 
   @override
   String get budgetIntro =>
-      'Plan how much to spend per category this month. Limits are saved to your account and synced with Firebase.';
+      'Plan how much to spend per category this cycle. Limits are saved to your account and synced with Firebase.';
 
   @override
   String get budgetPreviousMonth => 'Previous month';
@@ -1578,7 +1578,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetExceeded => 'Over budget';
 
   @override
-  String get budgetCopyPrevious => 'Copy previous month';
+  String get budgetCopyPrevious => 'Copy previous cycle';
 
   @override
   String get budgetCopyHint =>
@@ -1637,7 +1637,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetChartLegend =>
-      'Solid: spent · Line: budget · Your expenses only';
+      'Color: spent · Marker: limit · Dark texture: over budget';
 
   @override
   String get budgetAutomaticHint =>
@@ -1700,4 +1700,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeRefreshFailed => 'Could not refresh. Try again.';
+
+  @override
+  String get sharedInformational =>
+      'Informational · Does not affect your balance';
+
+  @override
+  String get sharedComparisonTitle => 'Informational comparison';
+
+  @override
+  String get transactionCategoryUnavailable => 'Category unavailable';
+
+  @override
+  String get monthlyBalance => 'Monthly balance';
+
+  @override
+  String get budgetCopyNext => 'Copy next cycle';
 }
