@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
+import '../billey_palette.dart';
 
 class AppColors {
-  static bool isDarkMode = true;
+  static bool _isDarkMode = true;
+  static BilleyPalette? _animatedPalette;
+  static bool get isDarkMode => _isDarkMode;
+  static set isDarkMode(bool value) {
+    _isDarkMode = value;
+    _animatedPalette = null;
+  }
+
+  /// Use the same interpolated colors as Material's AnimatedTheme.
+  static void applyPalette(BilleyPalette palette) {
+    _isDarkMode = palette.isDark;
+    _animatedPalette = palette;
+  }
 
   // Stitch Billey tokens (igual en ambos modos)
   static const Color primaryColor = Color(0xFF1FAD98);
@@ -48,34 +61,48 @@ class AppColors {
   static const Color _textLightLight = Color(0xFF9CA3AF);
 
   static Color get backgroundColor =>
-      isDarkMode ? _backgroundDark : _backgroundLight;
+      _animatedPalette?.backgroundColor ??
+      (isDarkMode ? _backgroundDark : _backgroundLight);
 
   static Color get backgroundAlt =>
-      isDarkMode ? _backgroundAltDark : _backgroundAltLight;
+      _animatedPalette?.backgroundAlt ??
+      (isDarkMode ? _backgroundAltDark : _backgroundAltLight);
 
-  static Color get surfaceColor => isDarkMode ? _surfaceDark : _surfaceLight;
+  static Color get surfaceColor =>
+      _animatedPalette?.surfaceColor ??
+      (isDarkMode ? _surfaceDark : _surfaceLight);
 
   static Color get surfaceElevated =>
-      isDarkMode ? _surfaceElevatedDark : _surfaceElevatedLight;
+      _animatedPalette?.surfaceElevated ??
+      (isDarkMode ? _surfaceElevatedDark : _surfaceElevatedLight);
 
   static Color get surfaceInput =>
-      isDarkMode ? _surfaceInputDark : _surfaceInputLight;
+      _animatedPalette?.surfaceInput ??
+      (isDarkMode ? _surfaceInputDark : _surfaceInputLight);
 
   static Color get surfacePressed =>
-      isDarkMode ? _surfacePressedDark : _surfacePressedLight;
+      _animatedPalette?.surfacePressed ??
+      (isDarkMode ? _surfacePressedDark : _surfacePressedLight);
 
-  static Color get charcoal => isDarkMode ? _charcoalDark : _charcoalLight;
+  static Color get charcoal =>
+      _animatedPalette?.charcoal ??
+      (isDarkMode ? _charcoalDark : _charcoalLight);
 
   static Color get borderSubtle =>
-      isDarkMode ? _borderSubtleDark : _borderSubtleLight;
+      _animatedPalette?.borderSubtle ??
+      (isDarkMode ? _borderSubtleDark : _borderSubtleLight);
 
   static Color get textPrimary =>
-      isDarkMode ? _textPrimaryDark : _textPrimaryLight;
+      _animatedPalette?.textPrimary ??
+      (isDarkMode ? _textPrimaryDark : _textPrimaryLight);
 
   static Color get textSecondary =>
-      isDarkMode ? _textSecondaryDark : _textSecondaryLight;
+      _animatedPalette?.textSecondary ??
+      (isDarkMode ? _textSecondaryDark : _textSecondaryLight);
 
-  static Color get textLight => isDarkMode ? _textLightDark : _textLightLight;
+  static Color get textLight =>
+      _animatedPalette?.textLight ??
+      (isDarkMode ? _textLightDark : _textLightLight);
 
   // Colores de estado
   static const Color successColor = Color(0xFF1FAD98);
@@ -120,17 +147,13 @@ class AppColors {
   );
 
   static BoxShadow get softShadow => BoxShadow(
-        color: isDarkMode
-            ? const Color(0x66000000)
-            : const Color(0x1A111827),
+        color: isDarkMode ? const Color(0x66000000) : const Color(0x1A111827),
         blurRadius: isDarkMode ? 24 : 16,
         offset: const Offset(0, 8),
       );
 
   static BoxShadow get cardShadow => BoxShadow(
-        color: isDarkMode
-            ? const Color(0x4D000000)
-            : const Color(0x14111827),
+        color: isDarkMode ? const Color(0x4D000000) : const Color(0x14111827),
         blurRadius: isDarkMode ? 18 : 12,
         offset: const Offset(0, 6),
       );

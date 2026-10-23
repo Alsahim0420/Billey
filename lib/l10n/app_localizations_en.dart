@@ -1200,7 +1200,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get txnCategoryEducation => 'Education';
 
   @override
-  String get txnCategoryOther => 'Other';
+  String get txnCategoryOther => 'Uncategorized';
 
   @override
   String get insightDemoHousing => 'Housing';
@@ -1491,4 +1491,213 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get applePayShortcutAvailability =>
       'No shortcut is published for installation yet. You can use the action directly. Field extraction must be verified on an iPhone with Wallet before sharing a shortcut.';
+
+  @override
+  String get applePayIntro =>
+      'Connect Shortcuts to Billey and bring your purchases into your expenses, without entering each one.';
+
+  @override
+  String applePayAccountHint(String currency) {
+    return 'Receive purchases in this account in $currency. They will be imported when you open Billey.';
+  }
+
+  @override
+  String get applePayActivity => 'Your activity';
+
+  @override
+  String get applePayLastLabel => 'Last expense received';
+
+  @override
+  String get applePayPendingLabel => 'Waiting to import';
+
+  @override
+  String get applePayTestShort => 'Test receipt';
+
+  @override
+  String get applePayTestHint =>
+      'Uses sample data. No expenses are created and your balance stays the same.';
+
+  @override
+  String get applePayMoreDetails => 'Good to know';
+
+  @override
+  String get applePayMappingTitle => 'What to send from Shortcuts';
+
+  @override
+  String get applePayScopeTitle => 'Scope and privacy';
+
+  @override
+  String get applePayShortcutTitle => 'About shortcuts and testing';
+
+  @override
+  String get applePayGuideSteps =>
+      'Open Shortcuts → Automation → + → Transaction or Wallet and select your cards.\nChoose Run Immediately and create a blank automation.\nAdd Registrar gasto en Billey. Map the available amount and merchant; enter your card currency.\nSave and check a real purchase. Open Billey to import and review the expense.';
+
+  @override
+  String get transactionDetailsTitle => 'Transaction details';
+
+  @override
+  String get transactionDataTitle => 'Transaction information';
+
+  @override
+  String get transactionNameLabel => 'Name';
+
+  @override
+  String get transactionAmountLabel => 'Amount';
+
+  @override
+  String get transactionNotesLabel => 'Notes and source';
+
+  @override
+  String get transactionSharedReadOnly =>
+      'This transaction was shared with you. Only its owner can edit it.';
+
+  @override
+  String get monthlyBudgets => 'Monthly budgets';
+
+  @override
+  String get budgetIntro =>
+      'Plan how much to spend per category this month. Limits are saved to your account and synced with Firebase.';
+
+  @override
+  String get budgetPreviousMonth => 'Previous month';
+
+  @override
+  String get budgetNextMonth => 'Next month';
+
+  @override
+  String get budgetPlanned => 'Monthly budget';
+
+  @override
+  String get budgetTrackedSpend => 'Spent in budgeted categories';
+
+  @override
+  String get budgetAvailable => 'Available';
+
+  @override
+  String get budgetExceeded => 'Over budget';
+
+  @override
+  String get budgetCopyPrevious => 'Copy previous month';
+
+  @override
+  String get budgetCopyHint =>
+      'Only copies categories without a budget in this month.';
+
+  @override
+  String budgetCopied(int count) {
+    return 'Copied $count budgets. Nothing changes if there were no previous limits or they were already configured.';
+  }
+
+  @override
+  String get budgetNotSet => 'No budget · Tap to configure';
+
+  @override
+  String budgetSpentOf(String spent, String limit) {
+    return '$spent spent of $limit';
+  }
+
+  @override
+  String budgetRemaining(String amount) {
+    return 'Available: $amount';
+  }
+
+  @override
+  String budgetOverBy(String amount) {
+    return 'Over budget by $amount';
+  }
+
+  @override
+  String get budgetEditTitle => 'Category budget';
+
+  @override
+  String get budgetInvalidAmount =>
+      'Enter an amount greater than zero, up to 1 trillion.';
+
+  @override
+  String get budgetRemove => 'Remove budget for this month';
+
+  @override
+  String get budgetSaveError =>
+      'Could not save. Check your connection and session, then try again.';
+
+  @override
+  String get budgetLoadError =>
+      'Could not sync budgets. Previously saved data may be displayed.';
+
+  @override
+  String get budgetRetry => 'Retry sync';
+
+  @override
+  String get budgetSignIn => 'Sign in to configure your budgets.';
+
+  @override
+  String get budgetLegacyHint =>
+      'Only your expenses count, excluding your partner’s transactions and income. Currencies are not converted. Older transactions without a currency count in the selected currency; older custom categories stored as Other need recategorization to distinguish them. Each month has its own limits.';
+
+  @override
+  String get budgetChartLegend =>
+      'Solid: spent · Line: budget · Your expenses only';
+
+  @override
+  String get budgetAutomaticHint =>
+      'Initial limits follow your template and recorded income for this month (or the previous month if no income is recorded yet). Needs and wants follow the last 3 months of spending, with 10% shared equally; without history, they are shared equally. Savings, investment, debt and buffer remain reserved. No amounts are invented without income. Manual overrides take priority and are saved in Firebase.';
+
+  @override
+  String get categoryReviewRequired =>
+      'Could not identify a category. Tap the category, choose the correct one and save again.';
+
+  @override
+  String get categoryAutomaticLabel => 'Automatic category';
+
+  @override
+  String get categoryMigrationTitle => 'Categorize pending expenses with AI';
+
+  @override
+  String get categoryMigrationHint =>
+      'Processes up to 20 uncategorized expenses from your account at a time. Gemini receives their titles and your categories. Ambiguous expenses remain for review; amounts and dates stay unchanged.';
+
+  @override
+  String get categoryMigrationAction => 'Categorize pending';
+
+  @override
+  String get categoryMigrationError =>
+      'Could not complete. Check your Gemini key, connection and session. Saved changes remain; you can retry.';
+
+  @override
+  String categoryMigrationReport(
+      int updated, int unresolved, int skipped, int remaining) {
+    return 'Categorized: $updated. Review needed: $unresolved. Skipped due to recent changes: $skipped. Not processed: $remaining.';
+  }
+
+  @override
+  String get categoryReviewEmpty => 'No expenses need a category.';
+
+  @override
+  String categoryReviewCount(int count) {
+    return '$count expenses to categorize';
+  }
+
+  @override
+  String get categoryReviewHint =>
+      'Choose a category for each expense. It saves immediately and removes the expense from this list.';
+
+  @override
+  String get categoryReviewSaveError =>
+      'Could not save or the expense changed. Check your connection and select the category again.';
+
+  @override
+  String get homeRefreshPull => 'Pull to refresh';
+
+  @override
+  String get homeRefreshRelease => 'Release to refresh';
+
+  @override
+  String get homeRefreshing => 'Updating your information…';
+
+  @override
+  String get homeRefreshDone => 'All up to date';
+
+  @override
+  String get homeRefreshFailed => 'Could not refresh. Try again.';
 }

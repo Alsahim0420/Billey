@@ -3,9 +3,21 @@ import 'package:flutter/foundation.dart';
 
 import '../database/data_base_helper.dart';
 import '../models/transaction.dart';
+import '../models/category.dart';
+import '../services/expense_categorizer.dart';
+import '../services/uncategorized_expense_migration.dart';
 import '../services/firestore_transaction_service.dart';
 
 class TransactionProvider with ChangeNotifier {
+  ExpenseCategorizer? categorizer;
+  List<CategoryModel> Function()? categoryCatalog;
+  Future<TransactionModel> _categorize(TransactionModel transaction) async {
+    final service = categorizer;
+    if (service == null) return transaction;
+    return service.categorize(transaction,
+        categoryCatalog?.call() ?? CategoryModel.getDefaultCategories());
+  }
+
   final DatabaseHelper? dbHelper;
   final FirestoreTransactionService? firestoreService;
   List<TransactionModel> _transactions = [];
@@ -69,7 +81,9 @@ class TransactionProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addTransaction(TransactionModel transaction) async {
+  Future<void> addTransaction(TransactionModel transaction,
+      {bool categorySelectedManually = false}) async {
+    if (!categorySelectedManually) transaction = await _categorize(transaction);
     if (firestoreService != null) {
       await firestoreService!.create(transaction);
     } else {
@@ -80,6 +94,7 @@ class TransactionProvider with ChangeNotifier {
 
   Future<void> importApplePay(
       TransactionModel transaction, String owner) async {
+    transaction = await _categorize(transaction);
     if (firestoreService != null) {
       await firestoreService!.importApplePay(transaction, owner);
     } else {
@@ -87,6 +102,87 @@ class TransactionProvider with ChangeNotifier {
       if (!existing.any((t) => t.id == transaction.id)) {
         await dbHelper!.create(transaction);
       }
+    }
+  }
+
+  List<TransactionModel> get uncategorizedExpenses {
+    final owner = firestoreService?.currentUser?.uid;
+    if (owner == null) return [];
+    return _transactions
+        .where((tx) => UncategorizedExpenseMigration.eligible(tx, owner))
+        .toList();
+  }
+
+  Future<void> assignPendingCategory(
+      TransactionModel before, CategoryModel category) async {
+    final cloud = firestoreService;
+    final owner = cloud?.currentUser?.uid;
+    if (cloud == null ||
+        owner == null ||
+        !category.isActive ||
+        category.id == 'other') {
+      throw StateError('Inicia sesión y elige una categoría activa.');
+    }
+    final available = categoryCatalog?.call() ?? [];
+    if (!available
+        .any((c) => c.id == category.id && c.isActive && c.id != 'other')) {
+      throw StateError('La categoría ya no está disponible.');
+    }
+    final after = TransactionModel(
+        id: before.id,
+        title: before.title,
+        amount: before.amount,
+        date: before.date,
+        type: before.type,
+        category: category.transactionCategory,
+        categoryId: category.id,
+        currencyCode: before.currencyCode,
+        description: before.description,
+        ownerId: before.ownerId,
+        sharedWith: before.sharedWith);
+    final updated = await cloud.categorizeIfUnchanged(before, after, owner);
+    if (cloud.currentUser?.uid != owner) throw StateError('La cuenta cambió.');
+    await loadTransactions();
+    if (!updated) {
+      throw StateError('El gasto cambió. Revisa la lista actualizada.');
+    }
+  }
+
+  bool recategorizing = false;
+  int recategorizedProgress = 0, recategorizationTotal = 0;
+  Future<CategorizationReport> categorizePendingExpenses() async {
+    if (recategorizing) throw StateError('Ya hay una clasificación en curso.');
+    final cloud = firestoreService;
+    final owner = cloud?.currentUser?.uid;
+    final ai = categorizer;
+    if (cloud == null || owner == null || ai == null) {
+      throw StateError('Inicia sesión y configura Gemini.');
+    }
+    recategorizing = true;
+    recategorizedProgress = 0;
+    recategorizationTotal = 0;
+    notifyListeners();
+    try {
+      final own = await cloud.readAll();
+      final categories = List<CategoryModel>.of(categoryCatalog?.call() ?? []);
+      return await UncategorizedExpenseMigration().run(
+        owner: owner,
+        transactions: own,
+        categories: categories,
+        categorizer: ai,
+        sessionIsCurrent: () => cloud.currentUser?.uid == owner,
+        update: (before, after) =>
+            cloud.categorizeIfUnchanged(before, after, owner),
+        onProgress: (done, total) {
+          recategorizedProgress = done;
+          recategorizationTotal = total;
+          notifyListeners();
+        },
+      );
+    } finally {
+      recategorizing = false;
+      notifyListeners();
+      if (cloud.currentUser?.uid == owner) await loadTransactions();
     }
   }
 

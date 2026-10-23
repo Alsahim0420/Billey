@@ -2315,7 +2315,7 @@ abstract class AppLocalizations {
   /// No description provided for @txnCategoryOther.
   ///
   /// In en, this message translates to:
-  /// **'Other'**
+  /// **'Uncategorized'**
   String get txnCategoryOther;
 
   /// No description provided for @insightDemoHousing.
@@ -2791,6 +2791,361 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No shortcut is published for installation yet. You can use the action directly. Field extraction must be verified on an iPhone with Wallet before sharing a shortcut.'**
   String get applePayShortcutAvailability;
+
+  /// No description provided for @applePayIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Shortcuts to Billey and bring your purchases into your expenses, without entering each one.'**
+  String get applePayIntro;
+
+  /// No description provided for @applePayAccountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive purchases in this account in {currency}. They will be imported when you open Billey.'**
+  String applePayAccountHint(String currency);
+
+  /// No description provided for @applePayActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Your activity'**
+  String get applePayActivity;
+
+  /// No description provided for @applePayLastLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last expense received'**
+  String get applePayLastLabel;
+
+  /// No description provided for @applePayPendingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to import'**
+  String get applePayPendingLabel;
+
+  /// No description provided for @applePayTestShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Test receipt'**
+  String get applePayTestShort;
+
+  /// No description provided for @applePayTestHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses sample data. No expenses are created and your balance stays the same.'**
+  String get applePayTestHint;
+
+  /// No description provided for @applePayMoreDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Good to know'**
+  String get applePayMoreDetails;
+
+  /// No description provided for @applePayMappingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What to send from Shortcuts'**
+  String get applePayMappingTitle;
+
+  /// No description provided for @applePayScopeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scope and privacy'**
+  String get applePayScopeTitle;
+
+  /// No description provided for @applePayShortcutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About shortcuts and testing'**
+  String get applePayShortcutTitle;
+
+  /// No description provided for @applePayGuideSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Shortcuts → Automation → + → Transaction or Wallet and select your cards.\nChoose Run Immediately and create a blank automation.\nAdd Registrar gasto en Billey. Map the available amount and merchant; enter your card currency.\nSave and check a real purchase. Open Billey to import and review the expense.'**
+  String get applePayGuideSteps;
+
+  /// No description provided for @transactionDetailsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction details'**
+  String get transactionDetailsTitle;
+
+  /// No description provided for @transactionDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction information'**
+  String get transactionDataTitle;
+
+  /// No description provided for @transactionNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get transactionNameLabel;
+
+  /// No description provided for @transactionAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get transactionAmountLabel;
+
+  /// No description provided for @transactionNotesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes and source'**
+  String get transactionNotesLabel;
+
+  /// No description provided for @transactionSharedReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'This transaction was shared with you. Only its owner can edit it.'**
+  String get transactionSharedReadOnly;
+
+  /// No description provided for @monthlyBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly budgets'**
+  String get monthlyBudgets;
+
+  /// No description provided for @budgetIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan how much to spend per category this month. Limits are saved to your account and synced with Firebase.'**
+  String get budgetIntro;
+
+  /// No description provided for @budgetPreviousMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous month'**
+  String get budgetPreviousMonth;
+
+  /// No description provided for @budgetNextMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Next month'**
+  String get budgetNextMonth;
+
+  /// No description provided for @budgetPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly budget'**
+  String get budgetPlanned;
+
+  /// No description provided for @budgetTrackedSpend.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent in budgeted categories'**
+  String get budgetTrackedSpend;
+
+  /// No description provided for @budgetAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Available'**
+  String get budgetAvailable;
+
+  /// No description provided for @budgetExceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Over budget'**
+  String get budgetExceeded;
+
+  /// No description provided for @budgetCopyPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy previous month'**
+  String get budgetCopyPrevious;
+
+  /// No description provided for @budgetCopyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only copies categories without a budget in this month.'**
+  String get budgetCopyHint;
+
+  /// No description provided for @budgetCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied {count} budgets. Nothing changes if there were no previous limits or they were already configured.'**
+  String budgetCopied(int count);
+
+  /// No description provided for @budgetNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'No budget · Tap to configure'**
+  String get budgetNotSet;
+
+  /// No description provided for @budgetSpentOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{spent} spent of {limit}'**
+  String budgetSpentOf(String spent, String limit);
+
+  /// No description provided for @budgetRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Available: {amount}'**
+  String budgetRemaining(String amount);
+
+  /// No description provided for @budgetOverBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Over budget by {amount}'**
+  String budgetOverBy(String amount);
+
+  /// No description provided for @budgetEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Category budget'**
+  String get budgetEditTitle;
+
+  /// No description provided for @budgetInvalidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount greater than zero, up to 1 trillion.'**
+  String get budgetInvalidAmount;
+
+  /// No description provided for @budgetRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove budget for this month'**
+  String get budgetRemove;
+
+  /// No description provided for @budgetSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save. Check your connection and session, then try again.'**
+  String get budgetSaveError;
+
+  /// No description provided for @budgetLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not sync budgets. Previously saved data may be displayed.'**
+  String get budgetLoadError;
+
+  /// No description provided for @budgetRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry sync'**
+  String get budgetRetry;
+
+  /// No description provided for @budgetSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to configure your budgets.'**
+  String get budgetSignIn;
+
+  /// No description provided for @budgetLegacyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only your expenses count, excluding your partner’s transactions and income. Currencies are not converted. Older transactions without a currency count in the selected currency; older custom categories stored as Other need recategorization to distinguish them. Each month has its own limits.'**
+  String get budgetLegacyHint;
+
+  /// No description provided for @budgetChartLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid: spent · Line: budget · Your expenses only'**
+  String get budgetChartLegend;
+
+  /// No description provided for @budgetAutomaticHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Initial limits follow your template and recorded income for this month (or the previous month if no income is recorded yet). Needs and wants follow the last 3 months of spending, with 10% shared equally; without history, they are shared equally. Savings, investment, debt and buffer remain reserved. No amounts are invented without income. Manual overrides take priority and are saved in Firebase.'**
+  String get budgetAutomaticHint;
+
+  /// No description provided for @categoryReviewRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not identify a category. Tap the category, choose the correct one and save again.'**
+  String get categoryReviewRequired;
+
+  /// No description provided for @categoryAutomaticLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic category'**
+  String get categoryAutomaticLabel;
+
+  /// No description provided for @categoryMigrationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Categorize pending expenses with AI'**
+  String get categoryMigrationTitle;
+
+  /// No description provided for @categoryMigrationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Processes up to 20 uncategorized expenses from your account at a time. Gemini receives their titles and your categories. Ambiguous expenses remain for review; amounts and dates stay unchanged.'**
+  String get categoryMigrationHint;
+
+  /// No description provided for @categoryMigrationAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Categorize pending'**
+  String get categoryMigrationAction;
+
+  /// No description provided for @categoryMigrationError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not complete. Check your Gemini key, connection and session. Saved changes remain; you can retry.'**
+  String get categoryMigrationError;
+
+  /// No description provided for @categoryMigrationReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Categorized: {updated}. Review needed: {unresolved}. Skipped due to recent changes: {skipped}. Not processed: {remaining}.'**
+  String categoryMigrationReport(
+      int updated, int unresolved, int skipped, int remaining);
+
+  /// No description provided for @categoryReviewEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses need a category.'**
+  String get categoryReviewEmpty;
+
+  /// No description provided for @categoryReviewCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} expenses to categorize'**
+  String categoryReviewCount(int count);
+
+  /// No description provided for @categoryReviewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a category for each expense. It saves immediately and removes the expense from this list.'**
+  String get categoryReviewHint;
+
+  /// No description provided for @categoryReviewSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save or the expense changed. Check your connection and select the category again.'**
+  String get categoryReviewSaveError;
+
+  /// No description provided for @homeRefreshPull.
+  ///
+  /// In en, this message translates to:
+  /// **'Pull to refresh'**
+  String get homeRefreshPull;
+
+  /// No description provided for @homeRefreshRelease.
+  ///
+  /// In en, this message translates to:
+  /// **'Release to refresh'**
+  String get homeRefreshRelease;
+
+  /// No description provided for @homeRefreshing.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating your information…'**
+  String get homeRefreshing;
+
+  /// No description provided for @homeRefreshDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All up to date'**
+  String get homeRefreshDone;
+
+  /// No description provided for @homeRefreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not refresh. Try again.'**
+  String get homeRefreshFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -7,6 +7,9 @@ La recepción de gastos desde Apple Pay y Atajos, su configuración y las prueba
 pendientes en iPhone están documentadas en
 [docs/APPLE_PAY_SHORTCUTS.md](docs/APPLE_PAY_SHORTCUTS.md).
 
+Los presupuestos mensuales por categoría y su almacenamiento en Firebase están
+documentados en [docs/CATEGORY_BUDGETS.md](docs/CATEGORY_BUDGETS.md).
+
 ![Billey](https://res.cloudinary.com/panmecar/image/upload/v1752550787/ChatGPT_Image_14_jul_2025_10_30_44_p.m._hpoaxj.png)
 
 ---

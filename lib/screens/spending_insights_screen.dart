@@ -1,3 +1,4 @@
+import '../widgets/billey_back_button.dart';
 import 'package:billey/providers/currency_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -224,14 +225,7 @@ class _InsightsHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        IconButton(
-          onPressed: onBack,
-          icon: Icon(
-            TablerIcons.chevron_left,
-            color: AppColors.textPrimary,
-            size: 28,
-          ),
-        ),
+        BilleyBackButton(onPressed: onBack),
         Expanded(
           child: Text(
             context.l10n.spendingInsights,

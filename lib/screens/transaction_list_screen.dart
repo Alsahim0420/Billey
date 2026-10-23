@@ -1,3 +1,4 @@
+import '../widgets/billey_back_button.dart';
 // lib/screens/transaction_list_screen.dart
 // ignore_for_file: void_checks
 
@@ -11,6 +12,7 @@ import '../widgets/empty_state_widget.dart';
 import '../widgets/shimmer_loading.dart';
 import '../theme/colors/app_colors.dart';
 import 'monthly_summary_screen.dart';
+import 'transaction_detail_screen.dart';
 import '../theme/billey_theme_scope.dart';
 
 class TransactionListScreen extends StatelessWidget {
@@ -24,6 +26,8 @@ class TransactionListScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading:
+            Navigator.of(context).canPop() ? const BilleyBackButton() : null,
         title: Text(l10n.appTitle),
         actions: [
           ElevatedButton(
@@ -90,7 +94,7 @@ class TransactionListScreen extends StatelessWidget {
                 onPressedEdit: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => AddTransactionScreen(
+                      builder: (context) => TransactionDetailScreen(
                         transaction: transaction,
                       ),
                     ),

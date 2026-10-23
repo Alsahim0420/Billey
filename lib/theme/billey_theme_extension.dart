@@ -39,7 +39,7 @@ class BilleyTheme extends ThemeExtension<BilleyTheme> {
   @override
   BilleyTheme lerp(ThemeExtension<BilleyTheme>? other, double t) {
     if (other is! BilleyTheme) return this;
-    return t < 0.5 ? this : other;
+    return BilleyTheme(BilleyPalette.lerp(palette, other.palette, t));
   }
 }
 

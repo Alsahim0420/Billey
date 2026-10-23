@@ -1,3 +1,4 @@
+import '../widgets/billey_back_button.dart';
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:flutter/material.dart';
 // ignore: unused_import
@@ -16,6 +17,8 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading:
+            Navigator.of(context).canPop() ? const BilleyBackButton() : null,
         title: Text(l10n.financialManager),
         actions: [
           IconButton(

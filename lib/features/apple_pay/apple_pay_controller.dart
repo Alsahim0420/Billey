@@ -1,3 +1,4 @@
+import '../../services/expense_categorizer.dart';
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -83,6 +84,10 @@ class ApplePayController extends ChangeNotifier with WidgetsBindingObserver {
         'currency': allow ? currency.selectedCurrency.code : null,
       });
       await refresh();
+    } on CategoryReviewRequired {
+      message =
+          'Hay un gasto pendiente sin categoría. Comprueba la configuración de Gemini y las categorías disponibles y vuelve a importar. No se eliminó la entrada.';
+      await transactions.loadTransactions();
     } on PlatformException catch (e) {
       message = e.message;
       notifyListeners();
@@ -95,6 +100,10 @@ class ApplePayController extends ChangeNotifier with WidgetsBindingObserver {
         'currency': currency.selectedCurrency.code,
       });
       await refresh();
+    } on CategoryReviewRequired {
+      message =
+          'Hay un gasto pendiente sin categoría. Comprueba la configuración de Gemini y las categorías disponibles y vuelve a importar. No se eliminó la entrada.';
+      await transactions.loadTransactions();
     } on PlatformException catch (e) {
       message = e.message;
       notifyListeners();
@@ -162,6 +171,10 @@ class ApplePayController extends ChangeNotifier with WidgetsBindingObserver {
         message = '$imported gasto(s) importado(s) desde Apple Pay/Atajos.';
         await transactions.loadTransactions();
       }
+    } on CategoryReviewRequired {
+      message =
+          'Hay un gasto pendiente sin categoría. Comprueba la configuración de Gemini y las categorías disponibles y vuelve a importar. No se eliminó la entrada.';
+      await transactions.loadTransactions();
     } on PlatformException catch (e) {
       message = e.message;
     } catch (e) {

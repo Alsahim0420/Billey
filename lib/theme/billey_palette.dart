@@ -60,6 +60,25 @@ class BilleyPalette {
         textLight: Color(0xFF9CA3AF),
       );
 
+  static BilleyPalette lerp(BilleyPalette a, BilleyPalette b, double t) {
+    if (t <= 0) return a;
+    if (t >= 1) return b;
+    return BilleyPalette._(
+      isDark: t < 0.5 ? a.isDark : b.isDark,
+      backgroundColor: Color.lerp(a.backgroundColor, b.backgroundColor, t)!,
+      backgroundAlt: Color.lerp(a.backgroundAlt, b.backgroundAlt, t)!,
+      surfaceColor: Color.lerp(a.surfaceColor, b.surfaceColor, t)!,
+      surfaceElevated: Color.lerp(a.surfaceElevated, b.surfaceElevated, t)!,
+      surfaceInput: Color.lerp(a.surfaceInput, b.surfaceInput, t)!,
+      surfacePressed: Color.lerp(a.surfacePressed, b.surfacePressed, t)!,
+      charcoal: Color.lerp(a.charcoal, b.charcoal, t)!,
+      borderSubtle: Color.lerp(a.borderSubtle, b.borderSubtle, t)!,
+      textPrimary: Color.lerp(a.textPrimary, b.textPrimary, t)!,
+      textSecondary: Color.lerp(a.textSecondary, b.textSecondary, t)!,
+      textLight: Color.lerp(a.textLight, b.textLight, t)!,
+    );
+  }
+
   factory BilleyPalette.forBrightness(Brightness brightness) =>
       brightness == Brightness.dark
           ? BilleyPalette.dark()

@@ -12,6 +12,9 @@ import 'package:billey/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'providers/transaction_provider.dart';
 import 'providers/category_provider.dart';
+import 'services/expense_categorizer.dart';
+import 'features/speech/config/encrypted_environment_secret_provider.dart';
+import 'providers/budget_provider.dart';
 import 'providers/currency_provider.dart';
 import 'providers/income_distribution_provider.dart';
 import 'providers/profile_provider.dart';
@@ -57,6 +60,13 @@ void main() async {
 
   final transactionProvider = TransactionProvider.cloud();
   final categoryProvider = CategoryProvider();
+  transactionProvider.categorizer =
+      ExpenseCategorizer(secrets: EncryptedEnvironmentSecretProvider());
+  transactionProvider.categoryCatalog = () =>
+      categoryProvider.categories.isEmpty
+          ? CategoryModel.getDefaultCategories()
+          : categoryProvider.categories;
+  final budgetProvider = BudgetProvider();
   final applePay = ApplePayController(
       transactionProvider, categoryProvider, currencyProvider);
   await applePay.initialize();
@@ -76,7 +86,9 @@ void main() async {
   // otherwise a new sign-in on the same device keeps showing (or
   // overwriting) the previous account's name, categories, budget split,
   // savings goals and payment reminders.
-  FirebaseAuth.instance.authStateChanges().listen((_) {
+  FirebaseAuth.instance.authStateChanges().listen((user) {
+    transactionProvider.categorizer?.clear();
+    budgetProvider.bindUser(user?.uid);
     profileProvider.load();
     if (ApplePayController.isIOS) {
       applePay.sessionChanged();
@@ -109,6 +121,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider.value(value: transactionProvider),
         ChangeNotifierProvider.value(value: categoryProvider),
+        ChangeNotifierProvider.value(value: budgetProvider),
         ChangeNotifierProvider.value(value: applePay),
         ChangeNotifierProvider.value(value: currencyProvider),
         ChangeNotifierProvider.value(value: incomeDistribution),
@@ -148,8 +161,8 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          themeAnimationDuration: const Duration(milliseconds: 280),
-          themeAnimationCurve: Curves.easeInOut,
+          themeAnimationDuration: const Duration(milliseconds: 420),
+          themeAnimationCurve: Curves.easeInOutCubic,
           builder: (context, child) {
             Responsive.init(context);
             return BilleyThemeBinder(

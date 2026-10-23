@@ -1,3 +1,4 @@
+import '../widgets/billey_back_button.dart';
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -110,10 +111,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
         ),
         backgroundColor: AppColors.surfaceColor,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: const BilleyBackButton(),
         actions: [
           TextButton(
             onPressed: _saveCategory,
@@ -445,7 +443,6 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
               if (_isCustomSection)
                 TextFormField(
                   controller: _sectionController,
@@ -494,9 +491,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                   onChanged: (value) =>
                       setState(() => _selectedSection = value!),
                 ),
-
               const SizedBox(height: 16),
-
               Text(
                 l10n.sectionColor,
                 style: TextStyle(
@@ -506,7 +501,6 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),

@@ -56,6 +56,8 @@ class WalletEntry {
       date: date,
       type: TransactionType.gasto,
       category: category.transactionCategory,
+      categoryId: category.id,
+      currencyCode: currency,
       description: [
         'Origen: Apple Pay/Atajos',
         'Moneda original: $currency',

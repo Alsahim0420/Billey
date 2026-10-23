@@ -1,3 +1,4 @@
+import '../widgets/billey_back_button.dart';
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/providers/currency_provider.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +35,8 @@ class MonthlySummaryScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading:
+            Navigator.of(context).canPop() ? const BilleyBackButton() : null,
         title: Text(l10n.monthlySummary),
       ),
       body: Padding(

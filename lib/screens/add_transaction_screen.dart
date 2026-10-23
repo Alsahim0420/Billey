@@ -1,3 +1,5 @@
+import '../services/expense_categorizer.dart';
+import '../widgets/billey_back_button.dart';
 // ignore_for_file: library_private_types_in_public_api
 
 import 'dart:async';
@@ -56,6 +58,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
   late DateTime _date;
   late TransactionType _type;
   CategoryModel? _selectedCategory;
+  bool _categorySelectedManually = false;
   bool _autoDistributeIncome = true;
   double _essentialsPercent = 50;
   double _wantsPercent = 30;
@@ -215,6 +218,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                           const SizedBox(height: 26),
                           _CategoryPill(
                             category: _selectedCategory!,
+                            label: !_isIncome &&
+                                    widget.transaction == null &&
+                                    !_categorySelectedManually
+                                ? context.l10n.categoryAutomaticLabel
+                                : null,
                             onTap: () => _showCategoryPicker(categories),
                           ),
                           const SizedBox(height: 30),
@@ -426,8 +434,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                   child: SizedBox(
                     height: 58,
                     child: ElevatedButton(
-                      onPressed:
-                          _saveState == _SaveState.idle ? _saveTransaction : null,
+                      onPressed: _saveState == _SaveState.idle
+                          ? _saveTransaction
+                          : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
                         foregroundColor: AppColors.white,
@@ -444,8 +453,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
                         transitionBuilder: (child, animation) =>
                             ScaleTransition(
                           scale: animation,
-                          child: FadeTransition(
-                              opacity: animation, child: child),
+                          child:
+                              FadeTransition(opacity: animation, child: child),
                         ),
                         child: _saveState == _SaveState.saving
                             ? const SizedBox.square(
@@ -503,7 +512,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     }
 
     return categories.firstWhere(
-      (category) => category.transactionCategory == transaction.category,
+      (category) => category.id == transaction.effectiveCategoryId,
       orElse: () => categories.first,
     );
   }
@@ -526,6 +535,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       _type = type;
       _awaitingVoiceClassification = false;
       _selectedCategory = null;
+      _categorySelectedManually = false;
     });
   }
 
@@ -573,6 +583,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
         _type = detectedType;
         _awaitingVoiceClassification = false;
         _selectedCategory = null;
+        _categorySelectedManually = false;
       });
     }
 
@@ -858,7 +869,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     );
 
     if (selected != null) {
-      setState(() => _selectedCategory = selected);
+      setState(() {
+        _selectedCategory = selected;
+        _categorySelectedManually = true;
+      });
     }
   }
 
@@ -903,6 +917,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
       date: _date,
       type: _type,
       category: category.transactionCategory,
+      categoryId: category.id,
+      currencyCode: widget.transaction?.currencyCode ??
+          context.read<CurrencyProvider>().selectedCurrency.code,
       sharedWith: _shareWithPartner ? coupleLink.shareableUids : const [],
       description: [
         if (description.isNotEmpty) description,
@@ -920,14 +937,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen>
     final provider = Provider.of<TransactionProvider>(context, listen: false);
     try {
       if (widget.transaction == null) {
-        await provider.addTransaction(transaction);
+        await provider.addTransaction(transaction,
+            categorySelectedManually: _categorySelectedManually);
       } else {
         await provider.editTransaction(transaction);
       }
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
         setState(() => _saveState = _SaveState.idle);
-        _showErrorMessage(l10n.transactionSaveError);
+        _showErrorMessage(error is CategoryReviewRequired
+            ? l10n.categoryReviewRequired
+            : l10n.transactionSaveError);
       }
       return;
     }
@@ -983,14 +1003,7 @@ class _IncomeHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
       child: Row(
         children: [
-          IconButton(
-            onPressed: onBack,
-            icon: Icon(
-              TablerIcons.chevron_left,
-              color: AppColors.textPrimary,
-              size: 30,
-            ),
-          ),
+          BilleyBackButton(onPressed: onBack),
           Expanded(
             child: Text(
               title,
@@ -1441,14 +1454,7 @@ class _AutomatedRulesScreenState extends State<_AutomatedRulesScreen> {
                 padding: const EdgeInsets.fromLTRB(18, 22, 18, 0),
                 child: Row(
                   children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(
-                        TablerIcons.arrow_left,
-                        color: AppColors.textPrimary,
-                        size: 28,
-                      ),
-                    ),
+                    BilleyBackButton(onPressed: () => Navigator.pop(context)),
                     Expanded(
                       child: Text(
                         l10n.automatedRules,
@@ -1894,10 +1900,12 @@ class _ConceptField extends StatelessWidget {
 /// invisible for anyone who hasn't set up shared finances.
 class _CategoryPill extends StatelessWidget {
   final CategoryModel category;
+  final String? label;
   final VoidCallback onTap;
 
   const _CategoryPill({
     required this.category,
+    this.label,
     required this.onTap,
   });
 
@@ -1918,7 +1926,7 @@ class _CategoryPill extends StatelessWidget {
             Icon(category.icon, color: AppColors.primaryColor, size: 20),
             const SizedBox(width: 8),
             Text(
-              category.name,
+              label ?? category.name,
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 15,

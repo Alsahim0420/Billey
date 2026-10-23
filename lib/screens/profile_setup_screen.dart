@@ -1,3 +1,4 @@
+import '../widgets/billey_back_button.dart';
 import 'package:billey/l10n/app_localizations.dart';
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/l10n/localization_helpers.dart';
@@ -290,15 +291,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   Row(
                     children: [
                       if (_currentPage > 0)
-                        IconButton(
-                          onPressed: _onBack,
-                          icon: Icon(
-                            TablerIcons.arrow_left,
-                            color: AppColors.textPrimary,
-                          ),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        )
+                        BilleyBackButton(onPressed: _onBack)
                       else
                         Container(
                           width: 40,

@@ -396,7 +396,7 @@
   "txnCategoryEntertainment": "Entretenimiento",
   "txnCategoryHealth": "Salud",
   "txnCategoryEducation": "Educación",
-  "txnCategoryOther": "Otros",
+  "txnCategoryOther": "Sin categorizar",
 
   "insightDemoHousing": "Vivienda",
   "insightDemoHousingSubtitle": "Arriendo y servicios",
@@ -541,5 +541,128 @@
         "type": "int"
       }
     }
-  }
+  },
+  "applePayIntro": "Conecta Atajos con Billey y lleva tus compras a tus gastos, sin anotarlas una por una.",
+  "applePayAccountHint": "Recibe las compras en esta cuenta y en {currency}. Se importarán cuando abras Billey.",
+  "applePayActivity": "Tu actividad",
+  "applePayLastLabel": "Último gasto recibido",
+  "applePayPendingLabel": "Pendientes de importar",
+  "applePayTestShort": "Probar recepción",
+  "applePayTestHint": "Usa datos de ejemplo. No crea gastos ni cambia tu saldo.",
+  "applePayMoreDetails": "Resuelve tus dudas",
+  "applePayMappingTitle": "Qué datos enviar desde Atajos",
+  "applePayScopeTitle": "Alcance y privacidad",
+  "applePayShortcutTitle": "Sobre el atajo y las pruebas",
+  "@applePayAccountHint": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "applePayGuideSteps": "Abre Atajos → Automatización → + → Transacción o Wallet y selecciona tus tarjetas.\nElige Ejecutar inmediatamente y crea una automatización en blanco.\nAñade Registrar gasto en Billey. Pasa el monto y el comercio disponibles; indica la moneda de tu tarjeta.\nGuarda y comprueba una compra real. Abre Billey para importar y revisar el gasto.",
+  "transactionDetailsTitle": "Detalle de transacción",
+  "transactionDataTitle": "Datos del movimiento",
+  "transactionNameLabel": "Nombre",
+  "transactionAmountLabel": "Monto",
+  "transactionNotesLabel": "Notas y origen",
+  "transactionSharedReadOnly": "Este movimiento fue compartido contigo. Solo su propietario puede editarlo.",
+  "monthlyBudgets": "Presupuestos mensuales",
+  "budgetIntro": "Define cuánto quieres gastar por categoría este mes. Tus límites se guardan en tu cuenta y se sincronizan con Firebase.",
+  "budgetPreviousMonth": "Mes anterior",
+  "budgetNextMonth": "Mes siguiente",
+  "budgetPlanned": "Presupuesto del mes",
+  "budgetTrackedSpend": "Gastado en categorías con presupuesto",
+  "budgetAvailable": "Disponible",
+  "budgetExceeded": "Excedido",
+  "budgetCopyPrevious": "Copiar mes anterior",
+  "budgetCopyHint": "Solo copia categorías que aún no tienen presupuesto en este mes.",
+  "budgetCopied": "Se copiaron {count} presupuestos. Si no había límites previos o ya estaban configurados, no se modificó nada.",
+  "budgetNotSet": "Sin presupuesto · Toca para configurar",
+  "budgetSpentOf": "{spent} gastado de {limit}",
+  "budgetRemaining": "Disponible: {amount}",
+  "budgetOverBy": "Excediste el presupuesto en {amount}",
+  "budgetEditTitle": "Presupuesto de la categoría",
+  "budgetInvalidAmount": "Introduce un monto mayor que cero y de hasta 1 billón.",
+  "budgetRemove": "Quitar ajuste manual de este mes",
+  "budgetSaveError": "No se pudo guardar. Comprueba tu conexión y tu sesión e inténtalo de nuevo.",
+  "budgetLoadError": "No se pudieron sincronizar los presupuestos. Puedes estar viendo datos guardados anteriormente.",
+  "budgetRetry": "Reintentar sincronización",
+  "budgetSignIn": "Inicia sesión para configurar tus presupuestos.",
+  "budgetLegacyHint": "Solo se cuentan tus gastos, sin los de tu pareja ni ingresos. No se convierten monedas. Los movimientos antiguos sin moneda se cuentan en la moneda seleccionada; las categorías personalizadas antiguas guardadas como Otros requieren recategorización para distinguirlas. Cada mes tiene sus propios límites.",
+  "@budgetCopied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@budgetSpentOf": {
+    "placeholders": {
+      "spent": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "@budgetRemaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "@budgetOverBy": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetChartLegend": "Sólido: gastado · Línea: presupuesto · Solo tus gastos",
+  "budgetAutomaticHint": "Los límites iniciales se calculan con tu plantilla y tus ingresos registrados del mes (o del mes anterior si aún no hay ingresos). Necesidades y gustos se reparten según los gastos de los últimos 3 meses, reservando un 10 % para repartir por igual; sin historial, se reparten por igual. Ahorro, inversión, deudas y colchón quedan reservados. Sin ingresos registrados no se inventan montos. Tus ajustes manuales tienen prioridad y se guardan en Firebase.",
+  "categoryReviewRequired": "No se pudo identificar la categoría. Toca la categoría, elige la correcta y vuelve a guardar.",
+  "categoryAutomaticLabel": "Categoría automática",
+
+  "categoryMigrationTitle": "Clasificar gastos pendientes con IA",
+  "categoryMigrationHint": "Procesa hasta 20 gastos sin categorizar de tu cuenta por vez. Gemini recibe sus títulos y tus categorías. Los gastos ambiguos quedan para revisión; no se modifican montos ni fechas.",
+  "categoryMigrationAction": "Clasificar pendientes",
+  "categoryMigrationError": "No se pudo completar. Comprueba la clave de Gemini, la conexión y tu sesión. Los cambios ya guardados se conservan; puedes volver a intentar.",
+  "categoryMigrationReport": "Clasificados: {updated}. Por revisar: {unresolved}. Omitidos por cambios recientes: {skipped}. Sin procesar: {remaining}.",
+  "@categoryMigrationReport": {
+    "placeholders": {
+      "updated": {
+        "type": "int"
+      },
+      "unresolved": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      },
+      "remaining": {
+        "type": "int"
+      }
+    }
+  },
+
+  "categoryReviewEmpty": "No tienes gastos pendientes de categoría.",
+  "categoryReviewCount": "{count} gastos por categorizar",
+  "categoryReviewHint": "Elige una categoría para cada gasto. Se guarda al seleccionarla y el gasto sale de esta lista.",
+  "categoryReviewSaveError": "No se pudo guardar o el gasto cambió. Revisa tu conexión y vuelve a seleccionar la categoría.",
+  "@categoryReviewCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "homeRefreshPull": "Desliza para actualizar",
+  "homeRefreshRelease": "Suelta para actualizar",
+  "homeRefreshing": "Actualizando tu información…",
+  "homeRefreshDone": "Todo actualizado",
+  "homeRefreshFailed": "No se pudo actualizar. Intenta de nuevo."
 }

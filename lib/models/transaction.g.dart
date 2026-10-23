@@ -24,13 +24,15 @@ class TransactionModelAdapter extends TypeAdapter<TransactionModel> {
       type: fields[4] as TransactionType,
       category: fields[5] as TransactionCategory,
       description: fields[6] as String?,
+      categoryId: fields[7] as String?,
+      currencyCode: fields[8] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, TransactionModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +46,11 @@ class TransactionModelAdapter extends TypeAdapter<TransactionModel> {
       ..writeByte(5)
       ..write(obj.category)
       ..writeByte(6)
-      ..write(obj.description);
+      ..write(obj.description)
+      ..writeByte(7)
+      ..write(obj.categoryId)
+      ..writeByte(8)
+      ..write(obj.currencyCode);
   }
 
   @override

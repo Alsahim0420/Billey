@@ -1,3 +1,4 @@
+import '../widgets/billey_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:provider/provider.dart';
@@ -53,14 +54,8 @@ class _IncomeDistributionScreenState extends State<IncomeDistributionScreen> {
                   padding: const EdgeInsets.fromLTRB(18, 18, 18, 0),
                   child: Row(
                     children: [
-                      IconButton(
-                        onPressed: () => Navigator.maybePop(context),
-                        icon: Icon(
-                          TablerIcons.arrow_left,
-                          color: AppColors.textPrimary,
-                          size: 26,
-                        ),
-                      ),
+                      BilleyBackButton(
+                          onPressed: () => Navigator.maybePop(context)),
                       Expanded(
                         child: Text(
                           l10n.autoDistribution,

@@ -1,3 +1,5 @@
+import 'category_budgets_screen.dart';
+import '../widgets/billey_back_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -89,12 +91,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
             ),
             const SizedBox(height: 10),
-            _ProfileSettingTile(
-              icon: TablerIcons.shield,
-              title: l10n.accountSecurity,
-              onTap: () => _showComingSoon(l10n.accountSecurity),
-            ),
-            const SizedBox(height: 10),
+            // Oculto temporalmente hasta implementar seguridad de la cuenta.
+            // _ProfileSettingTile(
+            //   icon: TablerIcons.shield,
+            //   title: l10n.accountSecurity,
+            //   onTap: () => _showComingSoon(l10n.accountSecurity),
+            // ),
+            // const SizedBox(height: 10),
             Consumer<CurrencyProvider>(
               builder: (context, currencyProvider, _) {
                 return _ProfileSettingTile(
@@ -157,6 +160,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _ProfileSettingTile(
               icon: TablerIcons.chart_bar,
               title: l10n.budgetLimits,
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => const CategoryBudgetsScreen(),
+              )),
+            ),
+            const SizedBox(height: 10),
+            _ProfileSettingTile(
+              icon: TablerIcons.chart_pie,
+              title: l10n.spendingInsights,
               onTap: _openSpendingInsights,
             ),
             const SizedBox(height: 10),
@@ -731,14 +742,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showComingSoon(String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(context.l10n.featureComingSoon(feature)),
-        backgroundColor: AppColors.surfacePressed,
-      ),
-    );
-  }
+//   void _showComingSoon(String feature) {
+//     ScaffoldMessenger.of(context).showSnackBar(
+//       SnackBar(
+//         content: Text(context.l10n.featureComingSoon(feature)),
+//         backgroundColor: AppColors.surfacePressed,
+//       ),
+//     );
+//   }
 
   void _showLogOutDialog() {
     final l10n = context.l10n;
@@ -907,14 +918,7 @@ class _ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        IconButton(
-          onPressed: onBack,
-          icon: Icon(
-            TablerIcons.arrow_left,
-            color: AppColors.textPrimary,
-            size: 26,
-          ),
-        ),
+        BilleyBackButton(onPressed: onBack),
         Expanded(
           child: Text(
             context.l10n.settings,
@@ -1157,9 +1161,18 @@ class _ProfileSettingTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = BilleyThemeScope.isDarkOf(context);
     return Material(
-      color: AppColors.surfaceInput,
-      borderRadius: BorderRadius.circular(10),
+      color: isDark ? AppColors.surfaceInput : AppColors.surfaceColor,
+      elevation: isDark ? 0 : 1,
+      shadowColor: AppColors.black.withValues(alpha: 0.06),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: isDark
+            ? BorderSide.none
+            : BorderSide(color: AppColors.borderSubtle),
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(10),

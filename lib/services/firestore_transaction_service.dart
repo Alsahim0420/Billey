@@ -87,6 +87,38 @@ class FirestoreTransactionService {
     });
   }
 
+  /// Update category fields only, with an atomic check against concurrent edits.
+  Future<bool> categorizeIfUnchanged(
+      TransactionModel before, TransactionModel after, String owner) async {
+    final user = _requireUser();
+    if (user.uid != owner) throw StateError('La cuenta cambió.');
+    if (before.type != TransactionType.gasto ||
+        before.effectiveCategoryId != 'other' ||
+        after.effectiveCategoryId == 'other') {
+      return false;
+    }
+    final ref = _transactionsFor(user).doc(_requireTransactionId(before));
+    return _firestore.runTransaction((tx) async {
+      if (_requireUser().uid != owner) throw StateError('La cuenta cambió.');
+      final snapshot = await tx.get(ref);
+      final data = snapshot.data();
+      if (data == null ||
+          data['type'] != 'gasto' ||
+          (data['userId'] != null && data['userId'] != owner) ||
+          data['title'] != before.title ||
+          (data['category'] ?? 'other') != before.category.name ||
+          data['categoryId'] != before.categoryId) {
+        return false;
+      }
+      tx.update(ref, {
+        'category': after.category.name,
+        'categoryId': after.effectiveCategoryId,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      return true;
+    });
+  }
+
   Future<void> delete(String transactionId) async {
     final user = _requireUser();
     if (transactionId.trim().isEmpty) {
