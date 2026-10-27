@@ -70,7 +70,7 @@ class _MonthlySummaryScreenState extends State<MonthlySummaryScreen> {
     final provider = Provider.of<TransactionProvider>(context);
     final currencyProvider =
         Provider.of<CurrencyProvider>(context, listen: false);
-    final transactions = provider.transactions
+    final transactions = provider.personalVisibleTransactions
         .where((t) =>
             t.date.year == _selectedMonth.year &&
             t.date.month == _selectedMonth.month)

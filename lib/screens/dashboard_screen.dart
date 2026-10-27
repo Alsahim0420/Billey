@@ -1,9 +1,16 @@
+import '../widgets/route_entrance_mixin.dart';
+import '../widgets/chart_reveal.dart';
+import '../widgets/budget_spend_bar.dart';
+import '../widgets/animated_value_visibility.dart';
+import '../providers/amount_visibility_provider.dart';
+import '../models/financial_cycle.dart';
+import '../providers/financial_cycle_provider.dart';
+import 'financial_cycle_screen.dart';
 import 'dart:math' as math;
 
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:billey/providers/currency_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:intl/intl.dart';
@@ -12,103 +19,167 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/localization_helpers.dart';
 import '../models/transaction.dart';
+import '../models/transaction_category_display.dart';
 import '../models/category_budget.dart';
 import '../providers/budget_provider.dart';
 import '../providers/income_distribution_provider.dart';
 import '../models/category.dart';
 import '../providers/category_provider.dart';
-import 'category_budgets_screen.dart';
 import '../providers/couple_link_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../theme/colors/app_colors.dart';
 import '../widgets/owner_avatar.dart';
 import '../widgets/billey_pull_to_refresh.dart';
+import '../widgets/monthly_period_builder.dart';
 import '../theme/billey_theme_scope.dart';
 import 'transaction_detail_screen.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key, this.onViewAllTransactions});
 
   final VoidCallback? onViewAllTransactions;
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  int _animationRevision = 0;
+  @override
   Widget build(BuildContext context) {
     BilleyThemeScope.isDarkOf(context);
-    return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
-      body: SafeArea(
-        child: Consumer2<TransactionProvider, ProfileProvider>(
-          builder: (context, provider, profile, child) {
-            final currencyProvider =
-                Provider.of<CurrencyProvider>(context, listen: false);
-            final totalIncome = provider.getTotalIncome();
-            final totalExpenses = provider.getTotalExpenses();
-            final balance = totalIncome - totalExpenses;
-            final recentTransactions = provider.transactions.take(4).toList();
+    return MonthlyPeriodBuilder(
+        builder: (context, month) => Scaffold(
+              backgroundColor: AppColors.backgroundColor,
+              body: SafeArea(
+                child: Consumer2<TransactionProvider, ProfileProvider>(
+                  builder: (context, provider, profile, child) {
+                    final currencyProvider =
+                        Provider.of<CurrencyProvider>(context, listen: false);
+                    final cycle =
+                        context.watch<FinancialCycleProvider?>()?.cycle ??
+                            const FinancialCycle();
+                    final movements = provider.personalTransactions
+                        .where((t) => cycle.forMonth(month).contains(t.date));
+                    final totalIncome = movements
+                        .where((t) => t.type == TransactionType.ingreso)
+                        .fold(0.0, (s, t) => s + t.amount);
+                    final totalExpenses = movements
+                        .where((t) => t.type == TransactionType.gasto)
+                        .fold(0.0, (s, t) => s + t.amount);
+                    // Leftover money from previous cycles carries over;
+                    // only the income/expense totals and charts reset.
+                    final carryOver = provider.personalTransactions
+                        .where((t) => t.date
+                            .toLocal()
+                            .isBefore(cycle.forMonth(month).start))
+                        .fold(
+                            0.0,
+                            (s, t) => t.type == TransactionType.ingreso
+                                ? s + t.amount
+                                : s - t.amount);
+                    final balance = carryOver + totalIncome - totalExpenses;
+                    final recentTransactions =
+                        provider.transactions.take(4).toList();
 
-            return BilleyPullToRefresh(
-              onRefresh: () async {
-                final budgets = context.read<BudgetProvider>();
-                await Future.wait([
-                  provider.loadTransactions(),
-                  profile.load(),
-                  budgets.refresh(),
-                ]);
-              },
-              builder: (context, physics) => SingleChildScrollView(
-                physics: physics,
-                padding: const EdgeInsets.fromLTRB(24, 30, 24, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _HomeHeader(
-                      greeting: profile.greetingForHour(
-                        DateTime.now().hour,
-                        context.l10n,
+                    return BilleyPullToRefresh(
+                      onRefresh: () async {
+                        final budgets = context.read<BudgetProvider>();
+                        await Future.wait([
+                          provider.loadTransactions(),
+                          profile.load(),
+                          budgets.refresh(),
+                        ]);
+                        if (mounted) setState(() => _animationRevision++);
+                      },
+                      builder: (context, physics) => SingleChildScrollView(
+                        physics: physics,
+                        padding: const EdgeInsets.fromLTRB(24, 30, 24, 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _HomeHeader(
+                              greeting: profile.greetingForHour(
+                                DateTime.now().hour,
+                                context.l10n,
+                              ),
+                              avatarUrl:
+                                  profile.hasAvatar ? profile.avatarUrl : null,
+                            ),
+                            const SizedBox(height: 44),
+                            _TotalBalance(
+                                key: ValueKey('balance_$_animationRevision'),
+                                balance: balance,
+                                carryOver: carryOver,
+                                currency: currencyProvider,
+                                month: month),
+                            TextButton.icon(
+                              onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const FinancialCycleScreen())),
+                              icon: const Icon(Icons.calendar_month_outlined,
+                                  size: 18),
+                              label: Text(context
+                                          .watch<FinancialCycleProvider?>()
+                                          ?.configured ==
+                                      true
+                                  ? (Localizations.localeOf(context)
+                                              .languageCode ==
+                                          'en'
+                                      ? 'Change cycle'
+                                      : 'Cambiar ciclo')
+                                  : (Localizations.localeOf(context)
+                                              .languageCode ==
+                                          'en'
+                                      ? 'Configure your cycle'
+                                      : 'Configura tu ciclo')),
+                            ),
+                            const SizedBox(height: 18),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _MetricCard(
+                                    key: ValueKey('income_$_animationRevision'),
+                                    label: context.l10n.income,
+                                    amount: totalIncome,
+                                    color: AppColors.incomeColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _MetricCard(
+                                    key: ValueKey(
+                                        'expenses_$_animationRevision'),
+                                    label: context.l10n.expenses,
+                                    amount: totalExpenses,
+                                    color: AppColors.expenseColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            _HomeAnalyticsChart(
+                              animationRevision: _animationRevision,
+                              transactions: provider.allTransactions,
+                              personalTransactions:
+                                  provider.personalTransactions,
+                            ),
+                            const SizedBox(height: 26),
+                            _RecentTransactions(
+                              onViewAll: widget.onViewAllTransactions,
+                              transactions: recentTransactions,
+                              currencyProvider: currencyProvider,
+                            ),
+                          ],
+                        ),
                       ),
-                      avatarUrl: profile.hasAvatar ? profile.avatarUrl : null,
-                    ),
-                    const SizedBox(height: 44),
-                    _TotalBalance(balance: balance, currency: currencyProvider),
-                    const SizedBox(height: 38),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _MetricCard(
-                            label: context.l10n.income,
-                            amount: totalIncome,
-                            color: AppColors.incomeColor,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _MetricCard(
-                            label: context.l10n.expenses,
-                            amount: totalExpenses,
-                            color: AppColors.expenseColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    _HomeAnalyticsChart(
-                      transactions: provider.allTransactions,
-                    ),
-                    const SizedBox(height: 26),
-                    _RecentTransactions(
-                      onViewAll: onViewAllTransactions,
-                      transactions: recentTransactions,
-                      currencyProvider: currencyProvider,
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
-            );
-          },
-        ),
-      ),
-    );
+            ));
   }
 }
 
@@ -117,9 +188,14 @@ enum _HomeChartMode { monthlyTrend, expensesByCategory, expensesByPerson }
 enum _HomeChartPeriod { thisMonth, lastMonth }
 
 class _HomeAnalyticsChart extends StatefulWidget {
-  const _HomeAnalyticsChart({required this.transactions});
+  const _HomeAnalyticsChart(
+      {required this.transactions,
+      required this.personalTransactions,
+      this.animationRevision = 0});
 
   final List<TransactionModel> transactions;
+  final List<TransactionModel> personalTransactions;
+  final int animationRevision;
 
   @override
   State<_HomeAnalyticsChart> createState() => _HomeAnalyticsChartState();
@@ -183,7 +259,9 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
           _FilterChipRow(
             children: [
               _FilterChip(
-                label: l10n.thisMonth,
+                label: Localizations.localeOf(context).languageCode == 'en'
+                    ? 'This cycle'
+                    : 'Este ciclo',
                 selected: _period == _HomeChartPeriod.thisMonth,
                 onTap: () => setState(
                   () => _period = _HomeChartPeriod.thisMonth,
@@ -191,7 +269,9 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
               ),
               const SizedBox(width: 8),
               _FilterChip(
-                label: l10n.lastMonth,
+                label: Localizations.localeOf(context).languageCode == 'en'
+                    ? 'Previous cycle'
+                    : 'Ciclo anterior',
                 selected: _period == _HomeChartPeriod.lastMonth,
                 onTap: () => setState(
                   () => _period = _HomeChartPeriod.lastMonth,
@@ -205,9 +285,11 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
           _MonthlyTrendContent(data: _monthlyChartData())
         else
           _BreakdownContent(
+            animationRevision: widget.animationRevision,
+            showBudgets: _mode == _HomeChartMode.expensesByCategory,
             title: _mode == _HomeChartMode.expensesByCategory
                 ? l10n.expensesByCategory
-                : l10n.expensesByPerson,
+                : l10n.sharedComparisonTitle,
             data: _mode == _HomeChartMode.expensesByCategory
                 ? _categoryChartData(l10n)
                 : _personChartData(l10n, couple, profile),
@@ -218,8 +300,11 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
     );
   }
 
+  FinancialCycle get _cycle =>
+      context.watch<FinancialCycleProvider?>()?.cycle ?? const FinancialCycle();
+
   DateTime get _selectedMonth {
-    final now = DateTime.now();
+    final now = _cycle.containing(DateTime.now()).start;
     if (_period == _HomeChartPeriod.thisMonth) {
       return DateTime(now.year, now.month);
     }
@@ -227,13 +312,14 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
   }
 
   String _periodLabel(AppLocalizations l10n) {
-    return _period == _HomeChartPeriod.thisMonth
-        ? l10n.thisMonth
-        : l10n.lastMonth;
+    final period = _cycle.forMonth(_selectedMonth);
+    final format =
+        DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag());
+    return '${format.format(period.start)} – ${format.format(period.lastDay)}';
   }
 
   _MonthlyChartData _monthlyChartData() {
-    final now = DateTime.now();
+    final now = _cycle.containing(DateTime.now()).start;
     final spots = <FlSpot>[];
     final labels = <String>[];
     final locale = Localizations.localeOf(context).toString();
@@ -253,9 +339,8 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
   }
 
   double _monthlyBalance(DateTime month) {
-    final monthTransactions = widget.transactions.where((transaction) {
-      return transaction.date.year == month.year &&
-          transaction.date.month == month.month;
+    final monthTransactions = widget.personalTransactions.where((transaction) {
+      return _cycle.forMonth(month).contains(transaction.date);
     });
 
     final income = monthTransactions
@@ -272,8 +357,7 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
     final month = _selectedMonth;
     return widget.transactions.where((transaction) {
       return transaction.type == TransactionType.gasto &&
-          transaction.date.year == month.year &&
-          transaction.date.month == month.month;
+          _cycle.forMonth(month).contains(transaction.date);
     }).toList();
   }
 
@@ -281,10 +365,11 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
     final currency = context.watch<CurrencyProvider>().selectedCurrency.code;
     final budgetsProvider = context.watch<BudgetProvider>();
     final categories = context.watch<CategoryProvider>().allCategories;
-    final owner = FirebaseAuth.instance.currentUser?.uid;
+    final owner = budgetsProvider.userId;
     final totals = CategoryBudget.spending(
       transactions: widget.transactions,
       month: _selectedMonth,
+      cycle: _cycle,
       currency: currency,
       owner: owner ?? '',
     );
@@ -293,6 +378,7 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
         for (final b in budgetsProvider.effectiveForMonth(
             _selectedMonth, currency,
             distribution: context.watch<IncomeDistributionProvider?>(),
+            cycle: _cycle,
             categories: categories.isEmpty
                 ? CategoryModel.getDefaultCategories()
                 : categories,
@@ -330,7 +416,8 @@ class _HomeAnalyticsChartState extends State<_HomeAnalyticsChart> {
     CoupleLinkProvider couple,
     ProfileProvider profile,
   ) {
-    final myUid = FirebaseAuth.instance.currentUser?.uid;
+    final myUid =
+        context.read<TransactionProvider>().firestoreService?.currentUser?.uid;
     double mine = 0;
     double partner = 0;
     for (final transaction in _expensesInSelectedMonth()) {
@@ -529,7 +616,9 @@ class _MonthlyTrendContent extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      data.trendLabel!,
+                      context.watch<AmountVisibilityProvider?>()?.hidden == true
+                          ? '•••'
+                          : data.trendLabel!,
                       style: const TextStyle(
                         color: AppColors.primaryColor,
                         fontSize: 12,
@@ -595,12 +684,16 @@ class _BreakdownContent extends StatelessWidget {
     required this.data,
     required this.periodLabel,
     required this.currency,
+    this.showBudgets = false,
+    this.animationRevision = 0,
   });
 
   final String title;
   final _BreakdownChartData data;
   final String periodLabel;
   final CurrencyProvider currency;
+  final bool showBudgets;
+  final int animationRevision;
 
   @override
   Widget build(BuildContext context) {
@@ -615,16 +708,18 @@ class _BreakdownContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.35,
+                  if (!showBudgets) ...[
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.35,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
+                    const SizedBox(height: 2),
+                  ],
                   Text(
                     periodLabel,
                     style: TextStyle(
@@ -638,7 +733,9 @@ class _BreakdownContent extends StatelessWidget {
             ),
             if (data.total > 0)
               Text(
-                currency.format(data.total),
+                context.watch<AmountVisibilityProvider?>()?.hidden == true
+                    ? '••••••'
+                    : currency.format(data.total),
                 style: const TextStyle(
                   color: AppColors.expenseColor,
                   fontSize: 16,
@@ -648,24 +745,19 @@ class _BreakdownContent extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 14),
-        if (data.items.any((i) => i.budget != null)) ...[
-          Row(children: [
-            const Icon(TablerIcons.chart_bar,
-                size: 14, color: AppColors.primaryColor),
-            const SizedBox(width: 6),
-            Expanded(
-                child: Text(l10n.budgetChartLegend,
-                    style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 11))),
-            IconButton(
-              tooltip: l10n.budgetLimits,
-              icon: const Icon(TablerIcons.adjustments_horizontal,
-                  size: 19, color: AppColors.primaryColor),
-              onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                      builder: (_) => const CategoryBudgetsScreen())),
-            ),
-          ]),
+        if (showBudgets) ...[
+          if (context.watch<BudgetProvider>().hasError)
+            Text(l10n.budgetLoadError,
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12))
+          else if (!context.watch<BudgetProvider>().loaded)
+            const LinearProgressIndicator()
+          else if (!data.items.any((i) => i.budget != null))
+            Text(
+                Localizations.localeOf(context).languageCode == 'en'
+                    ? 'No budget limits for this cycle. Open budgets to review your limits and automatic distribution.'
+                    : 'No hay límites de presupuesto para este ciclo. Abre Presupuestos para revisar tus límites y la distribución automática.',
+                style: TextStyle(
+                    color: AppColors.textSecondary, fontSize: 12, height: 1.4)),
           const SizedBox(height: 8),
         ],
         if (data.items.isEmpty)
@@ -673,9 +765,9 @@ class _BreakdownContent extends StatelessWidget {
         else ...[
           Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
+              constraints: const BoxConstraints(maxWidth: 680),
               child: FractionallySizedBox(
-                widthFactor: 0.92,
+                widthFactor: 1,
                 child: Container(
                   height: 432,
                   padding:
@@ -690,12 +782,13 @@ class _BreakdownContent extends StatelessWidget {
                   ),
                   // The bars scroll inside this bounded viewport; headings,
                   // filters and the breakdown below remain stationary.
-                  child: _AnimatedChartReveal(
+                  child: ChartReveal(
                     key: ValueKey(
-                      '$title-$periodLabel-${data.items.map((i) => '${i.amount}:${i.budget}').join(',')}',
+                      '$animationRevision-$title-$periodLabel-${data.items.map((i) => '${i.amount}:${i.budget}').join(',')}',
                     ),
-                    builder: (context, progress) =>
-                        _BreakdownBarChart(data: data, progress: progress),
+                    animationBuilder: (context, animation) =>
+                        _BreakdownBarChart(
+                            data: data, progress: 1, animation: animation),
                   ),
                 ),
               ),
@@ -719,51 +812,6 @@ class _BreakdownContent extends StatelessWidget {
   }
 }
 
-/// Plays [builder] through a 0→1 progress once, on mount — used to make a
-/// chart "fill in" the first time it's shown instead of appearing at full
-/// height/size immediately. Give it a key that changes with the underlying
-/// dataset so switching filters replays the reveal.
-class _AnimatedChartReveal extends StatefulWidget {
-  const _AnimatedChartReveal({super.key, required this.builder});
-
-  final Widget Function(BuildContext context, double progress) builder;
-
-  @override
-  State<_AnimatedChartReveal> createState() => _AnimatedChartRevealState();
-}
-
-class _AnimatedChartRevealState extends State<_AnimatedChartReveal>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _progress;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 750),
-    );
-    _progress =
-        CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _progress,
-      builder: (context, _) => widget.builder(context, _progress.value),
-    );
-  }
-}
-
 /// Compacts an amount to at most 3 significant digits plus a K/M suffix
 /// (e.g. 250000 → "250K", 1250000 → "1.3M") for labels too small to fit a
 /// full currency-formatted number, like the value shown above each bar.
@@ -783,15 +831,19 @@ String _compactAmount(double amount) {
 }
 
 class _BreakdownBarChart extends StatelessWidget {
-  const _BreakdownBarChart({required this.data, required this.progress});
+  const _BreakdownBarChart(
+      {required this.data, required this.progress, this.animation});
 
   final _BreakdownChartData data;
   final double progress;
+  final Animation<double>? animation;
 
   @override
   Widget build(BuildContext context) {
-    if (data.items.any((item) => item.budget != null)) {
-      return _BudgetComparisonBars(data: data, progress: progress);
+    if (data.items.any((item) => item.budget != null) ||
+        data.items.every((item) => item.isMine == null)) {
+      return _BudgetComparisonBars(
+          data: data, progress: progress, animation: animation);
     }
     final maxAmount = data.items
         .map((item) => item.amount)
@@ -825,7 +877,9 @@ class _BreakdownBarChart extends StatelessWidget {
                   getTooltipItem: (group, groupIndex, rod, rodIndex) {
                     final item = data.items[group.x];
                     return BarTooltipItem(
-                      _compactAmount(item.amount),
+                      context.watch<AmountVisibilityProvider?>()?.hidden == true
+                          ? '••••••'
+                          : _compactAmount(item.amount),
                       TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 11,
@@ -896,130 +950,87 @@ class _BreakdownBarChart extends StatelessWidget {
 
 /// Shared monetary scale: the line marks the limit, the fill is actual spend.
 class _BudgetComparisonBars extends StatelessWidget {
-  const _BudgetComparisonBars({required this.data, required this.progress});
+  const _BudgetComparisonBars(
+      {required this.data, required this.progress, this.animation});
   final _BreakdownChartData data;
   final double progress;
+  final Animation<double>? animation;
 
   @override
   Widget build(BuildContext context) {
     final currency = context.watch<CurrencyProvider>();
+    final hidden = context.watch<AmountVisibilityProvider?>()?.hidden == true;
+    String money(double value) => hidden ? '••••••' : currency.format(value);
+    String compact(double value) =>
+        hidden ? '••••••' : currency.formatCompact(value);
     final l10n = context.l10n;
     final maxValue = data.items.fold<double>(
         1,
         (value, item) =>
             math.max(value, math.max(item.amount, item.budget ?? 0)));
     return LayoutBuilder(builder: (context, constraints) {
-      final plotHeight = math.max(1.0, constraints.maxHeight - 92);
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         child: SizedBox(
-          width: math.max(constraints.maxWidth, data.items.length * 112.0),
+          width: math.max(constraints.maxWidth, data.items.length * 94.0),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             for (final item in data.items)
               Expanded(
                   child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 3),
                 child: Tooltip(
                   triggerMode: TooltipTriggerMode.tap,
                   message: item.budget == null
-                      ? '${item.label}: ${currency.format(item.amount)}'
-                      : '${item.label}\n${l10n.budgetSpentOf(currency.format(item.amount), currency.format(item.budget!))}\n${item.amount > item.budget! ? l10n.budgetOverBy(currency.format(item.amount - item.budget!)) : l10n.budgetRemaining(currency.format(item.budget! - item.amount))}',
-                  child: Column(children: [
-                    Text(currency.formatCompact(item.amount),
-                        maxLines: 1,
-                        style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
-                            color: item.budget != null &&
-                                    item.amount > item.budget!
-                                ? AppColors.expenseColor
-                                : AppColors.textPrimary)),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                        height: plotHeight,
-                        width: 64,
-                        child: Stack(
-                            clipBehavior: Clip.none,
-                            alignment: Alignment.bottomCenter,
-                            children: [
-                              if (item.budget != null)
-                                Container(
-                                    height:
-                                        plotHeight * item.budget! / maxValue,
-                                    decoration: BoxDecoration(
-                                        color:
-                                            item.color.withValues(alpha: 0.12),
-                                        borderRadius:
-                                            BorderRadius.circular(3))),
-                              ClipRRect(
-                                  borderRadius: BorderRadius.circular(3),
-                                  child: SizedBox(
-                                      height: plotHeight *
-                                          item.amount /
-                                          maxValue *
-                                          progress,
-                                      child: Column(children: [
-                                        if (item.budget != null &&
-                                            item.amount > item.budget!)
-                                          Expanded(
-                                              flex: ((item.amount -
-                                                          item.budget!) *
-                                                      1000 /
-                                                      item.amount)
-                                                  .round()
-                                                  .clamp(1, 1000),
-                                              child: Container(
-                                                  color:
-                                                      AppColors.expenseColor)),
-                                        Expanded(
-                                            flex: item.budget != null &&
-                                                    item.amount > item.budget!
-                                                ? (item.budget! *
-                                                        1000 /
-                                                        item.amount)
-                                                    .round()
-                                                    .clamp(1, 1000)
-                                                : 1000,
-                                            child:
-                                                Container(color: item.color)),
-                                      ]))),
-                              if (item.budget != null)
-                                Positioned(
-                                    bottom:
-                                        plotHeight * item.budget! / maxValue -
-                                            1,
-                                    left: -4,
-                                    right: -4,
-                                    child: Container(
-                                        height: 2,
-                                        decoration: BoxDecoration(
-                                            color: item.color,
-                                            borderRadius:
-                                                BorderRadius.circular(1)))),
-                            ])),
-                    const SizedBox(height: 8),
-                    Icon(item.icon, color: item.color, size: 19),
-                    const SizedBox(height: 3),
-                    Text(item.label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700)),
-                    Text(
-                        item.budget == null
-                            ? '—'
-                            : '${(item.amount / item.budget! * 100).round()}%',
-                        style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            color: item.budget != null &&
-                                    item.amount > item.budget!
-                                ? AppColors.expenseColor
-                                : AppColors.textSecondary)),
-                  ]),
+                      ? '${item.label}: ${money(item.amount)}'
+                      : '${item.label}\n${l10n.budgetSpentOf(money(item.amount), money(item.budget!))}\n${item.amount > item.budget! ? l10n.budgetOverBy(money(item.amount - item.budget!)) : l10n.budgetRemaining(money(item.budget! - item.amount))}',
+                  child: BudgetBarLayout(
+                    width: 88,
+                    header: const SizedBox.shrink(),
+                    bar: BudgetBarDetails(
+                      budget: item.budget,
+                      amount: item.amount,
+                      maximum: maxValue,
+                      progress: progress,
+                      animation: animation,
+                      color: item.color,
+                      icon: item.icon,
+                      amountLabel: compact(item.amount * progress),
+                      amountFormatter: compact,
+                      bar: BudgetSpendBar(
+                        amount: item.amount,
+                        budget: item.budget,
+                        maximum: maxValue,
+                        color: item.color,
+                        progress: progress,
+                        animation: animation,
+                        semanticLabel: item.budget == null
+                            ? '${item.label}: ${money(item.amount)}'
+                            : '${item.label}: ${l10n.budgetSpentOf(money(item.amount), money(item.budget!))}',
+                      ),
+                    ),
+                    footer: Column(mainAxisSize: MainAxisSize.min, children: [
+                      Text(item.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700)),
+                      Text(
+                          item.budget != null && item.amount > item.budget!
+                              ? (hidden
+                                  ? '••••••'
+                                  : '+${compact(item.amount - item.budget!)}')
+                              : ' ',
+                          maxLines: 1,
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: Color.lerp(
+                                  item.color, AppColors.textPrimary, 0.35))),
+                    ]),
+                  ),
                 ),
               )),
           ]),
@@ -1070,7 +1081,9 @@ class _SpendRow extends StatelessWidget {
             ),
           ),
           Text(
-            '${percentage.round()}%',
+            context.watch<AmountVisibilityProvider?>()?.hidden == true
+                ? '•••'
+                : '${percentage.round()}%',
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,
@@ -1079,7 +1092,9 @@ class _SpendRow extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Text(
-            currency.format(item.amount),
+            context.watch<AmountVisibilityProvider?>()?.hidden == true
+                ? '••••••'
+                : currency.format(item.amount),
             style: TextStyle(
               color: AppColors.textPrimary,
               fontSize: 13,
@@ -1239,11 +1254,16 @@ class _HomeHeader extends StatelessWidget {
 
 class _TotalBalance extends StatelessWidget {
   final double balance;
+  final double carryOver;
   final CurrencyProvider currency;
+  final DateTime month;
 
   const _TotalBalance({
+    super.key,
     required this.balance,
+    required this.carryOver,
     required this.currency,
+    required this.month,
   });
 
   @override
@@ -1253,14 +1273,29 @@ class _TotalBalance extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            context.l10n.totalBalance,
+            '${Localizations.localeOf(context).languageCode == 'en' ? 'Available balance' : 'Saldo disponible'} · ${DateFormat.MMMd(Localizations.localeOf(context).toLanguageTag()).format((context.watch<FinancialCycleProvider?>()?.cycle ?? const FinancialCycle()).forMonth(month).start)} – ${DateFormat.MMMd(Localizations.localeOf(context).toLanguageTag()).format((context.watch<FinancialCycleProvider?>()?.cycle ?? const FinancialCycle()).forMonth(month).lastDay)}',
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 15,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 8),
+          IconButton(
+            tooltip: context.watch<AmountVisibilityProvider?>()?.hidden == true
+                ? (Localizations.localeOf(context).languageCode == 'en'
+                    ? 'Show amounts'
+                    : 'Mostrar valores')
+                : (Localizations.localeOf(context).languageCode == 'en'
+                    ? 'Hide amounts'
+                    : 'Ocultar valores'),
+            onPressed: () => context.read<AmountVisibilityProvider>().toggle(),
+            icon: Icon(
+                context.watch<AmountVisibilityProvider?>()?.hidden == true
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+                color: AppColors.textSecondary,
+                size: 22),
+          ),
           _AnimatedCurrencyText(
             value: balance,
             formatter: currency.format,
@@ -1276,6 +1311,20 @@ class _TotalBalance extends StatelessWidget {
               height: 1.0,
             ),
           ),
+          if (carryOver.abs() >= 0.005) ...[
+            const SizedBox(height: 8),
+            Text(
+              '${Localizations.localeOf(context).languageCode == 'en' ? 'Carried over from previous cycles' : 'Sobrante de ciclos anteriores'}: ${context.watch<AmountVisibilityProvider?>()?.hidden == true ? '••••••' : currency.format(carryOver)}',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: carryOver < 0
+                    ? AppColors.expenseColor
+                    : AppColors.textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1285,7 +1334,7 @@ class _TotalBalance extends StatelessWidget {
 /// Counts up (or down) to [value] from whatever it last displayed —
 /// animates from 0 on first mount, and smoothly from the old to the new
 /// value on later rebuilds (e.g. after a transaction changes a total).
-class _AnimatedCurrencyText extends StatelessWidget {
+class _AnimatedCurrencyText extends StatefulWidget {
   const _AnimatedCurrencyText({
     required this.value,
     required this.formatter,
@@ -1303,18 +1352,65 @@ class _AnimatedCurrencyText extends StatelessWidget {
   final TextOverflow? overflow;
 
   @override
+  State<_AnimatedCurrencyText> createState() => _AnimatedCurrencyTextState();
+}
+
+class _AnimatedCurrencyTextState extends State<_AnimatedCurrencyText>
+    with
+        SingleTickerProviderStateMixin,
+        RouteEntranceMixin<_AnimatedCurrencyText> {
+  late final AnimationController _controller;
+  double _from = 0;
+  double get _value =>
+      _from +
+      (widget.value - _from) * Curves.easeOutCubic.transform(_controller.value);
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 900));
+  }
+
+  @override
+  void startEntranceAnimation() => _controller.forward();
+  @override
+  void didUpdateWidget(covariant _AnimatedCurrencyText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _from = _from +
+          (oldWidget.value - _from) *
+              Curves.easeOutCubic.transform(_controller.value);
+      _controller.reset();
+      if (entranceStarted) _controller.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: value),
-      duration: const Duration(milliseconds: 900),
-      curve: Curves.easeOutCubic,
-      builder: (context, animatedValue, _) => Text(
-        formatter(animatedValue),
-        textAlign: textAlign,
-        maxLines: maxLines,
-        overflow: overflow,
-        style: style,
-      ),
+    final hidden = context.watch<AmountVisibilityProvider?>()?.hidden == true;
+    return AnimatedValueVisibility(
+      hidden: hidden,
+      alignment: widget.textAlign == TextAlign.center
+          ? Alignment.center
+          : Alignment.centerLeft,
+      replacement: Text('••••••',
+          textAlign: widget.textAlign,
+          maxLines: widget.maxLines,
+          overflow: widget.overflow,
+          style: widget.style),
+      child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) => Text(widget.formatter(_value),
+              textAlign: widget.textAlign,
+              maxLines: widget.maxLines,
+              overflow: widget.overflow,
+              style: widget.style)),
     );
   }
 }
@@ -1325,6 +1421,7 @@ class _MetricCard extends StatelessWidget {
   final Color color;
 
   const _MetricCard({
+    super.key,
     required this.label,
     required this.amount,
     required this.color,
@@ -1481,13 +1578,15 @@ class _RecentTransactionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final category = TransactionCategoryDisplay.resolve(transaction,
+        context.watch<CategoryProvider>().allCategories, context.l10n);
     final isIncome = transaction.type == TransactionType.ingreso;
     final amountColor =
         isIncome ? AppColors.incomeColor : AppColors.textPrimary;
 
     final couple = context.watch<CoupleLinkProvider>();
     final isMine = transaction.ownerId == null ||
-        transaction.ownerId == FirebaseAuth.instance.currentUser?.uid;
+        context.read<TransactionProvider>().isOwnTransaction(transaction);
     final profile = context.watch<ProfileProvider>();
     final ownerName = couple.isLinked
         ? (isMine ? profile.displayName : couple.partnerDisplayName)
@@ -1516,8 +1615,8 @@ class _RecentTransactionRow extends StatelessWidget {
                 border: Border.all(color: AppColors.borderSubtle),
               ),
               child: Icon(
-                isIncome ? Icons.payments_outlined : transaction.category.icon,
-                color: isIncome ? AppColors.incomeColor : AppColors.textPrimary,
+                isIncome ? Icons.payments_outlined : category.icon,
+                color: isIncome ? AppColors.incomeColor : category.color,
                 size: 23,
               ),
             ),
@@ -1540,7 +1639,9 @@ class _RecentTransactionRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  _formatTransactionTime(context, transaction.date),
+                  isMine
+                      ? '${category.name} · ${_formatTransactionTime(context, transaction.date)}'
+                      : '${category.name} · ${context.l10n.sharedInformational}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -1553,21 +1654,32 @@ class _RecentTransactionRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            currencyProvider.formatWithSign(
-              transaction.amount,
-              isIncome: isIncome,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              color: amountColor,
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.25,
-            ),
-          ),
+          AnimatedValueVisibility(
+              hidden:
+                  context.watch<AmountVisibilityProvider?>()?.hidden == true,
+              alignment: Alignment.centerRight,
+              replacement: Text('••••••',
+                  style: TextStyle(
+                      color: amountColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900)),
+              child: Text(
+                isMine
+                    ? currencyProvider.formatWithSign(
+                        transaction.amount,
+                        isIncome: isIncome,
+                      )
+                    : currencyProvider.format(transaction.amount),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  color: amountColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.25,
+                ),
+              )),
         ],
       ),
     );

@@ -1,3 +1,4 @@
+import 'financial_cycle_screen.dart';
 import 'category_budgets_screen.dart';
 import '../widgets/billey_back_button.dart';
 import 'package:flutter/material.dart';
@@ -163,6 +164,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (_) => const CategoryBudgetsScreen(),
               )),
+            ),
+            const SizedBox(height: 10),
+            _ProfileSettingTile(
+              icon: TablerIcons.calendar,
+              title: Localizations.localeOf(context).languageCode == 'en'
+                  ? 'Financial cycle'
+                  : 'Ciclo financiero',
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => const FinancialCycleScreen())),
             ),
             const SizedBox(height: 10),
             _ProfileSettingTile(
@@ -467,7 +477,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final currency = Provider.of<CurrencyProvider>(context, listen: false);
     final profile = Provider.of<ProfileProvider>(context, listen: false);
     final filtered = TransactionExportService.filterTransactions(
-      provider.transactions,
+      provider.personalVisibleTransactions,
       options.scope,
     );
 
@@ -480,7 +490,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     try {
       final result = await TransactionExportService.export(
-        transactions: provider.transactions,
+        transactions: provider.personalVisibleTransactions,
         options: options,
         l10n: l10n,
         currency: currency,

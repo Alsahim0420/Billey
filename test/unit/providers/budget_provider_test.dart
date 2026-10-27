@@ -157,5 +157,9 @@ void main() {
     provider.bindUser('a');
     expect(await provider.copyPrevious('a', DateTime(2026, 1), 'COP'), 2);
     expect(service.copied, ['a', '2025-12', '2026-01', 'COP']);
+    expect(await provider.copyNext('a', DateTime(2026, 12), 'COP'), 2);
+    expect(service.copied, ['a', '2027-01', '2026-12', 'COP']);
+    expect(() => provider.copyNext('other', DateTime(2026, 12), 'COP'),
+        throwsStateError);
   });
 }

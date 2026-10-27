@@ -1,3 +1,5 @@
+import '../models/financial_cycle.dart';
+import '../providers/financial_cycle_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:intl/intl.dart';
@@ -25,15 +27,29 @@ class CategoryBudgetsScreen extends StatefulWidget {
 class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
   DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
   bool _copying = false;
+  int? _cycleDay;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final cycle = context.watch<FinancialCycleProvider?>()?.cycle ??
+        const FinancialCycle();
+    if (_cycleDay != cycle.startDay) {
+      _cycleDay = cycle.startDay;
+      final start = cycle.containing(DateTime.now()).start;
+      _month = DateTime(start.year, start.month);
+    }
+  }
 
-  Future<void> _copy() async {
+  Future<void> _copy({bool next = false}) async {
     final provider = context.read<BudgetProvider>();
     final owner = provider.userId;
     if (owner == null || _copying) return;
     final currency = context.read<CurrencyProvider>().selectedCurrency.code;
     setState(() => _copying = true);
     try {
-      final count = await provider.copyPrevious(owner, _month, currency);
+      final count = next
+          ? await provider.copyNext(owner, _month, currency)
+          : await provider.copyPrevious(owner, _month, currency);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(context.l10n.budgetCopied(count))));
@@ -82,9 +98,12 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
     final currency = context.watch<CurrencyProvider>();
     final categoryProvider = context.watch<CategoryProvider>();
     final distribution = context.watch<IncomeDistributionProvider?>();
+    final cycle = context.watch<FinancialCycleProvider?>()?.cycle ??
+        const FinancialCycle();
     final budgets = provider.effectiveForMonth(
         _month, currency.selectedCurrency.code,
         distribution: distribution,
+        cycle: cycle,
         categories: categoryProvider.categories.isEmpty
             ? CategoryModel.getDefaultCategories()
             : categoryProvider.categories,
@@ -93,6 +112,7 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
     final spent = CategoryBudget.spending(
       transactions: context.watch<TransactionProvider>().allTransactions,
       month: _month,
+      cycle: cycle,
       currency: currency.selectedCurrency.code,
       owner: provider.userId ?? '',
     );
@@ -142,9 +162,7 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
                         color: AppColors.textPrimary)),
                 Expanded(
                     child: Text(
-                        DateFormat.yMMMM(
-                                Localizations.localeOf(context).toLanguageTag())
-                            .format(_month),
+                        '${DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag()).format(cycle.forMonth(_month).start)} – ${DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag()).format(cycle.forMonth(_month).lastDay)}',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: AppColors.textPrimary,
@@ -202,7 +220,10 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
                     ])),
                 const SizedBox(height: 14),
                 OutlinedButton.icon(
-                    onPressed: _copying || !provider.loaded ? null : _copy,
+                    onPressed:
+                        _copying || !provider.loaded || _month.year <= 1900
+                            ? null
+                            : () => _copy(),
                     icon: _copying
                         ? const SizedBox(
                             width: 18,
@@ -210,6 +231,14 @@ class _CategoryBudgetsScreenState extends State<CategoryBudgetsScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(TablerIcons.copy, size: 18),
                     label: Text(l10n.budgetCopyPrevious)),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                    onPressed:
+                        _copying || !provider.loaded || _month.year >= 2999
+                            ? null
+                            : () => _copy(next: true),
+                    icon: const Icon(TablerIcons.copy, size: 18),
+                    label: Text(l10n.budgetCopyNext)),
                 const SizedBox(height: 6),
                 Text(l10n.budgetCopyHint,
                     textAlign: TextAlign.center,

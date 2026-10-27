@@ -1,3 +1,4 @@
+import '../models/financial_cycle.dart';
 import 'transaction.dart';
 
 class CategoryBudget {
@@ -52,13 +53,13 @@ class CategoryBudget {
       {required Iterable<TransactionModel> transactions,
       required DateTime month,
       required String currency,
-      required String owner}) {
+      required String owner,
+      FinancialCycle cycle = const FinancialCycle()}) {
     final totals = <String, double>{};
     for (final tx in transactions) {
       final date = tx.date.toLocal();
       if (tx.type != TransactionType.gasto ||
-          date.year != month.year ||
-          date.month != month.month ||
+          !cycle.forMonth(month).contains(date) ||
           (tx.ownerId != null && tx.ownerId != owner) ||
           (tx.currencyCode != null && tx.currencyCode != currency)) {
         continue;

@@ -1,10 +1,8 @@
 import 'package:billey/l10n/l10n_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:provider/provider.dart';
 
 import '../services/onboarding_status.dart';
-import '../providers/theme_settings_provider.dart';
 import '../theme/colors/app_colors.dart';
 import 'add_transaction_screen.dart';
 import 'dashboard_screen.dart';
@@ -48,20 +46,26 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     BilleyThemeScope.isDarkOf(context);
-    final isDark = context.watch<ThemeSettingsProvider>().isDarkMode;
 
     final screens = [
       DashboardScreen(
-        key: ValueKey('dash-$isDark'),
+        key: const ValueKey('dashboard'),
         onViewAllTransactions: () => _selectTab(2),
       ),
-      SavingsGoalsScreen(key: ValueKey('goals-$isDark')),
-      EnhancedTransactionListScreen(key: ValueKey('activity-$isDark')),
+      const SavingsGoalsScreen(key: ValueKey('goals')),
+      const EnhancedTransactionListScreen(key: ValueKey('activity')),
     ];
 
     return Scaffold(
       body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 220),
+        transitionBuilder: (child, animation) => SlideTransition(
+          position:
+              Tween<Offset>(begin: const Offset(0.025, 0), end: Offset.zero)
+                  .animate(CurvedAnimation(
+                      parent: animation, curve: Curves.easeOutCubic)),
+          child: child,
+        ),
         child: screens[_selectedIndex],
       ),
       bottomNavigationBar: Container(

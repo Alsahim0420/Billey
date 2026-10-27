@@ -127,29 +127,23 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Navegar según corresponda
     if (mounted) {
-      _fadeController.forward().then((_) {
-        if (mounted) {
-          final currentUser = FirebaseAuth.instance.currentUser;
-          final target = currentUser == null
-              ? const AuthScreen()
-              : (!hasSeenOnboarding
-                  ? const IntroScreen()
-                  : hasCustomProfile
-                      ? const MainNavigationScreen()
-                      : const ProfileSetupScreen());
-
-          Navigator.of(context).pushReplacement(
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => target,
-              transitionDuration: const Duration(milliseconds: 300),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
-            ),
-          );
-        }
-      });
+      // Keep the splash painted until the destination takes over.
+      final currentUser = FirebaseAuth.instance.currentUser;
+      final target = currentUser == null
+          ? const AuthScreen()
+          : (!hasSeenOnboarding
+              ? const IntroScreen()
+              : hasCustomProfile
+                  ? const MainNavigationScreen()
+                  : const ProfileSetupScreen());
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => target,
+          transitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              FadeTransition(opacity: animation, child: child),
+        ),
+      );
     }
   }
 

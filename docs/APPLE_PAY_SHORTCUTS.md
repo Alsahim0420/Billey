@@ -75,7 +75,7 @@ garantía global de exactly-once entre borrados remotos, dispositivos y reinstal
 
 | Campo de Billey | Regla |
 | --- | --- |
-| Monto | Texto numérico positivo, máximo 1 billón, hasta 2 decimales. Acepta `12500.50`, `12500,50`, `12.500,50`, `12,500.50`. Rechaza símbolos, cero, negativos, exponentes y formatos ambiguos como `12.500`/`12,500`. Un entero sin separadores (`12500`) no es ambiguo. |
+| Monto | Texto numérico positivo, máximo 1 billón, hasta 2 decimales. Acepta `12500.50`, `12500,50`, `12.500,50`, `12,500.50` y el texto formateado que entrega Wallet (`$ 18.900`, `COP 18.900`, `US$12.50`): se quitan símbolo/código de moneda al inicio o al final. Como ninguna moneda admitida usa 3 decimales, un separador seguido de exactamente 3 dígitos es de miles (`18.900` = 18900). Rechaza cero, negativos, exponentes y agrupaciones inválidas (`1,23,4`, `1.234,567`). |
 | Moneda ISO | Obligatoria: COP, USD, EUR, MXN o BRL. Normaliza mayúsculas; `$` no permite inferir moneda. Debe coincidir con la moneda configurada para recepción. |
 | Comercio | Opcional, máximo 200 caracteres. Ausente: título explícito «Compra con Apple Pay». |
 | Fecha de compra | Opcional. Ausente: hora de recepción del dispositivo, identificada como tal en las notas. Fechas negativas o más de 5 minutos futuras se rechazan. |

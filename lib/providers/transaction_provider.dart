@@ -50,6 +50,15 @@ class TransactionProvider with ChangeNotifier {
 
   List<TransactionModel> get allTransactions => _transactions;
 
+  /// Sharing grants visibility; only the owner's ledger affects their money.
+  bool isOwnTransaction(TransactionModel transaction) =>
+      transaction.ownerId == null ||
+      transaction.ownerId == firestoreService?.currentUser?.uid;
+  List<TransactionModel> get personalTransactions =>
+      _transactions.where(isOwnTransaction).toList();
+  List<TransactionModel> get personalVisibleTransactions =>
+      transactions.where(isOwnTransaction).toList();
+
   String get searchQuery => _searchQuery;
   TransactionType? get filterType => _filterType;
   TransactionCategory? get filterCategory => _filterCategory;
@@ -78,6 +87,7 @@ class TransactionProvider with ChangeNotifier {
     _transactions = data;
     // Sort by date (most recent first)
     _transactions.sort((a, b) => b.date.compareTo(a.date));
+    _refreshFilteredTransactions();
     notifyListeners();
   }
 
@@ -187,6 +197,9 @@ class TransactionProvider with ChangeNotifier {
   }
 
   Future<void> editTransaction(TransactionModel transaction) async {
+    if (!isOwnTransaction(transaction)) {
+      throw StateError('El movimiento compartido es solo informativo.');
+    }
     if (firestoreService != null) {
       await firestoreService!.update(transaction);
     } else {
@@ -198,6 +211,9 @@ class TransactionProvider with ChangeNotifier {
   Future<void> deleteTransaction(String id) async {
     final index =
         _transactions.indexWhere((transaction) => transaction.id == id);
+    if (index != -1 && !isOwnTransaction(_transactions[index])) {
+      throw StateError('El movimiento compartido es solo informativo.');
+    }
     final removed = index == -1 ? null : _transactions.removeAt(index);
     _refreshFilteredTransactions();
     notifyListeners();
@@ -222,35 +238,33 @@ class TransactionProvider with ChangeNotifier {
   }
 
   double getTotalIncome() {
-    return _transactions
+    return personalTransactions
         .where((transaction) => transaction.type == TransactionType.ingreso)
         .fold(0.0, (sum, item) => sum + item.amount);
   }
 
   double getTotalExpenses() {
-    return _transactions
+    return personalTransactions
         .where((transaction) => transaction.type == TransactionType.gasto)
         .fold(0.0, (sum, item) => sum + item.amount);
   }
 
-  double getMonthlySummary(DateTime date) {
-    double income = getTransactionsByMonth(date)
-        .where((transaction) => transaction.type == TransactionType.ingreso)
-        .fold(0.0, (sum, item) => sum + item.amount);
+  double getMonthlyIncome(DateTime month) => getTransactionsByMonth(month)
+      .where((tx) => tx.type == TransactionType.ingreso)
+      .fold(0.0, (sum, tx) => sum + tx.amount);
 
-    double expenses = getTransactionsByMonth(date)
-        .where((transaction) => transaction.type == TransactionType.gasto)
-        .fold(0.0, (sum, item) => sum + item.amount);
+  double getMonthlyExpenses(DateTime month) => getTransactionsByMonth(month)
+      .where((tx) => tx.type == TransactionType.gasto)
+      .fold(0.0, (sum, tx) => sum + tx.amount);
 
-    return income - expenses;
-  }
+  double getMonthlySummary(DateTime date) =>
+      getMonthlyIncome(date) - getMonthlyExpenses(date);
 
   List<TransactionModel> getTransactionsByMonth(DateTime date) {
-    return _transactions
-        .where((transaction) =>
-            transaction.date.year == date.year &&
-            transaction.date.month == date.month)
-        .toList();
+    return personalTransactions.where((transaction) {
+      final localDate = transaction.date.toLocal();
+      return localDate.year == date.year && localDate.month == date.month;
+    }).toList();
   }
 
   void searchTransactions(String query) {
@@ -324,7 +338,7 @@ class TransactionProvider with ChangeNotifier {
 
   List<TransactionModel> getTransactionsByDateRange(
       DateTime start, DateTime end) {
-    return _transactions.where((transaction) {
+    return personalTransactions.where((transaction) {
       return transaction.date
               .isAfter(start.subtract(const Duration(days: 1))) &&
           transaction.date.isBefore(end.add(const Duration(days: 1)));
@@ -332,7 +346,7 @@ class TransactionProvider with ChangeNotifier {
   }
 
   double getTotalByCategory(TransactionCategory category) {
-    return _transactions
+    return personalTransactions
         .where((transaction) => transaction.category == category)
         .fold(0.0, (sum, transaction) => sum + transaction.amount);
   }

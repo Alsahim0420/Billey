@@ -432,7 +432,7 @@
   "notificationPermissionDenied": "Activa las notificaciones en ajustes para recibir recordatorios de pago",
 
   "coupleFinanceTitle": "Finanzas compartidas",
-  "coupleIntro": "Vincula tu cuenta con tu pareja para decidir, transacción por transacción, qué gastos e ingresos quieren verse mutuamente.",
+  "coupleIntro": "Comparte movimientos para que la otra persona pueda verlos. Cada gasto o ingreso afecta únicamente el saldo de quien lo registra.",
   "coupleMyCodeLabel": "Tu código",
   "coupleMyCodeHint": "Compártelo con tu pareja. Se renueva solo cada 5 minutos.",
   "coupleCodeExpiresIn": "Expira en {seconds}s",
@@ -446,7 +446,7 @@
   "@coupleLinkedWith": {
     "placeholders": { "name": { "type": "String" } }
   },
-  "coupleLinkedSubtitle": "Ya pueden compartir transacciones entre ustedes desde cada registro.",
+  "coupleLinkedSubtitle": "Los movimientos compartidos son informativos: no se suman ni se descuentan del saldo de la otra persona.",
   "coupleLinkedSuccess": "¡Vinculación exitosa!",
   "coupleInvalidCode": "Ese código no es válido o ya expiró.",
   "coupleGenericError": "Algo salió mal. Intenta de nuevo.",
@@ -566,17 +566,17 @@
   "transactionNameLabel": "Nombre",
   "transactionAmountLabel": "Monto",
   "transactionNotesLabel": "Notas y origen",
-  "transactionSharedReadOnly": "Este movimiento fue compartido contigo. Solo su propietario puede editarlo.",
-  "monthlyBudgets": "Presupuestos mensuales",
-  "budgetIntro": "Define cuánto quieres gastar por categoría este mes. Tus límites se guardan en tu cuenta y se sincronizan con Firebase.",
+  "transactionSharedReadOnly": "Este movimiento es informativo y no afecta tu saldo ni tus presupuestos. Solo su propietario puede editarlo.",
+  "monthlyBudgets": "Presupuestos del ciclo",
+  "budgetIntro": "Define cuánto quieres gastar por categoría este ciclo. Tus límites se guardan en tu cuenta y se sincronizan con Firebase.",
   "budgetPreviousMonth": "Mes anterior",
   "budgetNextMonth": "Mes siguiente",
   "budgetPlanned": "Presupuesto del mes",
   "budgetTrackedSpend": "Gastado en categorías con presupuesto",
   "budgetAvailable": "Disponible",
   "budgetExceeded": "Excedido",
-  "budgetCopyPrevious": "Copiar mes anterior",
-  "budgetCopyHint": "Solo copia categorías que aún no tienen presupuesto en este mes.",
+  "budgetCopyPrevious": "Copiar ciclo anterior",
+  "budgetCopyHint": "Solo copia categorías que aún no tienen presupuesto en este ciclo.",
   "budgetCopied": "Se copiaron {count} presupuestos. Si no había límites previos o ya estaban configurados, no se modificó nada.",
   "budgetNotSet": "Sin presupuesto · Toca para configurar",
   "budgetSpentOf": "{spent} gastado de {limit}",
@@ -621,8 +621,8 @@
       }
     }
   },
-  "budgetChartLegend": "Sólido: gastado · Línea: presupuesto · Solo tus gastos",
-  "budgetAutomaticHint": "Los límites iniciales se calculan con tu plantilla y tus ingresos registrados del mes (o del mes anterior si aún no hay ingresos). Necesidades y gustos se reparten según los gastos de los últimos 3 meses, reservando un 10 % para repartir por igual; sin historial, se reparten por igual. Ahorro, inversión, deudas y colchón quedan reservados. Sin ingresos registrados no se inventan montos. Tus ajustes manuales tienen prioridad y se guardan en Firebase.",
+  "budgetChartLegend": "Color: gastado · Marca: tope · Trama oscura: exceso",
+  "budgetAutomaticHint": "Los límites iniciales se calculan con tu plantilla y tus ingresos registrados del ciclo (o del ciclo anterior si aún no hay ingresos). Necesidades y gustos se reparten según los gastos de los últimos 3 ciclos, reservando un 10 % para repartir por igual; sin historial, se reparten por igual. Ahorro, inversión, deudas y colchón quedan reservados. Sin ingresos registrados no se inventan montos. Tus ajustes manuales tienen prioridad y se guardan en Firebase.",
   "categoryReviewRequired": "No se pudo identificar la categoría. Toca la categoría, elige la correcta y vuelve a guardar.",
   "categoryAutomaticLabel": "Categoría automática",
 
@@ -664,5 +664,11 @@
   "homeRefreshRelease": "Suelta para actualizar",
   "homeRefreshing": "Actualizando tu información…",
   "homeRefreshDone": "Todo actualizado",
-  "homeRefreshFailed": "No se pudo actualizar. Intenta de nuevo."
+  "homeRefreshFailed": "No se pudo actualizar. Intenta de nuevo.",
+
+  "sharedInformational": "Informativo · No afecta tu saldo",
+  "sharedComparisonTitle": "Comparación informativa",
+  "transactionCategoryUnavailable": "Categoría no disponible",
+  "monthlyBalance": "Saldo del mes",
+  "budgetCopyNext": "Copiar ciclo siguiente"
 }

@@ -1318,7 +1318,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get coupleIntro =>
-      'Vincula tu cuenta con tu pareja para decidir, transacción por transacción, qué gastos e ingresos quieren verse mutuamente.';
+      'Comparte movimientos para que la otra persona pueda verlos. Cada gasto o ingreso afecta únicamente el saldo de quien lo registra.';
 
   @override
   String get coupleMyCodeLabel => 'Tu código';
@@ -1348,7 +1348,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get coupleLinkedSubtitle =>
-      'Ya pueden compartir transacciones entre ustedes desde cada registro.';
+      'Los movimientos compartidos son informativos: no se suman ni se descuentan del saldo de la otra persona.';
 
   @override
   String get coupleLinkedSuccess => '¡Vinculación exitosa!';
@@ -1552,14 +1552,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get transactionSharedReadOnly =>
-      'Este movimiento fue compartido contigo. Solo su propietario puede editarlo.';
+      'Este movimiento es informativo y no afecta tu saldo ni tus presupuestos. Solo su propietario puede editarlo.';
 
   @override
-  String get monthlyBudgets => 'Presupuestos mensuales';
+  String get monthlyBudgets => 'Presupuestos del ciclo';
 
   @override
   String get budgetIntro =>
-      'Define cuánto quieres gastar por categoría este mes. Tus límites se guardan en tu cuenta y se sincronizan con Firebase.';
+      'Define cuánto quieres gastar por categoría este ciclo. Tus límites se guardan en tu cuenta y se sincronizan con Firebase.';
 
   @override
   String get budgetPreviousMonth => 'Mes anterior';
@@ -1580,11 +1580,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get budgetExceeded => 'Excedido';
 
   @override
-  String get budgetCopyPrevious => 'Copiar mes anterior';
+  String get budgetCopyPrevious => 'Copiar ciclo anterior';
 
   @override
   String get budgetCopyHint =>
-      'Solo copia categorías que aún no tienen presupuesto en este mes.';
+      'Solo copia categorías que aún no tienen presupuesto en este ciclo.';
 
   @override
   String budgetCopied(int count) {
@@ -1639,11 +1639,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get budgetChartLegend =>
-      'Sólido: gastado · Línea: presupuesto · Solo tus gastos';
+      'Color: gastado · Marca: tope · Trama oscura: exceso';
 
   @override
   String get budgetAutomaticHint =>
-      'Los límites iniciales se calculan con tu plantilla y tus ingresos registrados del mes (o del mes anterior si aún no hay ingresos). Necesidades y gustos se reparten según los gastos de los últimos 3 meses, reservando un 10 % para repartir por igual; sin historial, se reparten por igual. Ahorro, inversión, deudas y colchón quedan reservados. Sin ingresos registrados no se inventan montos. Tus ajustes manuales tienen prioridad y se guardan en Firebase.';
+      'Los límites iniciales se calculan con tu plantilla y tus ingresos registrados del ciclo (o del ciclo anterior si aún no hay ingresos). Necesidades y gustos se reparten según los gastos de los últimos 3 ciclos, reservando un 10 % para repartir por igual; sin historial, se reparten por igual. Ahorro, inversión, deudas y colchón quedan reservados. Sin ingresos registrados no se inventan montos. Tus ajustes manuales tienen prioridad y se guardan en Firebase.';
 
   @override
   String get categoryReviewRequired =>
@@ -1702,4 +1702,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get homeRefreshFailed => 'No se pudo actualizar. Intenta de nuevo.';
+
+  @override
+  String get sharedInformational => 'Informativo · No afecta tu saldo';
+
+  @override
+  String get sharedComparisonTitle => 'Comparación informativa';
+
+  @override
+  String get transactionCategoryUnavailable => 'Categoría no disponible';
+
+  @override
+  String get monthlyBalance => 'Saldo del mes';
+
+  @override
+  String get budgetCopyNext => 'Copiar ciclo siguiente';
 }

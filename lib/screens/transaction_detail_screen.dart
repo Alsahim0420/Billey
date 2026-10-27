@@ -143,7 +143,10 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
               )),
               const SizedBox(height: 18),
               Text(
-                  currency.formatWithSign(transaction.amount, isIncome: income),
+                  _canEdit
+                      ? currency.formatWithSign(transaction.amount,
+                          isIncome: income)
+                      : currency.format(transaction.amount),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: AppColors.textPrimary,
@@ -156,6 +159,13 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                   textAlign: TextAlign.center,
                   style:
                       TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              if (!_canEdit) ...[
+                const SizedBox(height: 8),
+                Text(l10n.sharedInformational,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: AppColors.textSecondary, fontSize: 12)),
+              ],
               const SizedBox(height: 30),
               _DetailPanel(
                   child: Column(

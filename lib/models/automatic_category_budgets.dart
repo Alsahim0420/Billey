@@ -1,3 +1,4 @@
+import '../models/financial_cycle.dart';
 import 'category.dart';
 import 'category_budget.dart';
 import 'transaction.dart';
@@ -22,6 +23,7 @@ class AutomaticCategoryBudgets {
 
   static List<CategoryBudget> calculate({
     required DateTime month,
+    FinancialCycle cycle = const FinancialCycle(),
     required String currency,
     required String owner,
     required IncomeDistributionTemplate template,
@@ -35,15 +37,14 @@ class AutomaticCategoryBudgets {
     double incomeFor(DateTime m) => own
         .where((t) =>
             t.type == TransactionType.ingreso &&
-            t.date.toLocal().year == m.year &&
-            t.date.toLocal().month == m.month)
+            cycle.forMonth(m).contains(t.date))
         .fold(0.0, (sum, t) => sum + t.amount);
     final income = incomeFor(month);
     final base =
         income > 0 ? income : incomeFor(DateTime(month.year, month.month - 1));
     if (!base.isFinite || base <= 0) return [];
-    final start = DateTime(month.year, month.month - 3);
-    final end = DateTime(month.year, month.month);
+    final start = cycle.startFor(DateTime(month.year, month.month - 3));
+    final end = cycle.startFor(month);
     final history = <String, double>{};
     for (final t in own) {
       final date = t.date.toLocal();
