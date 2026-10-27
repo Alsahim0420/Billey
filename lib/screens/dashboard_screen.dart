@@ -68,7 +68,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     final totalExpenses = movements
                         .where((t) => t.type == TransactionType.gasto)
                         .fold(0.0, (s, t) => s + t.amount);
-                    final balance = totalIncome - totalExpenses;
+                    // Leftover money from previous cycles carries over;
+                    // only the income/expense totals and charts reset.
+                    final carryOver = provider.personalTransactions
+                        .where((t) => t.date
+                            .toLocal()
+                            .isBefore(cycle.forMonth(month).start))
+                        .fold(
+                            0.0,
+                            (s, t) => t.type == TransactionType.ingreso
+                                ? s + t.amount
+                                : s - t.amount);
+                    final balance = carryOver + totalIncome - totalExpenses;
                     final recentTransactions =
                         provider.transactions.take(4).toList();
 
@@ -100,6 +111,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             _TotalBalance(
                                 key: ValueKey('balance_$_animationRevision'),
                                 balance: balance,
+                                carryOver: carryOver,
                                 currency: currencyProvider,
                                 month: month),
                             TextButton.icon(
@@ -1242,12 +1254,14 @@ class _HomeHeader extends StatelessWidget {
 
 class _TotalBalance extends StatelessWidget {
   final double balance;
+  final double carryOver;
   final CurrencyProvider currency;
   final DateTime month;
 
   const _TotalBalance({
     super.key,
     required this.balance,
+    required this.carryOver,
     required this.currency,
     required this.month,
   });
@@ -1259,7 +1273,7 @@ class _TotalBalance extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            '${Localizations.localeOf(context).languageCode == 'en' ? 'Cycle balance' : 'Saldo del ciclo'} · ${DateFormat.MMMd(Localizations.localeOf(context).toLanguageTag()).format((context.watch<FinancialCycleProvider?>()?.cycle ?? const FinancialCycle()).forMonth(month).start)} – ${DateFormat.MMMd(Localizations.localeOf(context).toLanguageTag()).format((context.watch<FinancialCycleProvider?>()?.cycle ?? const FinancialCycle()).forMonth(month).lastDay)}',
+            '${Localizations.localeOf(context).languageCode == 'en' ? 'Available balance' : 'Saldo disponible'} · ${DateFormat.MMMd(Localizations.localeOf(context).toLanguageTag()).format((context.watch<FinancialCycleProvider?>()?.cycle ?? const FinancialCycle()).forMonth(month).start)} – ${DateFormat.MMMd(Localizations.localeOf(context).toLanguageTag()).format((context.watch<FinancialCycleProvider?>()?.cycle ?? const FinancialCycle()).forMonth(month).lastDay)}',
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 15,
@@ -1297,6 +1311,20 @@ class _TotalBalance extends StatelessWidget {
               height: 1.0,
             ),
           ),
+          if (carryOver.abs() >= 0.005) ...[
+            const SizedBox(height: 8),
+            Text(
+              '${Localizations.localeOf(context).languageCode == 'en' ? 'Carried over from previous cycles' : 'Sobrante de ciclos anteriores'}: ${context.watch<AmountVisibilityProvider?>()?.hidden == true ? '••••••' : currency.format(carryOver)}',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: carryOver < 0
+                    ? AppColors.expenseColor
+                    : AppColors.textSecondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ],
       ),
     );

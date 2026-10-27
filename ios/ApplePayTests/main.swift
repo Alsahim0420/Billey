@@ -14,8 +14,13 @@ let inbox = ApplePayInbox(directory: directory)
 for raw in ["12.500,50", "12,500.50", "12500.50", "12500,50"] {
     check(try! WalletAmount.normalize(raw) == "12500.5", "Locale amount: " + raw)
 }
-for raw in ["", "0", "-12", "NaN", "Infinity", "$12", "12.500", "12,500", "1,23,4", "1.234,567", "1000000000001", "1e3"] {
+for raw in ["", "0", "-12", "$-12", "NaN", "Infinity", "$", "1,23,4", "1.234,567", "12.5000", "1000000000001", "1e3"] {
     rejects { _ = try WalletAmount.normalize(raw) }
+}
+// Formatted values Wallet passes to Shortcuts.
+for (raw, expected) in [("$ 18.900", "18900"), ("$18.900,00", "18900"), ("$\u{00A0}18.900", "18900"), ("COP 18.900", "18900"),
+                        ("18.900 COP", "18900"), ("12.500", "12500"), ("12,500", "12500"), ("US$12.50", "12.5"), ("R$ 1.234,56", "1234.56"), ("€12,50", "12.5"), ("$12", "12")] {
+    check(try! WalletAmount.normalize(raw) == expected, "Wallet amount: " + raw)
 }
 check(try! WalletAmount.normalize("1.234.567") == "1234567", "Grouped integer")
 rejects { _ = try inbox.receive(amount: "12", currency: "COP", merchant: nil, date: nil, card: nil, eventID: nil) }

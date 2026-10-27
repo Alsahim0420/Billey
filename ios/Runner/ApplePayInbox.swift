@@ -12,17 +12,26 @@ enum WalletImportError: LocalizedError {
 enum WalletAmount {
     static let currencies = ["COP", "USD", "EUR", "MXN", "BRL"]
 
-    // No locale guessing: a single separator followed by 3 digits is ambiguous.
+    // Wallet hands Shortcuts the formatted amount ("$ 18.900", "COP 18.900,00").
+    // None of the supported currencies uses 3 decimals, so a separator followed
+    // by exactly 3 digits is always grouping (18.900 = 18900, never 18.9).
     static func normalize(_ raw: String) throws -> String {
         guard raw.count <= 100 else { throw WalletImportError.invalid("Monto demasiado largo.") }
-        let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        var value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        // Leading currency symbol or ISO code with optional (non-breaking) spaces: "$", "R$", "US$", "COP".
+        if let prefix = value.range(of: #"^(?:[A-Z]{1,3}\s*)?[$€]?\s*"#, options: .regularExpression), !prefix.isEmpty {
+            value.removeSubrange(prefix)
+        }
+        if let suffix = value.range(of: #"\s*(?:[$€]|[A-Z]{3})$"#, options: .regularExpression) {
+            value.removeSubrange(suffix)
+        }
         let formats = [
             (#"^[0-9]+$"#, "", ""),
             (#"^[0-9]+[.,][0-9]{1,2}$"#, "", ","),
             (#"^[0-9]{1,3}(\.[0-9]{3})+,[0-9]{1,2}$"#, ".", ","),
             (#"^[0-9]{1,3}(,[0-9]{3})+\.[0-9]{1,2}$"#, ",", "."),
-            (#"^[0-9]{1,3}(\.[0-9]{3}){2,}$"#, ".", ""),
-            (#"^[0-9]{1,3}(,[0-9]{3}){2,}$"#, ",", "")
+            (#"^[0-9]{1,3}(\.[0-9]{3})+$"#, ".", ""),
+            (#"^[0-9]{1,3}(,[0-9]{3})+$"#, ",", "")
         ]
         for (pattern, grouping, decimal) in formats where value.range(of: pattern, options: .regularExpression) != nil {
             var result = value
@@ -32,7 +41,7 @@ enum WalletAmount {
                   number > 0, number <= Decimal(1_000_000_000_000 as Int64) else { break }
             return NSDecimalNumber(decimal: number).stringValue
         }
-        throw WalletImportError.invalid("Monto inválido o ambiguo. Usa 12500.50, 12.500,50 o 12,500.50, sin símbolo de moneda.")
+        throw WalletImportError.invalid("Monto inválido: \"\(raw)\". Usa por ejemplo 18900, 18.900, 12.500,50 o 12,500.50.")
     }
 }
 

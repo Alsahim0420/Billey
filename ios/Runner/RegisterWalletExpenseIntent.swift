@@ -8,7 +8,7 @@ struct RegisterWalletExpenseIntent: AppIntent {
     static var openAppWhenRun: Bool = false
     static var authenticationPolicy: IntentAuthenticationPolicy = .alwaysAllowed
 
-    @Parameter(title: "Monto", description: "Sin símbolo: 12500.50, 12.500,50 o 12,500.50. No se admiten valores ambiguos como 12.500.")
+    @Parameter(title: "Monto", description: "Acepta el monto de Wallet tal cual ($ 18.900) o texto como 18900, 12.500,50 o 12,500.50.")
     var amount: String
     @Parameter(title: "Moneda ISO", description: "COP, USD, EUR, MXN o BRL. Configúrala explícitamente si la entrada no ofrece moneda.")
     var currency: String
