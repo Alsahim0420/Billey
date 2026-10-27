@@ -10,6 +10,8 @@ import '../../theme/billey_theme_scope.dart';
 import '../../theme/colors/app_colors.dart';
 import 'apple_pay_controller.dart';
 
+part 'android_payments_settings_screen.dart';
+
 class ApplePaySettingsScreen extends StatelessWidget {
   const ApplePaySettingsScreen({super.key});
 

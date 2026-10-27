@@ -4,11 +4,11 @@ import Foundation
 @available(iOS 16.0, *)
 struct RegisterWalletExpenseIntent: AppIntent {
     static var title: LocalizedStringResource = "Registrar gasto en Billey"
-    static var description = IntentDescription("Recibe un gasto de Apple Pay/Atajos en la bandeja local. Billey lo importa al abrirse. Requiere configurar la recepción en Billey.")
+    static var description = IntentDescription("Recibe un gasto desde Atajos en la bandeja local. Billey lo importa al abrirse. Requiere configurar la recepción en Billey.")
     static var openAppWhenRun: Bool = false
     static var authenticationPolicy: IntentAuthenticationPolicy = .alwaysAllowed
 
-    @Parameter(title: "Monto", description: "Acepta el monto de Wallet tal cual ($ 18.900) o texto como 18900, 12.500,50 o 12,500.50.")
+    @Parameter(title: "Monto", description: "Acepta el monto tal cual llega de la transacción ($ 18.900) o texto como 18900, 12.500,50 o 12,500.50.")
     var amount: String
     @Parameter(title: "Moneda ISO", description: "COP, USD, EUR, MXN o BRL. Configúrala explícitamente si la entrada no ofrece moneda.")
     var currency: String

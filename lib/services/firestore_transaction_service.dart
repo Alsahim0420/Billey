@@ -73,7 +73,9 @@ class FirestoreTransactionService {
       if (existing.exists) return;
       tx.set(ref, {
         ...transaction.toFirestore(userId: owner),
-        'source': 'apple_pay_shortcuts',
+        'source': ref.id.startsWith('notification_')
+            ? 'android_notifications'
+            : 'apple_pay_shortcuts',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });

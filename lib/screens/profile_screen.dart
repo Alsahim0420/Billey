@@ -120,15 +120,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
               },
             ),
-            if (ApplePayController.isIOS) ...[
+            if (ApplePayController.isSupportedPlatform) ...[
               const SizedBox(height: 10),
               _ProfileSettingTile(
                 icon: Icons.account_balance_wallet_outlined,
-                title: l10n.applePayTitle,
+                title: ApplePayController.isIOS
+                    ? l10n.applePayTitle
+                    : AndroidPaymentsSettingsScreen.title(context),
                 onTap: () {
                   context.read<ApplePayController>().refresh();
                   Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => const ApplePaySettingsScreen(),
+                    builder: (_) => ApplePayController.isIOS
+                        ? const ApplePaySettingsScreen()
+                        : const AndroidPaymentsSettingsScreen(),
                   ));
                 },
               ),

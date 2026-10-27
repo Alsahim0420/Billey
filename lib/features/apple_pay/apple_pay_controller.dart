@@ -20,7 +20,17 @@ class ApplePayController extends ChangeNotifier with WidgetsBindingObserver {
   static const _channel = MethodChannel('billey/apple_pay');
   static bool get isIOS =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+  // Android reads payment notifications (Google Wallet, bank apps and SMS
+  // alerts) into the same kind of inbox, over the same channel.
+  static bool get isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  static bool get isSupportedPlatform => isIOS || isAndroid;
+  static String get sourceName =>
+      isIOS ? 'Apple Pay/Atajos' : 'las notificaciones de pago';
   bool supported = false;
+
+  /// Android only: whether notification access is granted in system settings.
+  bool permission = false;
   bool receiving = false;
   bool busy = false;
   int pending = 0;
@@ -32,14 +42,15 @@ class ApplePayController extends ChangeNotifier with WidgetsBindingObserver {
   String? get _uid => FirebaseAuth.instance.currentUser?.uid;
 
   Future<void> initialize() async {
-    if (!isIOS) return;
+    if (!isSupportedPlatform) return;
     try {
       supported = await _channel.invokeMethod<bool>('capabilities') ?? false;
     } on PlatformException {
       message =
-          'La recepción de Apple Pay no está disponible. Reabre Billey para reintentar.';
+          'La recepción automática de compras no está disponible. Reabre Billey para reintentar.';
     } on MissingPluginException {
-      message = 'Esta instalación no incluye la acción nativa de Apple Pay.';
+      message =
+          'Esta instalación no incluye la recepción automática de compras.';
     }
     _channel.setMethodCallHandler((call) async {
       if (call.method == 'received') await refresh();
@@ -51,7 +62,7 @@ class ApplePayController extends ChangeNotifier with WidgetsBindingObserver {
   void _currencyChanged() => unawaited(refresh());
 
   Future<void> sessionChanged() async {
-    if (!isIOS) return;
+    if (!isSupportedPlatform) return;
     final uid = _uid;
     _readyOwner = null;
     receiving = false;
@@ -64,8 +75,9 @@ class ApplePayController extends ChangeNotifier with WidgetsBindingObserver {
       await _channel.invokeMethod<void>('session', {'owner': uid});
       nativeReady = true;
     } catch (_) {
-      message =
-          'No se pudo leer la bandeja. Abre Billey con el iPhone desbloqueado y reintenta.';
+      message = isIOS
+          ? 'No se pudo leer la bandeja. Abre Billey con el iPhone desbloqueado y reintenta.'
+          : 'No se pudo leer la bandeja de pagos. Reabre Billey y reintenta.';
       notifyListeners();
     }
     // Keep normal category loading independent of the optional native bridge.
@@ -94,6 +106,16 @@ class ApplePayController extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  /// Android: opens the system screen where notification access is granted.
+  Future<void> openPermissionSettings() async {
+    try {
+      await _channel.invokeMethod<void>('openPermissionSettings');
+    } on PlatformException catch (e) {
+      message = e.message;
+      notifyListeners();
+    }
+  }
+
   Future<void> testReceipt() async {
     try {
       await _channel.invokeMethod<String>('test', {
@@ -111,7 +133,7 @@ class ApplePayController extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> refresh() async {
-    if (!isIOS || !supported) return;
+    if (!isSupportedPlatform || !supported) return;
     // Coalesce overlapping resume, settings and auth requests, then reread.
     if (_running != null) {
       await _running;
@@ -143,6 +165,7 @@ class ApplePayController extends ChangeNotifier with WidgetsBindingObserver {
           .map((e) => WalletEntry.fromMap(Map<Object?, Object?>.from(e as Map)))
           .toList();
       receiving = snapshot?['receiving'] == true;
+      permission = snapshot?['permission'] == true;
       configuredCurrency = snapshot?['currency'] as String?;
       final last = snapshot?['lastReceived'] as num?;
       lastReceived = last == null
@@ -168,7 +191,7 @@ class ApplePayController extends ChangeNotifier with WidgetsBindingObserver {
       );
       if (_uid != owner) return;
       if (imported > 0) {
-        message = '$imported gasto(s) importado(s) desde Apple Pay/Atajos.';
+        message = '$imported gasto(s) importado(s) desde $sourceName.';
         await transactions.loadTransactions();
       }
     } on CategoryReviewRequired {

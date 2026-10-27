@@ -14,6 +14,7 @@ class WalletEntry {
         ),
         dateIsReceipt = map['dateIsReceipt'] as bool,
         card = map['card'] as String?,
+        source = map['source'] as String? ?? 'apple_pay',
         isTest = map['test'] as bool {
     if (!RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
             .hasMatch(id) ||
@@ -31,6 +32,10 @@ class WalletEntry {
   final DateTime date;
   final bool dateIsReceipt, isTest;
   final String? card;
+
+  /// 'apple_pay' (iOS Shortcuts) or 'android_notification'.
+  final String source;
+  bool get _fromAndroid => source == 'android_notification';
 
   TransactionModel toTransaction(List<CategoryModel> categories) {
     final available =
@@ -50,7 +55,7 @@ class WalletEntry {
       ),
     );
     return TransactionModel(
-      id: 'applepay_$id',
+      id: _fromAndroid ? 'notification_$id' : 'applepay_$id',
       title: merchant,
       amount: amount,
       date: date,
@@ -59,7 +64,9 @@ class WalletEntry {
       categoryId: category.id,
       currencyCode: currency,
       description: [
-        'Origen: Apple Pay/Atajos',
+        _fromAndroid
+            ? 'Origen: notificación de pago'
+            : 'Origen: Apple Pay/Atajos',
         'Moneda original: $currency',
         if (dateIsReceipt) 'Fecha de recepción (fecha de compra no disponible)',
         if (card?.isNotEmpty ?? false) 'Alias de tarjeta: $card',

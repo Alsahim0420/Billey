@@ -96,7 +96,7 @@ void main() async {
     budgetProvider.bindUser(user?.uid);
     financialCycle.bindUser(user?.uid);
     profileProvider.load();
-    if (ApplePayController.isIOS) {
+    if (ApplePayController.isSupportedPlatform) {
       applePay.sessionChanged();
     } else {
       categoryProvider.initialize();
